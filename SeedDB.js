@@ -5,38 +5,39 @@ var util = require('util');
 var MongoClient = require('mongodb').MongoClient
 var mongoose = require('mongoose');
 
-var DIR_PATH = "./seed";
+var DIR_PATH = './seed';
+var NAME_OF_FILE = 'surveyors';
 
-function loadSeedFiles(db) {
-    fs.readdir(DIR_PATH, function(err, files) {
-        if (err) {
-            console.log('Error reading files from ' + DIR_PATH);
-        } else {
-            console.log('Reading files from ' + DIR_PATH);
+function isFunction(functionToCheck) {
+    var getType = {};
+    return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
+}
 
-            if (files.length <= 0) {
-                console.log('No files inside ' + DIR_PATH);
-            } else { 
-                async.each(files, function(file, cb){
-                    var fileContents = require(DIR_PATH + '/' + file);
+function loadSeedFile(db, nameOfFile) {
+    var fileContents = require(DIR_PATH + '/' + nameOfFile);
 
-                    if (!util.isArray(fileContents)) {
-                        cb('File failed: ' + file);
-                    } else {
-                        // process the contents of the file
-                        saveIntoDB(db, fileContents, file.slice(0, -3));
-                        cb();
-                    }
-
-                }, function(err) {
-                    if (err) {
-                        console.log(err);
-                        return;   
-                    }
-                });
+    if (isFunction(fileContents)) {
+        // has returned a callback
+        var callback = fileContents;
+        callback(function (err, contents) {
+            if (err) {
+                console.log(err);
+            } else {
+                if (util.isArray(contents)) {
+                    // has array contents
+                    // process the contents of the file
+                    saveIntoDB(db, contents, NAME_OF_FILE);
+                }
             }
-        }
-    });
+        });
+    } else if (util.isArray(fileContents)) {
+        // has array contents
+        // process the contents of the file
+        saveIntoDB(db, fileContents, NAME_OF_FILE);
+    } else {
+        console.log('Please provide a valid file');
+        closeDatabase(db);
+    }
 }
 
 function saveIntoDB(db, fileContents, fileName) {
@@ -45,13 +46,13 @@ function saveIntoDB(db, fileContents, fileName) {
         return;
     }
 
-    db.collection(fileName, {strict: true}, function(err, result) {
+    db.collection(fileName, { strict: true }, function (err, result) {
         if (!err) {
             dropCollection(db, fileName);
         }
 
-        async.each(fileContents, function(fileContent, cb){
-            fileContent.save(function(err) {
+        async.each(fileContents, function (fileContent, cb) {
+            fileContent.save(function (err) {
                 if (err) {
                     console.log('Failed to save the document into the collection ' + fileName + ' err : ' + err);
                 }
@@ -59,29 +60,21 @@ function saveIntoDB(db, fileContents, fileName) {
                 console.log('Successfully saved the document into the collection : ' + fileName);
                 cb();
             });
-        }, function(err) {
+        }, function (err) {
             if (err) {
                 console.log('Failed to save the collection err : ' + err);
             }
 
             console.log('Completed inserting documents into the collection ' + fileName);
+
+            closeDatabase(db);
+            process.exit();
         });
     });
-
-    // // insert all the documents into the collection.
-    // db.collection('inserts').insertMany(fileContents, function(err, r) {
-    //     if (err) {
-    //         console.log('Failure inserting the file ' + fileName + ' into the db.');
-    //     } else {
-    //           if (fileContents.length == r.insertedCount) {
-    //               console.log('Documents inserted into the collection ' + fileName + ' successfully');
-    //           }
-    //     }
-    // });
 }
 
 function createCollection(db, nameOfCollection) {
-    db.createCollection(nameOfCollection, function(err, collection) {
+    db.createCollection(nameOfCollection, function (err, collection) {
         if (err) {
             console.log("Failed to create a collection: " + err);
             return null;
@@ -92,7 +85,7 @@ function createCollection(db, nameOfCollection) {
 }
 
 function dropCollection(db, nameOfCollection) {
-    db.dropCollection(nameOfCollection, function(err, result) {
+    db.dropCollection(nameOfCollection, function (err, result) {
         if (err) {
             console.log("Failed to drop the collection " + err);
         } else {
@@ -109,7 +102,7 @@ function closeDatabase(db) {
 
 // public function that helps to connect to the Database. 
 function connectToDB() {
-    MongoClient.connect(constants.clusterURL, function(err, db) {
+    MongoClient.connect(constants.clusterURL, function (err, db) {
         if (err) {
             console.log('Failed connecting to the Db. ' + err);
         } else {
@@ -118,13 +111,13 @@ function connectToDB() {
             mongoose.connect(constants.clusterURL);
 
             var mongooseDB = mongoose.connection;
-            mongooseDB.on('error', function() {
+            mongooseDB.on('error', function () {
                 console.log('Failed to connect to mongoose.');
             });
 
-            mongooseDB.once('open', function() {
+            mongooseDB.once('open', function () {
                 console.log('Connected to the mongoose DB');
-                loadSeedFiles(db);
+                loadSeedFile(db, NAME_OF_FILE);
             })
         }
     });

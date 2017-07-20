@@ -14,7 +14,7 @@ var questionSchema = new Schema({
   children: [{
     position: {type: String, required: true},
     question: {type: Schema.Types.ObjectId, ref: 'Question', required: true},
-  }],
+  }]
 });
 
 module.exports = mongoose.model('Question', questionSchema);
