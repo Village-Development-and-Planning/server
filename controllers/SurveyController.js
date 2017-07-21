@@ -7,14 +7,31 @@ function SurveyController() {
     BaseController.call(this, Survey);
 }
 
-var proto = {};
+SurveyController.prototype.sendSingleSurvey = function (req, res, next) {
+    var surveyID = req.params.id;
+    var self = req.controller.surveyController;
 
-proto.sendSingleSurvey = function(req, res) {
-    // BaseController.prototype.getForID(this, id).exec(cb);
-    res.send("NOT IMPLEMENTED: sendSingleSurvey id: " + req.params.id);
+    if (self) {
+        self.getSurveyFromID(function(err, survey) {
+
+            if (err) {
+                next(err);
+            } else { 
+                res.json(survey);
+            }
+
+        }, surveyID);
+    } else {
+        console.log('Self is undefined');
+        process.exit(1);
+    }
 }
 
-SurveyController.prototype = proto;
+SurveyController.prototype.getSurveyFromID = function (cb, surveyID) {
+    this.getForID(surveyID)
+        .populate('questions.question')
+        .exec(cb);
+}
 
 util.inherits(SurveyController, BaseController);
 

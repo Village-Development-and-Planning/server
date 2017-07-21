@@ -123,7 +123,4 @@ function connectToDB() {
     });
 }
 
-//Todo: remove this
-connectToDB();
-
 module.exports = connectToDB;

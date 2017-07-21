@@ -1,5 +1,3 @@
-var Question = require('../data/models/Question');
-
 function BaseController(modal) {
     this.modal = modal;
 }

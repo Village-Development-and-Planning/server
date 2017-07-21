@@ -1,6 +1,27 @@
 var express = require('express');
 var http = require('http');
 var bodyParser = require('body-parser');
+var mongoose = require('mongoose');
+var constants = require('./Constants');
+
+// import so the schema is initially created. 
+var Survey = require('./data/models/Survey');
+var Question = require('./data/models/Question');
+var Option = require('./data/models/Option');
+var Surveyor = require('./data/models/Surveyor');
+
+// connect to mongoose
+var options = {
+  db: { native_parser: true },
+  server: { poolSize: 5 },
+  user: constants.userName,
+  pass: constants.password
+}
+
+mongoose.connect(constants.clusterURL, options, function (err) {
+  if (err)
+    console.log('Error connecting to the DB: ' + err);
+});
 
 // Routes
 var cms = require('./routes/cms');
@@ -9,7 +30,7 @@ var app = express();
 
 // parse application/x-www-form-urlencoded 
 app.use(bodyParser.urlencoded({ extended: false }));
- 
+
 // parse application/json 
 app.use(bodyParser.json());
 
@@ -17,8 +38,34 @@ app.use(bodyParser.json());
 app.use('/cms', cms);
 
 // redirect the home to /cms
-app.get('/', function(req, res) {
-    res.redirect('/cms');
+app.get('/', function (req, res) {
+  res.redirect('/cms');
+});
+
+// error handlers are given at the last of the stack. 
+
+// development error handler
+// will print stacktrace
+if (app.get('env') === 'development') {
+
+  app.use(function (err, req, res, next) {
+    res.status(err.status || 500);
+    res.json({
+      message: err.message,
+      error: err
+    });
+  });
+
+}
+
+// production error handler
+// no stacktraces leaked to user
+app.use(function (err, req, res, next) {
+  res.status(err.status || 500);
+  res.json({
+    message: err.message,
+    error: {}
+  });
 });
 
 var port = normalizePort(process.env.PORT || '3000');
