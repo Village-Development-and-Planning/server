@@ -1,11 +1,11 @@
 var async = require('async');
-var constants = require('./Constants');
+var constants = require('../other/Constants');
 var fs = require('fs');
 var util = require('util');
 var MongoClient = require('mongodb').MongoClient
 var mongoose = require('mongoose');
 
-var DIR_PATH = './seed';
+var DIR_PATH = '../seed';
 var NAME_OF_FILE = 'surveyors';
 
 function isFunction(functionToCheck) {

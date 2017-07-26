@@ -11,6 +11,8 @@
   "dependencies": {
     "async": "^2.5.0",
     "body-parser": "^1.17.2",
+    "busboy": "^0.2.14",
+    "csv-parse": "^1.2.1",
     "express": "^4.15.3",
     "mongodb": "^2.2.30",
     "mongoose": "^4.11.3",

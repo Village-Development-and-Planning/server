@@ -2,7 +2,7 @@ var express = require('express');
 var http = require('http');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
-var constants = require('./Constants');
+var constants = require('./other/Constants');
 
 // import so the schema is initially created. 
 var Survey = require('./data/models/Survey');
@@ -25,6 +25,7 @@ mongoose.connect(constants.clusterURL, options, function (err) {
 
 // Routes
 var cms = require('./routes/cms');
+var mappingApp = require('./routes/MappingApp');
 
 var app = express();
 
@@ -34,8 +35,11 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json 
 app.use(bodyParser.json());
 
-// catalog routes
+// cms routes
 app.use('/cms', cms);
+
+// app data upload/download routes
+app.use('/app/mapping', mappingApp);
 
 // redirect the home to /cms
 app.get('/', function (req, res) {
