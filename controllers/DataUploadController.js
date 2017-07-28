@@ -1,31 +1,31 @@
 var Busboy = require('busboy');
 var Helpers = require('../other/Helpers');
-var parse = require('csv-parse');
+var csv = require('csv');
+var MappingCSVParser = require('../other/parsers/MappingCSVParser');
 
 function DataUploadController() {
 }
 
 DataUploadController.prototype.parseCSV = function (dataStrean, cb) {
-    var data = []; // The CSV data as objects
+    var dataObjects = []; // The CSV data as objects
 
-    var parser = parse({ delimiter: ',' });
+    var parser = csv.parse({ delimiter: ',', columns: true });
+    var stringifyer = csv.stringify();
+    var mappingCSVParser = new MappingCSVParser();
 
-    // CSV parser listeners
-    parser.on('readable', function () {
-        while (record = parser.read()) {
-            data.push(record);
-        }
+    mappingCSVParser.on('data', function (data) {
+        dataObjects.push(data);
     });
 
-    parser.on('error', function (err) {
+    mappingCSVParser.on('error', function (err) {
         cb(err);
     });
 
-    parser.on('finish', function () {
-        cb(null, data)
+    mappingCSVParser.on('finish', function () {
+        cb(null, dataObjects);
     });
 
-    dataStrean.pipe(parser);
+    dataStrean.pipe(parser).pipe(stringifyer).pipe(mappingCSVParser);
 }
 
 DataUploadController.prototype.receiveMultiPartData = function (req, res, next) {
@@ -53,7 +53,7 @@ DataUploadController.prototype.receiveMultiPartData = function (req, res, next) 
                 if (err) {
                     next(err);
                 } else {
-                    console.log(data);
+                    console.log(data.toString());
                     res.json({
                         msg: 'SUCCESS'
                     });

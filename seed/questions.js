@@ -25,6 +25,7 @@ function createQuestions(optionIDs) {
     for (var i = 0; i < 50; i++) {
         var question = new Question({
             type: QUESTION_TYPE[i % QUESTION_TYPE.length],
+            tags: [],
             text: {
                 english: 'Question ' + i,
                 tamil: 'கேள்வி ' + i

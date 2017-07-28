@@ -6,6 +6,7 @@ var mongoose = require('mongoose');
 
 var questionSchema = new Schema({
   type: {type: String, required: true},
+  tags: [{type: String}],
   text: {type: Text, required: true},
   options: [{
     position: {type: String, required: true},
