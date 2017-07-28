@@ -2,6 +2,7 @@ var Busboy = require('busboy');
 var Helpers = require('../other/Helpers');
 var csv = require('csv');
 var MappingCSVParser = require('../other/parsers/MappingCSVParser');
+var fs = require('fs');
 
 function DataUploadController() {
 }

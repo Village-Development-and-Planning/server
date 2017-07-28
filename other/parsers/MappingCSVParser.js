@@ -32,13 +32,67 @@ util.inherits(MappingCSVParser, TransformStream);
 MappingCSVParser.prototype._transform = function (data, encoding, cb) {
     var dataArray = data.toString().split(',');
 
+    var removeNonAlphaNumericRegx = /[^A-Za-z0-9]/g;
+    var optionsRegex = /[0-9]+./;
+
+    function parseOptions(optionsData) {
+        var arr = optionsData.split('\n');
+        var finalArr = arr.map(function (option) {
+            return option.replace(optionsRegex, '');
+        });
+        return finalArr;
+    }
+
+    function constructOptionsJson(optionsTxt, optionsTranslation) {
+        var optionsTextArray = parseOptions(optionsTxt);
+        var optionsTranslationArray = parseOptions(optionsTranslation);
+
+        if (optionsTranslationArray.length != optionsTextArray.length) {
+            return null;
+        }
+
+        var len = optionsTextArray.length;
+        var result = [];
+
+        for (var i = 0; i < len; i++) {
+            var option = {
+                type: '',
+                text: {
+                    english: optionsTextArray[i],
+                    tamil: optionsTranslationArray[i]
+                }
+            }
+
+            result.push(option);
+        }
+
+        return result;
+    }
+
     var questionNumber = dataArray[COLUMN_TITLE.questionnumber];
     var questionText = dataArray[COLUMN_TITLE.questiontext];
     var questionTextTranslation = dataArray[COLUMN_TITLE.questiontranslation];
     var questionType = dataArray[COLUMN_TITLE.questiontype];
     var questionTag = dataArray[COLUMN_TITLE.tags];
+    var optionsText = dataArray[COLUMN_TITLE.optionstext];
+    var optionsTranslation = dataArray[COLUMN_TITLE.optionstranslation];
 
-    // TODO: option.
+    if (!questionNumber || !questionText || !questionTextTranslation || !questionType
+        || !optionsText || !optionsTranslation) {
+        cb(new Error('The CSV data is not valid.'));
+        return;
+    }
+
+    questionTag.replace(removeNonAlphaNumericRegx, '');
+    optionsText.replace(/['"]+/g, '');
+    optionsTranslation.replace(/['"]+/g, '');
+
+    var optionsData = constructOptionsJson(optionsText, optionsTranslation);
+
+    if (!optionsData) {
+        cb(new Error('Provided options and options translation are not valid.'));
+        return;
+    }
 
     var currentQuestion = {
         number: questionNumber,
@@ -48,19 +102,21 @@ MappingCSVParser.prototype._transform = function (data, encoding, cb) {
         },
         type: questionType,
         tag: questionTag,
+        options: optionsData,
         children: []
     }
 
     var parentQuestionNumber = getParentQuestionNumber(questionNumber);
 
-    // If there is no parent or the parent donot match then this is the start of the parent-child tree. 
+    // If there is no parent or the parent does not match then this is the start of the parent-child tree. 
     if (!parentQuestionNumber) {
         this.lastParentQuestionNumber = getParentQuestionNumber(questionNumber) || questionNumber;
 
         if (!parentQuestionNumber) {
 
-            if (this.question)
+            if (this.question) {
                 this.push(JSON.stringify(this.question));
+            }
 
             this.question = Object.assign({}, currentQuestion);
             this.lastParentQuestion = this.question;
