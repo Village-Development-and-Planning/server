@@ -1,5 +1,6 @@
 var TransformStream = require('stream').Transform;
 var util = require('util');
+var Helpers = require('../../other/Helpers');
 
 var COLUMN_TITLE = {
     questionnumber: 0,
@@ -18,11 +19,6 @@ function MappingCSVParser(options) {
     if (!(this instanceof MappingCSVParser))
         return new MappingCSVParser(options);
     TransformStream.call(this, options);
-
-    this.lastParentQuestion = null;
-    this.lastQuestion = null;
-    this.lastParentQuestionNumber = null;
-    this.lastQuestionNumber = null;
 
     this.question = null;
 }
@@ -77,15 +73,20 @@ MappingCSVParser.prototype._transform = function (data, encoding, cb) {
     var optionsText = dataArray[COLUMN_TITLE.optionstext];
     var optionsTranslation = dataArray[COLUMN_TITLE.optionstranslation];
 
-    if (!questionNumber || !questionText || !questionTextTranslation || !questionType
-        || !optionsText || !optionsTranslation) {
+    if (!questionNumber || !questionText || !questionTextTranslation) {
         cb(new Error('The CSV data is not valid.'));
         return;
     }
 
-    questionTag.replace(removeNonAlphaNumericRegx, '');
-    optionsText.replace(/['"]+/g, '');
-    optionsTranslation.replace(/['"]+/g, '');
+    // convert the tag to array
+    questionTag = questionTag.split('\n').map(function(value) {
+        return value.replace(removeNonAlphaNumericRegx, '');
+    });
+    // clear the question tag of any empty values
+    questionTag = Helpers.cleanArray(questionTag);
+
+    optionsText = optionsText.replace(/['"]+/g, '');
+    optionsTranslation = optionsTranslation.replace(/['"]+/g, '');
 
     var optionsData = constructOptionsJson(optionsText, optionsTranslation);
 
@@ -100,43 +101,25 @@ MappingCSVParser.prototype._transform = function (data, encoding, cb) {
             english: questionText,
             tamil: questionTextTranslation
         },
-        type: questionType,
-        tag: questionTag,
-        options: optionsData,
+        type: questionType || '',
+        tag: questionTag || '',
+        options: optionsData || '',
         children: []
     }
 
     var parentQuestionNumber = getParentQuestionNumber(questionNumber);
 
-    // If there is no parent or the parent does not match then this is the start of the parent-child tree. 
+    // If there is no parent then this is the start of the parent-child tree. 
     if (!parentQuestionNumber) {
-        this.lastParentQuestionNumber = getParentQuestionNumber(questionNumber) || questionNumber;
 
-        if (!parentQuestionNumber) {
-
-            if (this.question) {
-                this.push(JSON.stringify(this.question));
-            }
-
-            this.question = Object.assign({}, currentQuestion);
-            this.lastParentQuestion = this.question;
+        if (this.question) {
+            this.push(this.question);
         }
 
+        this.question = Object.assign({}, currentQuestion);
     } else {
-
-        if ((this.lastParentQuestionNumber != parentQuestionNumber)) {
-            this.lastParentQuestionNumber = getParentQuestionNumber(questionNumber) || questionNumber;
-            this.lastParentQuestion = this.lastQuestion;
-        }
-
-        var child = Object.assign({}, currentQuestion);
-        this.lastParentQuestion.children.push(child);
+        constructQuestionsJson(currentQuestion, this.question);
     }
-
-    var lastParentQuestionChildCount = this.lastParentQuestion.children.length;
-
-    if (lastParentQuestionChildCount > 0)
-        this.lastQuestion = this.lastParentQuestion.children[lastParentQuestionChildCount - 1];
 
     cb();
 }
@@ -144,6 +127,60 @@ MappingCSVParser.prototype._transform = function (data, encoding, cb) {
 MappingCSVParser.prototype._flush = function (cb) {
     this.push(JSON.stringify(this.question));
     cb();
+}
+
+/**
+ * Appends children to the root question. 
+ * Returns if there is no root parent ID or the tree 
+ * for a particular root is over.
+ * 
+ * @param questionJsonToInsert The new questions to insert 
+ * @param questionsJson The single set of question tree 
+ * (with one root question)
+ */
+function constructQuestionsJson(questionJsonToInsert, questionsJson) {
+
+    if (!questionsJson || !questionJsonToInsert) {
+        return;
+    }
+
+    var parentQuestionNumber = getParentQuestionNumber(questionJsonToInsert.number);
+
+    // If there is no parent question number dont proceed. 
+    if (!parentQuestionNumber) {
+        return;
+    }
+
+    var immediateParentQuestion = findParentQuestionObject(questionsJson, parentQuestionNumber);
+
+    if (immediateParentQuestion) {
+        immediateParentQuestion.children.push(questionJsonToInsert);
+    }
+}
+
+// Returns a reference to the appropriate parent question 
+// to insert the children to. 
+function findParentQuestionObject(questionsJson, number) {
+
+    if (!questionsJson || !number) {
+        return;
+    }
+
+    var resultQuestionJson = null;
+
+    var currentQuestionNumber = questionsJson.number;
+
+    // return if the current question is found.
+    if (currentQuestionNumber == number) {
+        return questionsJson;
+    }
+
+    // loopover all the children until you find the result
+    for (var currentQuestion of questionsJson.children) {
+        resultQuestionJson = findParentQuestionObject(currentQuestion, number);
+    }
+
+    return resultQuestionJson;
 }
 
 function getParentQuestionNumber(questionNumber) {
