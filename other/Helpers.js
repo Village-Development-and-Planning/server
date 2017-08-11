@@ -5,7 +5,7 @@ helpers.getExtensionFromFileName = function (fileName) {
     return re.exec(fileName)[1];
 }
 
-// Will remove all falsy values: undefined, null, 0, false, NaN and "" (empty string)
+// Will remove all false values: undefined, null, 0, false, NaN and "" (empty string)
 helpers.cleanArray = function (actual) {
     var newArray = new Array();
     for (var i = 0; i < actual.length; i++) {

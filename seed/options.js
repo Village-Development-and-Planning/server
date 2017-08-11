@@ -2,6 +2,8 @@ var Option = require('../data/models/Option');
 
 var OPTION_TYPES = ["Type1", "Type2", "Type3", "Type4", "Type5"];
 
+/* TODO: *** IMPORTANT *** Change the options to match new Schema */
+
 function createOptions() {
     var options = [];
 

@@ -1,12 +1,18 @@
 var Schema = require('./Schema');
 
-var Text =  require('./Text');
+var Text = require('./Text');
 
 var mongoose = require('mongoose');
 
 var optionSchema = new Schema({
-  type: {type: String, required: true},
-  text: {type: Text, required: true},
+  text: { type: Text, required: true, unique: true },
+  type: { type: String, required: true }
+});
+
+// indexes
+optionSchema.index({
+  text: 1,
+  type: 1
 });
 
 module.exports = mongoose.model('Option', optionSchema);
