@@ -26,7 +26,12 @@ function MappingCSVParser(options) {
 util.inherits(MappingCSVParser, TransformStream);
 
 MappingCSVParser.prototype._transform = function (data, encoding, cb) {
-    var dataArray = data.toString().split(',');
+    var dataArray = Helpers.CSVtoArray(data.toString());
+
+    if (!dataArray) {
+        cb(new Error('The CSV data is not valid. DATA:  ' + dataArray.toString()));
+        return;
+    }
 
     var removeNonAlphaNumericRegx = /[^A-Za-z0-9]/g;
     var optionsRegex = /[0-9]+./;
@@ -79,7 +84,7 @@ MappingCSVParser.prototype._transform = function (data, encoding, cb) {
     }
 
     // convert the tag to array
-    questionTag = questionTag.split('\n').map(function(value) {
+    questionTag = questionTag.split('\n').map(function (value) {
         return value.replace(removeNonAlphaNumericRegx, '');
     });
     // clear the question tag of any empty values

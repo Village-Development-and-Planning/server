@@ -29,7 +29,12 @@ SurveyController.prototype.sendSingleSurvey = function (req, res, next) {
 
 SurveyController.prototype.getSurveyFromID = function (cb, surveyID) {
     this.getForID(surveyID)
-        .populate('questions.question')
+        .populate({
+            path: 'questions.question',
+            populate: {
+                path: 'children.question'
+            }
+        })
         .exec(cb);
 }
 

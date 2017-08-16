@@ -15,13 +15,11 @@ util.inherits(DataUploadController, BaseDataUploadController);
  * Upload the parsed CSV data.
  * @param data - The parsed CSV data.
  */
-DataUploadController.prototype.uploadData = function (data, cb) {
-    this.saveQuestion(data).then(function (err) {
-        if (err) {
-            cb(new Error(err)); // This is a error string so convert to error object.
-        } else {
-            cb(null);
-        }
+DataUploadController.prototype.uploadData = function (surveyName, data, cb) {
+    this.saveQuestions(data, surveyName).then(function () {
+        cb(null);
+    }).catch(function (err) {
+        cb(new Error(err)); // This is a error string so convert to error object.
     });
 }
 
@@ -29,16 +27,18 @@ DataUploadController.prototype.uploadData = function (data, cb) {
  * @param datastream - The stream of data from upload
  * @param cb - error only callback
  */
-DataUploadController.prototype.parseCSV = function (dataStrean, cb) {
+DataUploadController.prototype.parseCSVandUpload = function (surveyName, dataStrean, cb) {
     var self = this;
 
     var parser = csv.parse({ delimiter: ',', columns: true });
     var stringifyer = csv.stringify();
     var mappingCSVParser = new MappingCSVParser();
 
+    var jsonData = [];
+
     mappingCSVParser.on('data', function (data) {
         var dataObj = JSON.parse(data);
-        self.uploadData(dataObj, cb);
+        jsonData.push(dataObj);
     });
 
     mappingCSVParser.on('error', function (err) {
@@ -46,6 +46,7 @@ DataUploadController.prototype.parseCSV = function (dataStrean, cb) {
     });
 
     mappingCSVParser.on('finish', function () {
+        self.uploadData(surveyName, jsonData, cb);
     });
 
     dataStrean.pipe(parser).pipe(stringifyer).pipe(mappingCSVParser);
@@ -70,8 +71,9 @@ DataUploadController.prototype.receiveMultiPartData = function (req, res, next) 
         // Allow only if the file is a CSV type.
         if (fileExtension == 'csv') {
 
-            // pipe with the parse Transform stream and read CSV data. 
-            self.parseCSV(fileStream, function (err) {
+            // pipe with the parse Transform stream and read CSV data.
+            fileName = fileName.slice(0, -4); 
+            self.parseCSVandUpload(fileName, fileStream, function (err) {
 
                 if (err) {
                     next(err);
@@ -89,7 +91,7 @@ DataUploadController.prototype.receiveMultiPartData = function (req, res, next) 
 
         } else {
             fileStream.resume();
-            next(new Error("Please provide a .csv file only"));
+            next(new Error('Please provide a .csv file only'));
         }
 
     });
