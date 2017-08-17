@@ -4,7 +4,7 @@ var util = require('util');
 var BaseController = require('./BaseController');
 
 function SurveyorController() {
-    BaseController.call(this, Surveyor);
+    BaseController.call(this);
 }
 
 SurveyorController.prototype.sendSingleSurveyor = function (req, res, next) {
@@ -12,7 +12,7 @@ SurveyorController.prototype.sendSingleSurveyor = function (req, res, next) {
     var self = req.controller.surveyorController;
 
     if (self) {
-        self.getSurveyorFromID(function(err, surveyor) {
+        self.getSurveyorFromID(function (err, surveyor) {
 
             if (err) {
                 next(err);
@@ -29,7 +29,7 @@ SurveyorController.prototype.sendSingleSurveyor = function (req, res, next) {
 };
 
 SurveyorController.prototype.getSurveyorFromID = function (cb, surveyorID) {
-    this.getForID(surveyorID)
+    Surveyor.find({ _id: surveyorID })
         .exec(cb);
 }
 

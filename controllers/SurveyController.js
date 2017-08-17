@@ -1,10 +1,11 @@
 var Survey = require('../data/models/Survey');
+var Question = require('../data/models/Question');
 var async = require('async');
 var util = require('util');
 var BaseController = require('./BaseController');
 
 function SurveyController() {
-    BaseController.call(this, Survey);
+    BaseController.call(this);
 }
 
 SurveyController.prototype.sendSingleSurvey = function (req, res, next) {
@@ -12,30 +13,27 @@ SurveyController.prototype.sendSingleSurvey = function (req, res, next) {
     var self = req.controller.surveyController;
 
     if (self) {
-        self.getSurveyFromID(function(err, survey) {
-
-            if (err) {
-                next(err);
-            } else { 
-                res.json(survey);
-            }
-
-        }, surveyID);
+        self.getSurveyFromID(surveyID).then(function (survey) {
+            res.json(survey);
+        }).catch(function (err) {
+            next(err);
+        });
     } else {
-        console.log('Self is undefined');
-        process.exit(1);
+        next(new Error('Self is undefined'));
     }
 }
 
-SurveyController.prototype.getSurveyFromID = function (cb, surveyID) {
-    this.getForID(surveyID)
-        .populate({
-            path: 'questions.question',
-            populate: {
-                path: 'children.question'
-            }
-        })
-        .exec(cb);
+SurveyController.prototype.getSurveyFromID = function (surveyID) {
+    var self = this;
+    var promise = Survey.find({ _id: surveyID }).exec();
+
+    promise = promise.then(function (survey) {
+        return survey;
+    }).then(function (survey) {
+        return self.populateSurveys(survey);
+    });
+
+    return promise;
 }
 
 util.inherits(SurveyController, BaseController);

@@ -4,7 +4,7 @@ var util = require('util');
 var BaseController = require('./BaseController');
 
 function QuestionController() {
-    BaseController.call(this, Question);
+    BaseController.call(this);
 }
 
 util.inherits(QuestionController, BaseController);
@@ -32,7 +32,7 @@ QuestionController.prototype.sendSingleQuestion = function (req, res, next) {
 };
 
 QuestionController.prototype.getQuestionFromID = function (cb, questionID) {
-    this.getForID(questionID)
+    Question.find({ _id: questionID })
         .populate('options.option')
         .populate('children.question')
         .exec(cb);
