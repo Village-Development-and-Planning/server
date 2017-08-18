@@ -6,6 +6,8 @@ function BaseController() {
 
 var proto = {};
 
+proto.childrenQuestionMap = {};
+
 /**
  * Helper to populate surveys with all the questions and its children.
  *
@@ -32,12 +34,14 @@ proto.populateSurveys = function (surveys) {
 proto.populateQuestions = function (questions) {
     return questions.reduce(function (sequence, root) {
         return sequence.then(function () {
-            if (root.question)
-                return proto.populateChildren(root.question)
+            if (root.question) {
+                return proto.populateChildren(root)
                     .then(function (currentQuestion) {
+                        console.log(currentQuestion)
                         root.question = currentQuestion;
                         return root;
                     });
+            }
             else
                 throw new Error('The survey dosen\'t have questions');
         });
@@ -50,25 +54,30 @@ proto.populateQuestions = function (questions) {
  * @return Promise.
  */
 proto.populateChildren = function (root) {
-    var id = root._id;
+    var id = root.question;
 
     if (id) {
-        return Question.find({ _id: id }).exec().then(function (question) {
-            return question.children.map(proto.populateChildren)
-                .reduce(function (sequence, questionPromise) {
+        return Question.findOne({ _id: id })
+            .exec()
+            .then(function (question) {
+                return question.children.reduce(function (sequence, node) {
                     return sequence.then(function () {
-                        return questionPromise;
+                        return proto.populateChildren(node);
                     }).then(function (currentQuestion) {
-                        for (var i = 0; i < root.children; i++) {
-                            if (root.children.question._id === currentQuestion._id) {
-                                root.children.question = currentQuestion;
-                                break;
-                            }
-                        }
-                        return root;
+                        // save the current question json in the map for later use. 
+                        proto.childrenQuestionMap[currentQuestion._id] = currentQuestion;
+
+                        currentQuestion.children = currentQuestion.children.map(
+                            function (child) {
+                                var childData = proto.childrenQuestionMap[child.question];
+                                child.question = childData;
+                                return child;
+                            });
+
+                        return question;
                     });
-                }, Promise.resolve(root));
-        });
+                }, Promise.resolve(question));
+            });
     } else {
         throw new Error('The question dosen\'t have an ID : ' + root);
     }
