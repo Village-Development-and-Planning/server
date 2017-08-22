@@ -26,22 +26,21 @@ function MappingCSVParser(options) {
 util.inherits(MappingCSVParser, TransformStream);
 
 MappingCSVParser.prototype._transform = function (data, encoding, cb) {
-    var dataArray = Helpers.CSVtoArray(data.toString());
+    var dataArray = Helpers.CSVToArray(data.toString());
 
     if (!dataArray) {
-        cb(new Error('The CSV data is not valid. DATA:  ' + dataArray.toString()));
+        cb(new Error('The CSV data is not valid. DATA:' + data.toString()));
         return;
     }
 
-    var removeNonAlphaNumericRegx = /[^A-Za-z0-9]/g;
-    var optionsRegex = /[0-9]+./;
+    dataArray = dataArray[0];
 
     function parseOptions(optionsData) {
-        var arr = optionsData.split('\n');
+        var arr = optionsData.split(/[0-9][.]/);
         var finalArr = arr.map(function (option) {
-            return option.replace(optionsRegex, '');
+            return option.replace(/ *\<[^)]*\> */g, '');
         });
-        return finalArr;
+        return Helpers.cleanArray(finalArr);
     }
 
     function constructOptionsJson(optionsTxt, optionsTranslation) {
@@ -56,15 +55,17 @@ MappingCSVParser.prototype._transform = function (data, encoding, cb) {
         var result = [];
 
         for (var i = 0; i < len; i++) {
-            var option = {
-                type: '',
-                text: {
-                    english: optionsTextArray[i],
-                    tamil: optionsTranslationArray[i]
+            if (optionsTextArray[i] && optionsTranslationArray[i]) {
+                var option = {
+                    type: '',
+                    text: {
+                        english: optionsTextArray[i],
+                        tamil: optionsTranslationArray[i]
+                    }
                 }
-            }
 
-            result.push(option);
+                result.push(option);
+            }
         }
 
         return result;
@@ -85,7 +86,7 @@ MappingCSVParser.prototype._transform = function (data, encoding, cb) {
 
     // convert the tag to array
     questionTag = questionTag.split('\n').map(function (value) {
-        return value.replace(removeNonAlphaNumericRegx, '');
+        return value.replace(/[^A-Za-z0-9]/g, '');
     });
     // clear the question tag of any empty values
     questionTag = Helpers.cleanArray(questionTag);
@@ -96,7 +97,8 @@ MappingCSVParser.prototype._transform = function (data, encoding, cb) {
     var optionsData = constructOptionsJson(optionsText, optionsTranslation);
 
     if (!optionsData) {
-        cb(new Error('Provided options and options translation are not valid.'));
+        cb(new Error('Provided options and options translation are not valid. DATA: '
+            + optionsText + ' TRANSLATION : ' + optionsTranslation));
         return;
     }
 
@@ -107,8 +109,8 @@ MappingCSVParser.prototype._transform = function (data, encoding, cb) {
             tamil: questionTextTranslation
         },
         type: questionType || '',
-        tag: questionTag || '',
-        options: optionsData || '',
+        tags: questionTag || '',
+        options: optionsData || [],
         children: []
     }
 
@@ -118,7 +120,7 @@ MappingCSVParser.prototype._transform = function (data, encoding, cb) {
     if (!parentQuestionNumber) {
 
         if (this.question) {
-            this.push(this.question);
+            this.push(JSON.stringify(this.question));
         }
 
         this.question = Object.assign({}, currentQuestion);

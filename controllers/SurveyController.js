@@ -25,15 +25,38 @@ SurveyController.prototype.sendSingleSurvey = function (req, res, next) {
 
 SurveyController.prototype.getSurveyFromID = function (surveyID) {
     var self = this;
-    var promise = Survey.find({ _id: surveyID }).exec();
+    return Survey.findOne({ _id: surveyID })
+        .exec()
+        .then(function (survey) {
+            if (survey.name) {
+                console.log('Populating ' + survey.name + ' survey.');
+            }
 
-    promise = promise.then(function (survey) {
-        return survey;
-    }).then(function (survey) {
-        return self.populateSurveys(survey);
-    });
+            var surveyQuestions = survey.questions;
 
-    return promise;
+            if (surveyQuestions) {
+                return Promise.all(surveyQuestions.map(function (surveyQuestion) {
+                    if (!surveyQuestion.question) {
+                        return survey;
+                    }
+                    return self.populateChildren(Question, surveyQuestion.question);
+                })).then(function (populatedSurveyQuestions) {
+                    var surveyQuestionsPopulated = {
+                        questions: survey.questions.map(function (question) {
+                            var foundPopulatedSurveyQuestion =
+                                populatedSurveyQuestions.find(function (element) {
+                                    return question.question.equals(element._id);
+                                });
+                            return Object.assign(question.toObject()
+                                , foundPopulatedSurveyQuestion);
+                        })
+                    }
+                    return Object.assign(survey.toObject(), surveyQuestionsPopulated);
+                });
+            } else {
+                return survey;
+            }
+        });
 }
 
 util.inherits(SurveyController, BaseController);

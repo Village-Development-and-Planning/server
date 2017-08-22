@@ -6,7 +6,7 @@ var mongoose = require('mongoose');
 
 var optionSchema = new Schema({
   text: { type: Text, required: true, unique: true },
-  type: { type: String, required: true }
+  type: { type: String }
 });
 
 // indexes

@@ -1,88 +1,117 @@
 var Survey = require('../data/models/Survey');
 var Question = require('../data/models/Question');
+var Option = require('../data/models/Option');
 
 function BaseController() {
 }
 
-var proto = {};
-
-proto.childrenQuestionMap = {};
-
-/**
- * Helper to populate surveys with all the questions and its children.
- *
- * @param surveys - array of surveys
- * @return Promise.
- */
-proto.populateSurveys = function (surveys) {
-    return surveys.reduce(function (sequence, survey) {
-        return sequence.then(function () {
-            if (survey.questions) {
-                return proto.populateQuestions(survey.questions);
-            } else {
-                throw new Error('The survey have no valid data.');
+BaseController.prototype.populateChildren = function (collection, _id) {
+    var self = this;
+    return collection.findOne({ _id })
+        .populate({
+            path: 'options.option'
+        })
+        .then(function (node) {
+            console.log('Found question for ID: '
+                + _id + '\nQuestion JSON: \n' + node + '\n');
+            if (!node.children) {
+                return node;
             }
-        });
-    }, Promise.resolve());
+            return Promise.all(node.children.map(function (child) {
+                if (child.question) {
+                    console.log('Recrusive call to child : ' + child.question + '\n');
+                    return self.populateChildren(collection, child.question);
+                }
+                return child;
+            })).then(function (children) {
+                var populatedNode = Object.assign(node.toObject(), { children });
+                console.log('Populating question ID ' + node._id
+                    + ' with children. \n' + JSON.stringify(children) + '\n'
+                    + 'RESULT:\n ' + JSON.stringify(populatedNode) + '\n');
+                return populatedNode;
+            })
+        })
 }
 
 /**
- * Helper to populate the question array with children
- * @param questions - array of root questions that contains children
- * @return Promise.
+ * Creates a survay with the given questions in the db. 
+ * 
+ * @param surveyName - The name of the survey.
+ * @param questions - array of questions to insert into the survey.
+ * @return Promise with the inserted survey.
  */
-proto.populateQuestions = function (questions) {
-    return questions.reduce(function (sequence, root) {
-        return sequence.then(function () {
-            if (root.question) {
-                return proto.populateChildren(root)
-                    .then(function (currentQuestion) {
-                        console.log(currentQuestion)
-                        root.question = currentQuestion;
-                        return root;
-                    });
-            }
-            else
-                throw new Error('The survey dosen\'t have questions');
-        });
-    }, Promise.resolve());
+BaseController.prototype.saveSurvey = function (surveyName, questions) {
+    var self = this;
+    return Promise.all(questions.map(function (e) {
+        console.log('Question processing : \n' + e + '\n');
+        return self.saveQuestion(e);
+    })).then(function (questionIds) {
+        var survey = {
+            name: surveyName,
+            questions: questionIds.map(function (e, index) {
+                return {
+                    position: index,
+                    question: e
+                }
+            })
+        }
+        console.log('Survey about to be saved is: \n' + JSON.stringify(survey));
+        return Survey.create(survey);
+    });
 }
 
 /**
- * Helper to populate all children nodes of a question.
- * @param question - root question.
- * @return Promise.
+ * Save the question along with its children and option into the database.
+ * This method works recrusively to save the root's children. 
+ * 
+ * @param root - The root question to save. 
+ * @return Promise with the inserted question id.
  */
-proto.populateChildren = function (root) {
-    var id = root.question;
-
-    if (id) {
-        return Question.findOne({ _id: id })
-            .exec()
-            .then(function (question) {
-                return question.children.reduce(function (sequence, node) {
-                    return sequence.then(function () {
-                        return proto.populateChildren(node);
-                    }).then(function (currentQuestion) {
-                        // save the current question json in the map for later use. 
-                        proto.childrenQuestionMap[currentQuestion._id] = currentQuestion;
-
-                        currentQuestion.children = currentQuestion.children.map(
-                            function (child) {
-                                var childData = proto.childrenQuestionMap[child.question];
-                                child.question = childData;
-                                return child;
-                            });
-
-                        return question;
-                    });
-                }, Promise.resolve(question));
+BaseController.prototype.saveQuestion = function (root) {
+    var self = this;
+    console.log('Currently processing question:\n' + root);
+    if (root.children.length > 0) {
+        return Promise.all(root.children.map(function (e) {
+            return self.saveQuestion(e);
+        })).then(function (children) {
+            return Object.assign(root, {
+                children: children.map(function (e, index) {
+                    return {
+                        position: index,
+                        question: e
+                    }
+                })
             });
+        }).then(function (q) {
+            return insertQuestionsWithOptions(q);
+        }).then(function (r) {
+            console.log('Saved question: \n' + r.toObject());
+            return r._id;
+        });
     } else {
-        throw new Error('The question dosen\'t have an ID : ' + root);
+        return insertQuestionsWithOptions(root).then(function (r) {
+            console.log('Saved option: \n' + r.toObject());
+            return r._id;
+        });
+    }
+
+    // Helper to insert options along with the questions into the db
+    function insertQuestionsWithOptions(root) {
+        return Promise.all(root.options.map(function (option) {
+            return Option.create(option);
+        })).then(function (optionIds) {
+            var rootWithOptionIds = Object.assign(root, {
+                options: optionIds.map(function (e, index) {
+                    return {
+                        position: index,
+                        option: e
+                    }
+                })
+            });
+            console.log('Option about to be saved is: \n' + rootWithOptionIds);
+            return Question.create(rootWithOptionIds);
+        });
     }
 }
-
-BaseController.prototype = proto;
 
 module.exports = BaseController;

@@ -2,22 +2,22 @@ var Busboy = require('busboy');
 var Helpers = require('../other/Helpers');
 var csv = require('csv');
 var MappingCSVParser = require('../other/parsers/MappingCSVParser');
-var BaseDataUploadController = require('./BaseDataUploadController');
+var BaseController = require('./BaseController');
 var util = require('util');
 
 function DataUploadController() {
-    BaseDataUploadController.call(this);
+    BaseController.call(this);
 }
 
-util.inherits(DataUploadController, BaseDataUploadController);
+util.inherits(DataUploadController, BaseController);
 
 /**
  * Upload the parsed CSV data.
  * @param data - The parsed CSV data.
  */
-DataUploadController.prototype.uploadData = function (surveyName, data, cb) {
-    this.saveQuestions(data, surveyName).then(function () {
-        cb(null);
+DataUploadController.prototype.uploadSurveyData = function (surveyName, data, cb) {
+    this.saveSurvey(surveyName, data).then(function (survey) {
+        cb(null, survey);
     }).catch(function (err) {
         cb(new Error(err)); // This is a error string so convert to error object.
     });
@@ -25,9 +25,9 @@ DataUploadController.prototype.uploadData = function (surveyName, data, cb) {
 
 /**
  * @param datastream - The stream of data from upload
- * @param cb - error only callback
+ * @param cb - error first callback
  */
-DataUploadController.prototype.parseCSVandUpload = function (surveyName, dataStrean, cb) {
+DataUploadController.prototype.parseCSV = function (dataStrean, cb) {
     var self = this;
 
     var parser = csv.parse({ delimiter: ',', columns: true });
@@ -46,7 +46,7 @@ DataUploadController.prototype.parseCSVandUpload = function (surveyName, dataStr
     });
 
     mappingCSVParser.on('finish', function () {
-        self.uploadData(surveyName, jsonData, cb);
+        cb(null, jsonData);
     });
 
     dataStrean.pipe(parser).pipe(stringifyer).pipe(mappingCSVParser);
@@ -72,17 +72,18 @@ DataUploadController.prototype.receiveMultiPartData = function (req, res, next) 
         if (fileExtension == 'csv') {
 
             // pipe with the parse Transform stream and read CSV data.
-            fileName = fileName.slice(0, -4); 
-            self.parseCSVandUpload(fileName, fileStream, function (err) {
+            fileName = fileName.slice(0, -4);
+            self.parseCSV(fileStream, function (err, data) {
 
-                if (err) {
-                    next(err);
-                } else {
-                    res.json({
-                        msg: 'SUCCESS'
-                    });
-                }
+                console.log('Starting to save uploaded data. DATA:\n' + data.toString());
 
+                self.uploadSurveyData(fileName, data, function (err, dbResponse) {
+                    if (err) {
+                        next(err);
+                    } else {
+                        res.json(dbResponse.toObject());
+                    }
+                });
             });
 
             fileStream.on('end', function () {

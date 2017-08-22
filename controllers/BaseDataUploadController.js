@@ -3,6 +3,8 @@ var Question = require('../data/models/Question');
 var Survey = require('../data/models/Survey');
 var async = require('async');
 
+// ***************** DEPRECATED ********************
+
 function BaseDataUploadController() {
     this.childrenIDs = new Map(); // Holds the ObjectID's for all the question in the given CSV
     this.errors = '';
@@ -56,15 +58,18 @@ BaseDataUploadController.prototype.saveSurvey = function (surveyName, roots) {
 BaseDataUploadController.prototype.saveQuestions = function (roots, surveyName) {
     var self = this;
 
-    var sequence = Promise.resolve();
-
-    roots.forEach(function (r) {
-        sequence = self.saveQuestion(r).then(function (initialRoot) {
-            return insertSingleQuestion.call(self, initialRoot);
-        }).then(function () {
-            return self.saveSurvey(surveyName, roots);
-        });
+    return Promise.all(roots.map(function (root) {
+        return self.saveQuestion(root);
+    })).then(function () {
+        return self.saveSurvey(surveyName, roots);
     });
+
+    // roots.forEach(function (r) {
+    //     sequence = self.saveQuestion(r).then(function (initialRoot) {
+    //         return insertSingleQuestion.call(self, initialRoot);
+    //     }).then(function () {
+    //     });
+    // });
 
     return sequence;
 }

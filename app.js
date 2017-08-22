@@ -10,6 +10,11 @@ var Question = require('./data/models/Question');
 var Option = require('./data/models/Option');
 var Surveyor = require('./data/models/Surveyor');
 
+// Remove console log in production mode
+if (process.env.NODE_ENV == "production") {
+      console.log = function () { };
+}
+
 // connect to mongoose
 var options = {
   db: { native_parser: true },
