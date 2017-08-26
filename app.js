@@ -3,6 +3,7 @@ var http = require('http');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var constants = require('./other/Constants');
+var jwt = require('express-jwt');
 
 // import so the schema is initially created. 
 var Survey = require('./data/models/Survey');
@@ -19,11 +20,11 @@ if (process.env.NODE_ENV == "production") {
 var options = {
   db: { native_parser: true },
   server: { poolSize: 5 },
-  user: constants.userName,
-  pass: constants.password
+  user: constants.db.userName,
+  pass: constants.db.password
 }
 
-mongoose.connect(constants.clusterURL, options, function (err) {
+mongoose.connect(constants.db.clusterURL, options, function (err) {
   if (err)
     console.log('Error connecting to the DB: ' + err);
 });
@@ -33,6 +34,9 @@ var cms = require('./routes/cms');
 var mappingApp = require('./routes/MappingApp');
 
 var app = express();
+
+// add security to all end points
+app.use(jwt(constants.jwt))
 
 // parse application/x-www-form-urlencoded 
 app.use(bodyParser.urlencoded({ extended: false }));
