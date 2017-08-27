@@ -1,9 +1,9 @@
 var express = require('express');
 var router = express.Router();
 
-var DataUploadController = require('../controllers/DataUploadController');
+var SurveyUploadController = require('../controllers/SurveyUploadController');
 
-var dataUploadController = new DataUploadController();
+var surveyUploadController = new SurveyUploadController();
 
 /*
     Gendral /mapping router.
@@ -15,13 +15,13 @@ router.use(function (req, res, next) {
 
     req.controller = {};
 
-    if (path.startsWith('/dataupload')) {
-        req.controller.dataUploadController = dataUploadController;
+    if (path.startsWith('/surveyupload')) {
+        req.controller.surveyUploadController = surveyUploadController;
     }
 
     next();
 });
 
-router.post('/dataupload', dataUploadController.receiveMultiPartData);
+router.post('/surveyupload', surveyUploadController.receiveMultiPartData);
 
 module.exports = router;
