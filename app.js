@@ -17,14 +17,9 @@ if (process.env.NODE_ENV == "production") {
 }
 
 // connect to mongoose
-var options = {
-  db: { native_parser: true },
-  server: { poolSize: 5 },
-  user: constants.db.userName,
-  pass: constants.db.password
-}
+var options = constants.db;
 
-mongoose.connect(constants.db.clusterURL, options, function (err) {
+mongoose.connect(options.connectionString, options.connectionOptions, function (err) {
   if (err)
     console.log('Error connecting to the DB: ' + err);
 });
