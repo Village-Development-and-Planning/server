@@ -5,17 +5,17 @@ var MappingCSVParser = require('../other/parsers/MappingCSVParser');
 var BaseController = require('./BaseController');
 var util = require('util');
 
-function DataUploadController() {
+function SurveyUploadController() {
     BaseController.call(this);
 }
 
-util.inherits(DataUploadController, BaseController);
+util.inherits(SurveyUploadController, BaseController);
 
 /**
  * Upload the parsed CSV data.
  * @param data - The parsed CSV data.
  */
-DataUploadController.prototype.uploadSurveyData = function (surveyName, data, cb) {
+SurveyUploadController.prototype.uploadSurveyData = function (surveyName, data, cb) {
     this.saveSurvey(surveyName, data).then(function (survey) {
         cb(null, survey);
     }).catch(function (err) {
@@ -27,7 +27,7 @@ DataUploadController.prototype.uploadSurveyData = function (surveyName, data, cb
  * @param datastream - The stream of data from upload
  * @param cb - error first callback
  */
-DataUploadController.prototype.parseCSV = function (dataStrean, cb) {
+SurveyUploadController.prototype.parseCSV = function (dataStrean, cb) {
     var self = this;
 
     var parser = csv.parse({ delimiter: ',', columns: true });
@@ -52,8 +52,8 @@ DataUploadController.prototype.parseCSV = function (dataStrean, cb) {
     dataStrean.pipe(parser).pipe(stringifyer).pipe(mappingCSVParser);
 }
 
-DataUploadController.prototype.receiveMultiPartData = function (req, res, next) {
-    var self = req.controller.dataUploadController;
+SurveyUploadController.prototype.receiveMultiPartData = function (req, res, next) {
+    var self = req.controller.surveyUploadController;
 
     // multipart data upload
     var busBoy = new Busboy({
@@ -113,4 +113,4 @@ DataUploadController.prototype.receiveMultiPartData = function (req, res, next) 
     req.pipe(busBoy);
 }
 
-module.exports = DataUploadController;
+module.exports = SurveyUploadController;
