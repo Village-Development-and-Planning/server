@@ -28,6 +28,10 @@ SurveyController.prototype.getSurveyFromID = function (surveyID) {
     return Survey.findOne({ _id: surveyID })
         .exec()
         .then(function (survey) {
+            if (!survey) {
+                throw new Error('No survey found!');
+            }
+
             if (survey.name) {
                 console.log('Populating ' + survey.name + ' survey.');
             }
