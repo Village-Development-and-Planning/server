@@ -1,7 +1,7 @@
 var Busboy = require('busboy');
 var Helpers = require('../other/Helpers');
 var csv = require('csv');
-var MappingCSVParser = require('../other/parsers/MappingCSVParser');
+var MappingSurveyCSVParser = require('../other/parsers/MappingSurveyCSVParser');
 var BaseController = require('./BaseController');
 var util = require('util');
 
@@ -32,24 +32,25 @@ SurveyUploadController.prototype.parseCSV = function (dataStrean, cb) {
 
     var parser = csv.parse({ delimiter: ',', columns: true });
     var stringifyer = csv.stringify();
-    var mappingCSVParser = new MappingCSVParser();
+    var mappingSurveyCSVParser = new MappingSurveyCSVParser();
 
     var jsonData = [];
 
-    mappingCSVParser.on('data', function (data) {
-        var dataObj = JSON.parse(data);
-        jsonData.push(dataObj);
+    mappingSurveyCSVParser.on('data', function (data) {
+        console.log('Data received!');
+        console.log(data.toString());
+        jsonData = data;
     });
 
-    mappingCSVParser.on('error', function (err) {
+    mappingSurveyCSVParser.on('error', function (err) {
         cb(err);
     });
 
-    mappingCSVParser.on('finish', function () {
+    mappingSurveyCSVParser.on('finish', function () {
         cb(null, jsonData);
     });
 
-    dataStrean.pipe(parser).pipe(stringifyer).pipe(mappingCSVParser);
+    dataStrean.pipe(parser).pipe(stringifyer).pipe(mappingSurveyCSVParser);
 }
 
 SurveyUploadController.prototype.receiveMultiPartData = function (req, res, next) {
@@ -75,15 +76,19 @@ SurveyUploadController.prototype.receiveMultiPartData = function (req, res, next
             fileName = fileName.slice(0, -4);
             self.parseCSV(fileStream, function (err, data) {
 
-                console.log('Starting to save uploaded data. DATA:\n' + data.toString());
+                if (err) {
+                    next(err);
+                } else {
+                    console.log('Starting to save uploaded data. DATA:\n' + data.toString());
 
-                self.uploadSurveyData(fileName, data, function (err, dbResponse) {
-                    if (err) {
-                        next(err);
-                    } else {
-                        res.json(dbResponse.toObject());
-                    }
-                });
+                    self.uploadSurveyData(fileName, JSON.parse(data.toString()), function (err, dbResponse) {
+                        if (err) {
+                            next(err);
+                        } else {
+                            res.json(dbResponse.toObject());
+                        }
+                    });
+                }
             });
 
             fileStream.on('end', function () {

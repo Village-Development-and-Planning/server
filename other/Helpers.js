@@ -43,7 +43,7 @@ helpers.CSVToArray = function (strData, strDelimiter) {
 
     // Create an array to hold our data. Give the array
     // a default empty first row.
-    var arrData = [[]];
+    var arrData = [];
 
     // Create an array to hold our individual pattern
     // matching groups.
@@ -68,7 +68,7 @@ helpers.CSVToArray = function (strData, strDelimiter) {
 
             // Since we have reached a new row of data,
             // add an empty row to our data array.
-            arrData.push([]);
+            arrData.push();
 
         }
 
@@ -96,7 +96,7 @@ helpers.CSVToArray = function (strData, strDelimiter) {
 
         // Now that we have our value string, let's add
         // it to the data array.
-        arrData[arrData.length - 1].push(strMatchedValue);
+        arrData.push(strMatchedValue);
     }
 
     // Return the parsed data.
