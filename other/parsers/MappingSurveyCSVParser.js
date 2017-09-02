@@ -65,8 +65,15 @@ MappingSurveyCSVParser.prototype._transform = function (data, encoding, cb) {
         type: questionType || '',
         tags: questionTag || '',
         options: optionsData || [],
-        info: skipPattern ? parseSkipPattern(skipPattern) : {},
         children: []
+    }
+
+    try {
+        var info = parseSkipPattern(skipPattern);
+        currentQuestion.info = info;
+    } catch (err) {
+        cb('Error while parsing question number ' + questionNumber + ' Error: ' + err);
+        return;
     }
 
     var parent = getParentQuestion.call(this, currentQuestion);
@@ -92,13 +99,16 @@ function parseSkipPattern(input) {
     var inputAsArray = input.split(',');
     return inputAsArray.reduce(function (object, element) {
         var r = /\<([^>]+)\>/.exec(element);
+        if (!r) {
+            throw 'Error while parsing skip pattern :' + input;
+        }
         if (element.includes('question')) {
             return Object.assign(object, {
-                question: r ? r[1] : null
+                question: r ? r[1].replace(/(\r\n|\n|\r)/gm, '') : null
             });
         } else if (element.includes('option')) {
             return Object.assign(object, {
-                option: r ? r[1] : null
+                option: r ? r[1].replace(/(\r\n|\n|\r)/gm, '') : null
             })
         }
     }, {});
