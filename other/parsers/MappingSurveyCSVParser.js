@@ -96,6 +96,9 @@ MappingSurveyCSVParser.prototype._flush = function (cb) {
  * Helper function to parse the skip pattern into JSON format.
  */
 function parseSkipPattern(input) {
+    if (!input){
+        return {};
+    }
     var inputAsArray = input.split(',');
     return inputAsArray.reduce(function (object, element) {
         var r = /\<([^>]+)\>/.exec(element);
