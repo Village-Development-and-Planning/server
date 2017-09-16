@@ -4,6 +4,9 @@ var async = require('async');
 var util = require('util');
 var BaseController = require('./BaseController');
 
+var mongoose = require('mongoose');
+var ObjId = mongoose.Types.ObjectId;
+
 class SurveyController extends BaseController {
   constructor() {
     super(Survey)

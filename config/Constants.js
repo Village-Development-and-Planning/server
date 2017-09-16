@@ -4,7 +4,7 @@ module.exports = {
       db: { native_parser: true },
       server: { poolSize: 5 },
     },
-    connectionString: "mongodb://localhost/pvdb"
+    connectionString: "mongodb://localhost/test"
   },
   jwt: {
     secret: 'a general string',
