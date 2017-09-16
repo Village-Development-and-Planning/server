@@ -1,81 +1,25 @@
-var express = require('express');
-var http = require('http');
-var bodyParser = require('body-parser');
-var mongoose = require('mongoose');
-var constants = require('../config/Constants');
-var jwt = require('express-jwt');
+const express = require('express');
+const http = require('http');
+const constants = require('../config/Constants');
 
-// import so the schema is initially created. 
-var Survey = require('../data/models/Survey');
-var Question = require('../data/models/Question');
-var Option = require('../data/models/Option');
-var Surveyor = require('../data/models/Surveyor');
 
-// Remove console log in production mode
-if (process.env.NODE_ENV == "production") {
-      console.log = function () { };
-}
+// Create the server and load the components.
+const app = express();
 
-// connect to mongoose
-var options = constants.db;
+// 1. Connect to DB (doesn't need the app object)
+require('./database') 
 
-mongoose.connect(options.connectionString, options.connectionOptions, function (err) {
-  if (err)
-    console.log('Error connecting to the DB: ' + err);
-});
+// 2. Add security to all end points.
+require('./security')(app)
 
-// Routes
-var cms = require('../routes/cms');
-var mappingApp = require('../routes/MappingApp');
+// 3. Setup body-parser.
+require('./body-parser')(app)
 
-var app = express();
+// 4. Setup the routes:
+require('./routes')(app)
 
-// add security to all end points
-app.use(jwt(constants.jwt))
-
-// parse application/x-www-form-urlencoded 
-app.use(bodyParser.urlencoded({ extended: false }));
-
-// parse application/json 
-app.use(bodyParser.json());
-
-// cms routes
-app.use('/cms', cms);
-
-// app data upload/download routes
-app.use('/app/mapping', mappingApp);
-
-// redirect the home to /cms
-app.get('/', function (req, res) {
-  res.redirect('/cms');
-});
-
-// error handlers are given at the last of the stack. 
-
-// development error handler
-// will print stacktrace
-if (app.get('env') === 'development') {
-
-  app.use(function (err, req, res, next) {
-    res.status(err.status || 500);
-    res.json({
-      message: err.message,
-      error: err,
-      stack: err.stack.split("\n"),
-    });
-  });
-
-}
-
-// production error handler
-// no stacktraces leaked to user
-app.use(function (err, req, res, next) {
-  res.status(err.status || 500);
-  res.json({
-    message: err.message,
-    error: {}
-  });
-});
+// 5. Setup error-handling
+require('./error-handler')(app)
 
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);

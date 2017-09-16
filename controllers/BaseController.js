@@ -1,21 +1,20 @@
-var Survey = require('../data/models/Survey');
-var Question = require('../data/models/Question');
-var Option = require('../data/models/Option');
+var mongoose = require('mongoose');
+var express = require('express');
 
 class BaseController {
-  constructor(collection) {
-    this.collection = collection;
+  constructor(opts) {
+    Object.assign(this, opts);
   }
 
   /**
-   * Generic fetch API endpoint template.  Calls getFromId with callback to return response in JSON.
+   * Generic fetch API endpoint template.  Calls getFromId and responds according to the promise.
    * @param  {[type]}   req  request
    * @param  {[type]}   res  response
    * @param  {Function} next next
    * @return {[type]}        None
    */
   fetchFromId(req, res, next) {
-    return this.getFromId(req.params.id)
+    this.getFromId(req.params.id)
       .then((json) => { res.json(json) })
       .catch((err) => { next(err) });
   }
@@ -26,8 +25,36 @@ class BaseController {
    * @return {[type]}     Promise that resolves to one object corresponding to id.
    */
   getFromId(_id) {
-    return this.collection.findOne({_id})
+    return this.constructor.collection.findOne({_id})
   }
 
+  fetchObject(req, res, next) {
+    var _id = req.params.id;
+    if (_id) {
+      if (!mongoose.Types.ObjectId.isValid(_id)) {
+        next(new Error("Object ID invalid."));
+        return;
+      } else {
+        this.fetchFromId(req, res, next);
+        return;
+      }
+    }
+  }
+
+  static registerRoute(app) {
+    if (this.routeName) {
+      console.log("Registering: " + this.routeName)
+      app.use('/' + this.routeName, this.router());
+    }
+  }
+
+  static router() {
+    var router = express.Router();
+    router.get("/:id", (...args) => {
+      var ctrl = new this();
+      ctrl.fetchObject(...args);
+    });
+    return router;
+  }
 }
 module.exports = BaseController;
