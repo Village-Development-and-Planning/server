@@ -45,4 +45,44 @@ questionSchema.statics.fetchDeep = function(query) {
     });
 }
 
+/**
+ * Inserts a question and all its options into the db, and references the
+ * options in the question document.
+ * @param  {[type]} root JSON of the whole question, along with all options.
+ * @return {[type]}      promise that resolves when the question is created.
+ */
+questionSchema.statics.insertWithOptions = function(root) {
+  root.options = root.options || []
+  return Promise.all(
+    root.options.map( option => Option.create(option) )
+  ).then(
+    (optionIds) => {
+      root.options = optionIds.map(
+        (e, i) => ({position: i, option: e}));
+      return root;
+  });
+}
+
+
+/**
+ * Save the question along with its children and option into the database.
+ * This method works recrusively to save the root's children. 
+ * 
+ * @param root - The root question to save. 
+ * @return Promise with the inserted question id.
+ */
+questionSchema.statics.saveDeep(root) {
+  var self = this;
+  console.log('Currently processing question:\n' + root);
+  root.children = root.children || [];
+  return Promise.all(
+    root.children.map(
+      (child) => this.saveDeep(child)
+  )).then((children) => {
+    root.children = children.map((e, i) => ({position: i, question: e}));
+    return root;
+  }).then((qdata) => self.insertWithOptions(qdata))
+  .then((r) => r._id);
+}
+
 module.exports = mongoose.model('Question', questionSchema);
