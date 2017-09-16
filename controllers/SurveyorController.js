@@ -4,6 +4,9 @@ var util = require('util');
 var BaseController = require('./BaseController');
 
 class SurveyorController extends BaseController {
+  constructor() {
+    super(Surveyor)
+  }
 
   sendSingleSurveyor(req, res, next) {
     var id = req.params.id;

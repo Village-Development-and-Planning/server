@@ -19,4 +19,25 @@ var questionSchema = new Schema({
   }]
 });
 
+questionSchema.statics.fetchDeep = function(_id) {
+  return this.findOne({_id})
+    .populate({path: 'options.option'})
+    .then(
+      (node) => {
+        node.children = node.children || []
+        return Promise.all(node.children.map(
+          (child) => {
+            if (child.question) {
+              return this.fetchDeep(child.question);
+            } else {
+              return child.question;
+            }
+          }))
+          .then((children) => {
+            node.children = children;
+            return node;
+          });
+    });
+}
+
 module.exports = mongoose.model('Question', questionSchema);

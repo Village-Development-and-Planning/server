@@ -3,35 +3,8 @@ var Question = require('../data/models/Question');
 var Option = require('../data/models/Option');
 
 class BaseController {
-  constructor() {
-  }
-
-  populateChildren(collection, _id) {
-    var self = this;
-    return collection.findOne({ _id })
-    .populate({
-      path: 'options.option'
-    })
-    .then(function (node) {
-      console.log('Found question for ID: '
-        + _id + '\nQuestion JSON: \n' + node + '\n');
-      if (!node.children) {
-        return node;
-      }
-      return Promise.all(node.children.map(function (child) {
-        if (child.question) {
-          console.log('Recrusive call to child : ' + child.question + '\n');
-          return self.populateChildren(collection, child.question);
-        }
-        return child;
-      })).then(function (children) {
-        var populatedNode = Object.assign(node.toObject(), { children });
-        console.log('Populating question ID ' + node._id
-          + ' with children. \n' + JSON.stringify(children) + '\n'
-          + 'RESULT:\n ' + JSON.stringify(populatedNode) + '\n');
-        return populatedNode;
-      })
-    })
+  constructor(collection) {
+    this.collection = collection;
   }
 
   /**
@@ -41,7 +14,7 @@ class BaseController {
    * @param questions - array of questions to insert into the survey.
    * @return Promise with the inserted survey.
    */
-  saveSurvey(surveyName, questions) {
+   saveSurvey(surveyName, questions) {
     var self = this;
     return Promise.all(questions.map(function (e) {
       console.log('Question processing : \n' + e + '\n');
@@ -68,52 +41,51 @@ class BaseController {
    * @param root - The root question to save. 
    * @return Promise with the inserted question id.
    */
-  saveQuestion(root) {
-      var self = this;
-      console.log('Currently processing question:\n' + root);
-      if (root.children.length > 0) {
-          return Promise.all(root.children.map(function (e) {
-              return self.saveQuestion(e);
-          })).then(function (children) {
-              return Object.assign(root, {
-                  children: children.map(function (e, index) {
-                      return {
-                          position: index,
-                          question: e
-                      }
-                  })
-              });
-          }).then(function (q) {
-              return insertQuestionsWithOptions(q);
-          }).then(function (r) {
-              console.log('Saved question: \n' + r.toObject());
-              return r._id;
-          });
-      } else {
-          return insertQuestionsWithOptions(root).then(function (r) {
-              console.log('Saved option: \n' + r.toObject());
-              return r._id;
-          });
-      }
+   saveQuestion(root) {
+    var self = this;
+    console.log('Currently processing question:\n' + root);
+    if (root.children.length > 0) {
+      return Promise.all(root.children.map(function (e) {
+        return self.saveQuestion(e);
+      })).then(function (children) {
+        return Object.assign(root, {
+          children: children.map(function (e, index) {
+            return {
+              position: index,
+              question: e
+            }
+          })
+        });
+      }).then(function (q) {
+        return insertQuestionsWithOptions(q);
+      }).then(function (r) {
+        console.log('Saved question: \n' + r.toObject());
+        return r._id;
+      });
+    } else {
+      return insertQuestionsWithOptions(root).then(function (r) {
+        console.log('Saved option: \n' + r.toObject());
+        return r._id;
+      });
+    }
 
-      // Helper to insert options along with the questions into the db
-      function insertQuestionsWithOptions(root) {
-          return Promise.all(root.options.map(function (option) {
-              return Option.create(option);
-          })).then(function (optionIds) {
-              var rootWithOptionIds = Object.assign(root, {
-                  options: optionIds.map(function (e, index) {
-                      return {
-                          position: index,
-                          option: e
-                      }
-                  })
-              });
-              console.log('Option about to be saved is: \n' + rootWithOptionIds);
-              return Question.create(rootWithOptionIds);
-          });
-      }
+    // Helper to insert options along with the questions into the db
+    function insertQuestionsWithOptions(root) {
+      return Promise.all(root.options.map(function (option) {
+        return Option.create(option);
+      })).then(function (optionIds) {
+        var rootWithOptionIds = Object.assign(root, {
+          options: optionIds.map(function (e, index) {
+            return {
+              position: index,
+              option: e
+            }
+          })
+        });
+        console.log('Option about to be saved is: \n' + rootWithOptionIds);
+        return Question.create(rootWithOptionIds);
+      });
+    }
   }
 }
-
 module.exports = BaseController;

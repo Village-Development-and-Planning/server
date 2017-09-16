@@ -5,6 +5,9 @@ var util = require('util');
 var BaseController = require('./BaseController');
 
 class QuestionController extends BaseController {
+  constructor() {
+    super(Question)
+  }
 
   sendSingleQuestion(req, res, next) {
     var self = req.controller.questionController;

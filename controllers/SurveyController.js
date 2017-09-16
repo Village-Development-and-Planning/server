@@ -5,6 +5,9 @@ var util = require('util');
 var BaseController = require('./BaseController');
 
 class SurveyController extends BaseController {
+  constructor() {
+    super(Survey)
+  }
 
   sendSingleSurvey(req, res, next) {
     var surveyID = req.params.id;
@@ -41,7 +44,7 @@ class SurveyController extends BaseController {
           if (!surveyQuestion.question) {
             return survey;
           }
-          return self.populateChildren(Question, surveyQuestion.question);
+          return Question.fetchDeep(surveyQuestion.question);
         })).then(function (populatedSurveyQuestions) {
           var surveyQuestionsPopulated = {
             questions: survey.questions.map(function (question) {
