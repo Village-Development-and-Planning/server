@@ -8,6 +8,19 @@ class BaseController {
   }
 
   /**
+   * Generic fetch API endpoint template.  Calls getFromId with callback to return response in JSON.
+   * @param  {[type]}   req  request
+   * @param  {[type]}   res  response
+   * @param  {Function} next next
+   * @return {[type]}        None
+   */
+  fetchFromId(req, res, next) {
+    return this.getFromId(req.params.id)
+      .then((json) => { res.json(json) })
+      .catch((err) => { next(err) });
+  }
+
+  /**
    * Creates a survay with the given questions in the db. 
    * 
    * @param surveyName - The name of the survey.

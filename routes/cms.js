@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
+
 var QuestionController = require('../controllers/QuestionController');
 var SurveyController = require('../controllers/SurveyController');
 var SurveyorController = require('../controllers/SurveyorController');
@@ -20,37 +21,34 @@ router.use(function (req, res, next) {
     req.controller = {};
 
     if (path.startsWith('/question')) {
-        req.controller.questionController = questionController;
+        req.controller = new QuestionController();
     } else if (path.startsWith('/surveyor')) {
-        req.controller.surveyorController = surveyorController;
+        req.controller = new SurveyorController();
     }
     else if (path.startsWith('/survey')) {
-        req.controller.surveyController = surveyController;
+        req.controller = new SurveyController();
     }
 
     next();
 });
 
-// middleware to check if the ObjectID provided by the client is in the right format.
-var checkObjectID = function (req, res, next) {
+// middleware to check if the ObjectId provided by the client is in the right format.
+var checkFetchObjectId = function (req, res, next) {
     var _id = req.params.id;
     if (_id) {
         if (!mongoose.Types.ObjectId.isValid(_id)) {
-            next(new Error("Please enter a valid ObjectID"));
+            next(new Error("Please enter a valid ObjectId"));
             return;
         } else {
-            next();
+            req.controller.fetchFromId(req, res, next);
+            return;
         }
     }
 }
 
-// question for id
-router.get('/question/:id', checkObjectID, questionController.sendSingleQuestion);
-
-// survey for id
-router.get('/survey/:id', checkObjectID, surveyController.sendSingleSurvey);
-
-// surveyor for id
-router.get('/surveyor/:id', checkObjectID, surveyorController.sendSingleSurveyor);
+// Fetch for /<entity>/:id
+router.get('/question/:id', checkFetchObjectId);
+router.get('/survey/:id', checkFetchObjectId);
+router.get('/surveyor/:id', checkFetchObjectId);
 
 module.exports = router;

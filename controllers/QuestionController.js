@@ -9,31 +9,12 @@ class QuestionController extends BaseController {
     super(Question)
   }
 
-  sendSingleQuestion(req, res, next) {
-    var self = req.controller.questionController;
 
-    if (self) {
-        var questionID = req.params.id;
-        self.getQuestionFromID(function (err, question) {
-
-            if (err) {
-                next(err);
-            } else {
-                res.json(question);
-            }
-
-        }, questionID);
-    } else {
-        console.log('Self is undefined');
-        process.exit(1);
-    }
-  }
-
-  getQuestionFromID(cb, questionID) {
-    Question.find({ _id: questionID })
+  getFromId(questionId) {
+    Question.find({ _id: questionId })
         .populate('options.option')
         .populate('children.question')
-        .exec(cb);
+        .exec();
   }
 }
 

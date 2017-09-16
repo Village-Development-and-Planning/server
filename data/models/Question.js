@@ -19,18 +19,23 @@ var questionSchema = new Schema({
   }]
 });
 
-questionSchema.statics.fetchDeep = function(_id) {
-  return this.findOne({_id})
+questionSchema.statics.fetchDeep = function(query) {
+  return this.findOne(query)
     .populate({path: 'options.option'})
     .then(
       (node) => {
+        if (!node) { return node; }
         node.children = node.children || []
         return Promise.all(node.children.map(
           (child) => {
             if (child.question) {
-              return this.fetchDeep(child.question);
+              return this.fetchDeep({_id: child.question})
+                .then((cdata) => {
+                  child.question = cdata;
+                  return child;
+                })
             } else {
-              return child.question;
+              return child;
             }
           }))
           .then((children) => {

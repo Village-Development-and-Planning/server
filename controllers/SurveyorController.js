@@ -8,29 +8,9 @@ class SurveyorController extends BaseController {
     super(Surveyor)
   }
 
-  sendSingleSurveyor(req, res, next) {
-    var id = req.params.id;
-    var self = req.controller.surveyorController;
-
-    if (self) {
-      self.getSurveyorFromID(function (err, surveyor) {
-
-        if (err) {
-          next(err);
-        } else {
-          res.json(surveyor);
-        }
-
-      }, id);
-    } else {
-      console.log('Self is undefined');
-      process.exit(1);
-    }
-
-  }
-  getSurveyorFromID(cb, surveyorID) {
+  getFromID(surveyorID) {
     return Surveyor.find({ _id: surveyorID })
-    .exec(cb);
+    .exec();
   }
 }
 module.exports = SurveyorController;
