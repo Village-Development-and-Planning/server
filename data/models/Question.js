@@ -51,7 +51,7 @@ questionSchema.statics.fetchDeep = function(query) {
  * @param  {[type]} root JSON of the whole question, along with all options.
  * @return {[type]}      promise that resolves when the question is created.
  */
-questionSchema.statics.insertWithOptions = function(root) {
+questionSchema.statics.createWithOptions = function(root) {
   root.options = root.options || []
   return Promise.all(
     root.options.map( option => Option.create(option) )
@@ -60,7 +60,7 @@ questionSchema.statics.insertWithOptions = function(root) {
       root.options = optionIds.map(
         (e, i) => ({position: i, option: e}));
       return root;
-  });
+  }).then((d) => this.create(d));
 }
 
 
@@ -81,7 +81,7 @@ questionSchema.statics.saveDeep(root) {
   )).then((children) => {
     root.children = children.map((e, i) => ({position: i, question: e}));
     return root;
-  }).then((qdata) => self.insertWithOptions(qdata))
+  }).then((qdata) => self.createWithOptions(qdata))
   .then((r) => r._id);
 }
 
