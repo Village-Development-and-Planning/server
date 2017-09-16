@@ -72,7 +72,7 @@ questionSchema.statics.createWithOptions = function(root) {
  * @param root - The root question to save. 
  * @return Promise with the inserted question id.
  */
-questionSchema.statics.saveDeep(root) {
+questionSchema.statics.saveDeep = function(root) {
   var self = this;
   console.log('Currently processing question:\n' + root);
   root.children = root.children || [];
