@@ -12,7 +12,7 @@ class SurveyUploadController extends BaseController {
    * @param data - The parsed CSV data.
    */
    uploadSurveyData(surveyName, data, cb) {
-    this.saveSurvey(surveyName, data).then(function (survey) {
+    Survey.saveDeep(surveyName, data).then(function (survey) {
       cb(null, survey);
     }).catch(function (err) {
           cb(new Error(err)); // This is a error string so convert to error object.

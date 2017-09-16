@@ -9,7 +9,7 @@ class SurveyorController extends BaseController {
   }
 
   getFromID(surveyorID) {
-    return Surveyor.find({ _id: surveyorID })
+    return Surveyor.findOne({ _id: surveyorID })
     .exec();
   }
 }

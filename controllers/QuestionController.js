@@ -11,11 +11,12 @@ class QuestionController extends BaseController {
 
 
   getFromId(questionId) {
-    Question.find({ _id: questionId })
+    Question.findOne({ _id: questionId })
         .populate('options.option')
         .populate('children.question')
         .exec();
   }
+
 }
 
 module.exports = QuestionController;
