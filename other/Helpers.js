@@ -16,6 +16,14 @@ helpers.cleanArray = function (actual) {
     return newArray;
 }
 
+helpers.isEmpty = function (obj) {
+    for (var key in obj) {
+        if (obj.hasOwnProperty(key))
+            return false;
+    }
+    return true;
+}
+
 // ref: http://stackoverflow.com/a/1293163/2343
 // This will parse a delimited string into an array of
 // arrays. The default delimiter is the comma, but this

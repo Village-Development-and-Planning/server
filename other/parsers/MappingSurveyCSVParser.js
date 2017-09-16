@@ -9,7 +9,8 @@ var COLUMN_TITLE = {
     questiontranslation: 3,
     optionstranslation: 4,
     questiontype: 5,
-    tags: 6
+    tags: 6,
+    skippattern: 7
 }
 
 function MappingSurveyCSVParser(options) {
@@ -32,6 +33,7 @@ MappingSurveyCSVParser.prototype._transform = function (data, encoding, cb) {
     var questionTag = dataArray[COLUMN_TITLE.tags] || '';
     var optionsText = dataArray[COLUMN_TITLE.optionstext] || '';
     var optionsTranslation = dataArray[COLUMN_TITLE.optionstranslation] || '';
+    var skipPattern = dataArray[COLUMN_TITLE.skippattern] || '';
 
     if (!questionNumber) {
         cb();
@@ -66,6 +68,14 @@ MappingSurveyCSVParser.prototype._transform = function (data, encoding, cb) {
         children: []
     }
 
+    try {
+        var info = parseSkipPattern(skipPattern);
+        currentQuestion.info = info;
+    } catch (err) {
+        cb('Error while parsing question number ' + questionNumber + ' Error: ' + err);
+        return;
+    }
+
     var parent = getParentQuestion.call(this, currentQuestion);
 
     if (!parent) {
@@ -80,6 +90,31 @@ MappingSurveyCSVParser.prototype._transform = function (data, encoding, cb) {
 MappingSurveyCSVParser.prototype._flush = function (cb) {
     this.push(JSON.stringify(this.parentArray));
     cb();
+}
+
+/**
+ * Helper function to parse the skip pattern into JSON format.
+ */
+function parseSkipPattern(input) {
+    if (!input){
+        return {};
+    }
+    var inputAsArray = input.split(',');
+    return inputAsArray.reduce(function (object, element) {
+        var r = /\<([^>]+)\>/.exec(element);
+        if (!r) {
+            throw 'Error while parsing skip pattern :' + input;
+        }
+        if (element.includes('question')) {
+            return Object.assign(object, {
+                question: r ? r[1].replace(/(\r\n|\n|\r)/gm, '') : null
+            });
+        } else if (element.includes('option')) {
+            return Object.assign(object, {
+                option: r ? r[1].replace(/(\r\n|\n|\r)/gm, '') : null
+            })
+        }
+    }, {});
 }
 
 function getParentQuestion(currentQuestion) {
