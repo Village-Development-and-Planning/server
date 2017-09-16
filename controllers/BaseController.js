@@ -20,6 +20,14 @@ class BaseController {
       .catch((err) => { next(err) });
   }
 
+  /**
+   * Base implementation of getFromId.  Derived controllers can augment behaviour.
+   * @param  {[type]} _id Object ID to search for.
+   * @return {[type]}     Promise that resolves to one object corresponding to id.
+   */
+  getFromId(_id) {
+    return this.collection.findOne({_id})
+  }
 
 }
 module.exports = BaseController;
