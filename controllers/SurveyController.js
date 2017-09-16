@@ -5,6 +5,7 @@ var BaseController = require('./BaseController');
 var Busboy = require('busboy');
 var Helpers = require('../config/Helpers');
 var csv = require('csv');
+var MappingSurveyCSVParser = require('../config/parsers/MappingSurveyCSVParser');
 
 class SurveyController extends BaseController {
 
@@ -52,8 +53,7 @@ class SurveyController extends BaseController {
 
     busBoy.on(
       'file', 
-      ( fieldName, fileStream, fileName,
-        encoding, mimeType ) => {
+      ( fieldName, fileStream, fileName, encoding, mimeType ) => {
 
         var fileExtension = Helpers.getExtensionFromFileName(fileName);
 
@@ -62,7 +62,7 @@ class SurveyController extends BaseController {
 
           // pipe with the parse Transform stream and read CSV data.
           fileName = fileName.slice(0, -4);
-          this.parseCSV(fileStream, function (err, data) {
+          this.parseCSV(fileStream, (err, data) => {
             if (err) {
               next(err);
             } else {
@@ -103,7 +103,6 @@ class SurveyController extends BaseController {
 
     mappingSurveyCSVParser.on('data', function (data) {
       console.log('Data received!');
-      console.log(data.toString());
       jsonData = data;
     });
 

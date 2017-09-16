@@ -53,6 +53,7 @@ questionSchema.statics.fetchDeep = function(query) {
  * @return {[type]}      promise that resolves when the question is created.
  */
 questionSchema.statics.createWithOptions = function(root) {
+  var Option = this.model("Option");
   root.options = root.options || []
   return Promise.all(
     root.options.map( option => Option.create(option) )
@@ -74,7 +75,6 @@ questionSchema.statics.createWithOptions = function(root) {
  */
 questionSchema.statics.saveDeep = function(root) {
   var self = this;
-  console.log('Currently processing question:\n' + root);
   root.children = root.children || [];
   return Promise.all(
     root.children.map(

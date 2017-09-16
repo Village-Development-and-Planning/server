@@ -20,8 +20,7 @@ var surveySchema = new Schema({
  */
 
 surveySchema.statics.saveDeep = function(surveyName, questions) {
-  var self = this;
-
+  var Question = this.model("Question")
   return Promise.all(
     questions.map(
       (q) => Question.saveDeep(q)
