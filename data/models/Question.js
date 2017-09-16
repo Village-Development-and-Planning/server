@@ -20,4 +20,30 @@ var questionSchema = new Schema({
   }]
 });
 
+questionSchema.statics.fetchDeep = function(query) {
+  return this.findOne(query)
+    .populate({path: 'options.option'})
+    .then(
+      (node) => {
+        if (!node) { return node; }
+        node.children = node.children || []
+        return Promise.all(node.children.map(
+          (child) => {
+            if (child.question) {
+              return this.fetchDeep({_id: child.question})
+                .then((cdata) => {
+                  child.question = cdata;
+                  return child;
+                })
+            } else {
+              return child;
+            }
+          }))
+          .then((children) => {
+            node.children = children;
+            return node;
+          });
+    });
+}
+
 module.exports = mongoose.model('Question', questionSchema);
