@@ -4,65 +4,62 @@ var async = require('async');
 var util = require('util');
 var BaseController = require('./BaseController');
 
-function SurveyController() {
-    BaseController.call(this);
-}
+class SurveyController extends BaseController {
 
-SurveyController.prototype.sendSingleSurvey = function (req, res, next) {
+  sendSingleSurvey(req, res, next) {
     var surveyID = req.params.id;
     var self = req.controller.surveyController;
 
     if (self) {
-        self.getSurveyFromID(surveyID).then(function (survey) {
-            res.json(survey);
-        }).catch(function (err) {
-            next(err);
-        });
+      self.getSurveyFromID(surveyID).then(function (survey) {
+        res.json(survey);
+      }).catch(function (err) {
+        next(err);
+      });
     } else {
-        next(new Error('Self is undefined'));
+      next(new Error('Self is undefined'));
     }
-}
+  }
 
-SurveyController.prototype.getSurveyFromID = function (surveyID) {
+  getSurveyFromID(surveyID) {
     var self = this;
     return Survey.findOne({ _id: surveyID })
-        .exec()
-        .then(function (survey) {
-            if (!survey) {
-                throw new Error('No survey found!');
-            }
+    .exec()
+    .then(function (survey) {
+      if (!survey) {
+        throw new Error('No survey found!');
+      }
 
-            if (survey.name) {
-                console.log('Populating ' + survey.name + ' survey.');
-            }
+      if (survey.name) {
+        console.log('Populating ' + survey.name + ' survey.');
+      }
 
-            var surveyQuestions = survey.questions;
+      var surveyQuestions = survey.questions;
 
-            if (surveyQuestions) {
-                return Promise.all(surveyQuestions.map(function (surveyQuestion) {
-                    if (!surveyQuestion.question) {
-                        return survey;
-                    }
-                    return self.populateChildren(Question, surveyQuestion.question);
-                })).then(function (populatedSurveyQuestions) {
-                    var surveyQuestionsPopulated = {
-                        questions: survey.questions.map(function (question) {
-                            var foundPopulatedSurveyQuestion =
-                                populatedSurveyQuestions.find(function (element) {
-                                    return question.question.equals(element._id);
-                                });
-                            return Object.assign(question.toObject()
-                                , foundPopulatedSurveyQuestion);
-                        })
-                    }
-                    return Object.assign(survey.toObject(), surveyQuestionsPopulated);
-                });
-            } else {
-                return survey;
-            }
+      if (surveyQuestions) {
+        return Promise.all(surveyQuestions.map(function (surveyQuestion) {
+          if (!surveyQuestion.question) {
+            return survey;
+          }
+          return self.populateChildren(Question, surveyQuestion.question);
+        })).then(function (populatedSurveyQuestions) {
+          var surveyQuestionsPopulated = {
+            questions: survey.questions.map(function (question) {
+              var foundPopulatedSurveyQuestion =
+              populatedSurveyQuestions.find(function (element) {
+                return question.question.equals(element._id);
+              });
+              return Object.assign(question.toObject()
+                , foundPopulatedSurveyQuestion);
+            })
+          }
+          return Object.assign(survey.toObject(), surveyQuestionsPopulated);
         });
+      } else {
+        return survey;
+      }
+    });
+  }
 }
-
-util.inherits(SurveyController, BaseController);
 
 module.exports = SurveyController;

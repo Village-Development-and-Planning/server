@@ -3,36 +3,31 @@ var async = require('async');
 var util = require('util');
 var BaseController = require('./BaseController');
 
-function SurveyorController() {
-    BaseController.call(this);
-}
+class SurveyorController extends BaseController {
 
-SurveyorController.prototype.sendSingleSurveyor = function (req, res, next) {
+  sendSingleSurveyor(req, res, next) {
     var id = req.params.id;
     var self = req.controller.surveyorController;
 
     if (self) {
-        self.getSurveyorFromID(function (err, surveyor) {
+      self.getSurveyorFromID(function (err, surveyor) {
 
-            if (err) {
-                next(err);
-            } else {
-                res.json(surveyor);
-            }
+        if (err) {
+          next(err);
+        } else {
+          res.json(surveyor);
+        }
 
-        }, id);
+      }, id);
     } else {
-        console.log('Self is undefined');
-        process.exit(1);
+      console.log('Self is undefined');
+      process.exit(1);
     }
 
-};
-
-SurveyorController.prototype.getSurveyorFromID = function (cb, surveyorID) {
-    Surveyor.find({ _id: surveyorID })
-        .exec(cb);
+  }
+  getSurveyorFromID(cb, surveyorID) {
+    return Surveyor.find({ _id: surveyorID })
+    .exec(cb);
+  }
 }
-
-util.inherits(SurveyorController, BaseController);
-
 module.exports = SurveyorController;

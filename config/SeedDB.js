@@ -1,5 +1,5 @@
 var async = require('async');
-var constants = require('../other/Constants');
+var constants = require('../config/Constants');
 var fs = require('fs');
 var util = require('util');
 var MongoClient = require('mongodb').MongoClient

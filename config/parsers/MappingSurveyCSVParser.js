@@ -1,6 +1,6 @@
 var TransformStream = require('stream').Transform;
 var util = require('util');
-var Helpers = require('../../other/Helpers');
+var Helpers = require('../../config/Helpers');
 
 var COLUMN_TITLE = {
     questionnumber: 0,

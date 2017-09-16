@@ -1,17 +1,12 @@
 var Question = require('../data/models/Question');
 var async = require('async');
 var util = require('util');
+
 var BaseController = require('./BaseController');
 
-function QuestionController() {
-    BaseController.call(this);
-}
+class QuestionController extends BaseController {
 
-util.inherits(QuestionController, BaseController);
-
-var proto = {};
-
-QuestionController.prototype.sendSingleQuestion = function (req, res, next) {
+  sendSingleQuestion(req, res, next) {
     var self = req.controller.questionController;
 
     if (self) {
@@ -29,13 +24,14 @@ QuestionController.prototype.sendSingleQuestion = function (req, res, next) {
         console.log('Self is undefined');
         process.exit(1);
     }
-};
+  }
 
-QuestionController.prototype.getQuestionFromID = function (cb, questionID) {
+  getQuestionFromID(cb, questionID) {
     Question.find({ _id: questionID })
         .populate('options.option')
         .populate('children.question')
         .exec(cb);
+  }
 }
 
 module.exports = QuestionController;

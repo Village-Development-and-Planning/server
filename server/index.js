@@ -2,14 +2,14 @@ var express = require('express');
 var http = require('http');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
-var constants = require('./other/Constants');
+var constants = require('../config/Constants');
 var jwt = require('express-jwt');
 
 // import so the schema is initially created. 
-var Survey = require('./data/models/Survey');
-var Question = require('./data/models/Question');
-var Option = require('./data/models/Option');
-var Surveyor = require('./data/models/Surveyor');
+var Survey = require('../data/models/Survey');
+var Question = require('../data/models/Question');
+var Option = require('../data/models/Option');
+var Surveyor = require('../data/models/Surveyor');
 
 // Remove console log in production mode
 if (process.env.NODE_ENV == "production") {
@@ -25,8 +25,8 @@ mongoose.connect(options.connectionString, options.connectionOptions, function (
 });
 
 // Routes
-var cms = require('./routes/cms');
-var mappingApp = require('./routes/MappingApp');
+var cms = require('../routes/cms');
+var mappingApp = require('../routes/MappingApp');
 
 var app = express();
 
