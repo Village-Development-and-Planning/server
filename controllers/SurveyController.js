@@ -15,7 +15,7 @@ class SurveyController extends BaseController {
     .then(
       (survey) => {
         if (!survey) {
-          return new Promise.reject(new Error("No Survey found!"));
+          return Promise.reject(new Error("No Survey found!"));
         }
         survey.questions = survey.questions || [];
         return Promise.all(survey.questions.map(

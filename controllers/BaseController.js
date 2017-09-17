@@ -43,7 +43,7 @@ class BaseController {
 
   static registerRoute(app) {
     if (this.routeName) {
-      console.log("Registering: " + this.routeName)
+      console.log("Registering: /" + this.routeName)
       app.use('/' + this.routeName, this.router());
     }
   }
