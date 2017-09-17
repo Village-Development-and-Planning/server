@@ -9,6 +9,7 @@ var questionSchema = new Schema({
   tags: [{ type: String }],
   text: { type: Text, required: true },
   number: { type: String },
+  info: { type: Object, default: {} },
   options: [{
     position: { type: String, required: true },
     option: { type: Schema.Types.ObjectId, ref: 'Option', required: true },
