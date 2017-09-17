@@ -7,7 +7,26 @@ var Helpers = require('../config/Helpers');
 var csv = require('csv');
 var MappingSurveyCSVParser = require('../config/parsers/MappingSurveyCSVParser');
 
+const MPHandler = require('../utils/multipart-handler');
+
 class SurveyController extends BaseController {
+
+  constructor(opts) {
+    super(opts);
+    this.router.post(
+      "/import",
+      MPHandler(this.createFromFile.bind(this)));
+  }
+
+  createFromFile(field, file, fname) {
+    if (fname.endsWith(".csv")) {
+      return this.parseCSV(file)
+        .then( data => this.uploadSurveyData(fname, JSON.parse(data.toString())) );            
+    } else {
+      return null;
+    }
+
+  }
 
   getFromId(surveyID) {
     return Survey.findOne({ _id: surveyID })
@@ -34,15 +53,6 @@ class SurveyController extends BaseController {
             return survey;
           })
       });
-  }
-
-  static router() {
-    var router = super.router();
-    router.post("/import", (...args) => {
-      var ctrl = new this();
-      ctrl.createFromMultipart(...args);
-    });
-    return router;
   }
 
   createFromMultipart(req, res, next) {
@@ -94,39 +104,33 @@ class SurveyController extends BaseController {
    * @param datastream - The stream of data from upload
    * @param cb - error first callback
    */
-  parseCSV(dataStrean, cb) {
-    var parser = csv.parse({ delimiter: ',', columns: true });
-    var stringifyer = csv.stringify();
-    var mappingSurveyCSVParser = new MappingSurveyCSVParser();
+  parseCSV(dataStream) {
+    return new Promise((res, rej) => {
+      var parser = csv.parse({ delimiter: ',', columns: true });
+      var stringifyer = csv.stringify();
+      var mappingSurveyCSVParser = new MappingSurveyCSVParser();
+      var jsonData = [];
 
-    var jsonData = [];
+      mappingSurveyCSVParser.on('data', function (data) {
+        jsonData = data;
+      });
+      mappingSurveyCSVParser.on('error', function (err) {
+        rej(err);
+      });
 
-    mappingSurveyCSVParser.on('data', function (data) {
-      console.log('Data received!');
-      jsonData = data;
+      mappingSurveyCSVParser.on('finish', function () {
+        res(jsonData);
+      });
+      dataStream.pipe(parser).pipe(stringifyer).pipe(mappingSurveyCSVParser);
     });
-
-    mappingSurveyCSVParser.on('error', function (err) {
-      cb(err);
-    });
-
-    mappingSurveyCSVParser.on('finish', function () {
-      cb(null, jsonData);
-    });
-
-    dataStrean.pipe(parser).pipe(stringifyer).pipe(mappingSurveyCSVParser);
   }
 
   /**
    * Upload the parsed CSV data.
    * @param data - The parsed CSV data.
    */
-  uploadSurveyData(surveyName, data, cb) {
-    Survey.saveDeep(surveyName, data).then(function (survey) {
-      cb(null, survey);
-    }).catch(function (err) {
-      cb(new Error(err)); // This is a error string so convert to error object.
-    });
+  uploadSurveyData(surveyName, data) {
+    return Survey.saveDeep(surveyName, data);
   }
 
 }

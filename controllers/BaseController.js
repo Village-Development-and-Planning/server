@@ -4,6 +4,7 @@ var express = require('express');
 class BaseController {
   constructor(opts) {
     Object.assign(this, opts);
+    this.router.get("/:id", this.fetchObject.bind(this));
   }
 
   /**
@@ -44,17 +45,9 @@ class BaseController {
   static registerRoute(app) {
     if (this.routeName) {
       console.log("Registering: /" + this.routeName)
-      app.use('/' + this.routeName, this.router());
+      var ctrl = new this({router: express.Router()});
+      app.use('/' + this.routeName, ctrl.router);
     }
-  }
-
-  static router() {
-    var router = express.Router();
-    router.get("/:id", (...args) => {
-      var ctrl = new this();
-      ctrl.fetchObject(...args);
-    });
-    return router;
   }
 }
 module.exports = BaseController;
