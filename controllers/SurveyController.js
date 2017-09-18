@@ -51,7 +51,6 @@ class SurveyController extends BaseController {
     } else {
       return null;
     }
-
   }
 
   /**
@@ -66,29 +65,6 @@ class SurveyController extends BaseController {
     return parser.promise;
   }
 
-  /**
-   * @param datastream - The stream of data from upload
-   */
-  // _parseCSV(dataStream) {
-  //   return new Promise((res, rej) => {
-  //     var parser = csv.parse({ delimiter: ',', columns: true });
-  //     var stringifyer = csv.stringify();
-  //     var mappingSurveyCSVParser = new MappingSurveyCSVParser();
-  //     var jsonData = [];
-
-  //     mappingSurveyCSVParser.on('data', function (data) {
-  //       jsonData = data;
-  //     });
-  //     mappingSurveyCSVParser.on('error', function (err) {
-  //       rej(err);
-  //     });
-
-  //     mappingSurveyCSVParser.on('finish', function () {
-  //       res(jsonData);
-  //     });
-  //     dataStream.pipe(parser).pipe(stringifyer).pipe(mappingSurveyCSVParser);
-  //   });
-  // }
 
   /**
    * Upload the parsed CSV data.
