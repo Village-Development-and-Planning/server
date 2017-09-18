@@ -3,6 +3,7 @@ var constants = require('../config/Constants');
 var mongoose = require('mongoose');
 
 var options = constants.db;
+mongoose.Promise = global.Promise;
 mongoose.connect(options.connectionString, options.connectionOptions, function (err) {
   if (err)
     console.log('Error connecting to the DB: ' + err);
