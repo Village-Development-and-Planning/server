@@ -62,11 +62,19 @@ class SurveyCSVParser extends TreeParser {
       return Question.create(Object.assign(q, {
         text: this._createTextJson(node, "Q.Text."),
         type: node["Q.Type"] || "GENERIC",
-        tags: node["Q.Tags"].split(",").map(e => e.trim()),
+        tags: this._createTagsList(node["Q.Tags"]),
         number: node["Q.No"],
         info: { question: node["Q.PreReq.Q"], option: node["Q.PreReq.Opt"] },
       }));
     });
+  }
+
+  _createTagsList(str) {
+    return str.split(",").reduce((acc, e) => {
+      if (e = e.trim())
+        acc.push(e);
+      return acc;
+    }, [])
   }
 
   _createTextJson(node, prefix) {
