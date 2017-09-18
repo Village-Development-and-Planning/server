@@ -2,31 +2,21 @@ var Survey = require('../data/models/Survey');
 var Question = require('../data/models/Question');
 var BaseController = require('./BaseController');
 
-var Busboy = require('busboy');
-var Helpers = require('../config/Helpers');
-var csv = require('csv');
-var MappingSurveyCSVParser = require('../config/parsers/MappingSurveyCSVParser');
+// var csv = require('csv');
+// var MappingSurveyCSVParser = require('../config/parsers/MappingSurveyCSVParser');
 
 const MPHandler = require('../utils/multipart-handler');
+var SurveyCSVParser = require('../utils/survey-csv-parser');
 
 class SurveyController extends BaseController {
 
   constructor(opts) {
     super(opts);
     this.router.post(
-      "/import",
-      MPHandler(this.createFromFile.bind(this)));
+      "/import", MPHandler(this.createFromFile.bind(this))
+    );
   }
 
-  createFromFile(field, file, fname) {
-    if (fname.endsWith(".csv")) {
-      return this.parseCSV(file)
-        .then( data => this.uploadSurveyData(fname, JSON.parse(data.toString())) );            
-    } else {
-      return null;
-    }
-
-  }
 
   getFromId(surveyID) {
     return Survey.findOne({ _id: surveyID })
@@ -55,75 +45,50 @@ class SurveyController extends BaseController {
       });
   }
 
-  createFromMultipart(req, res, next) {
-    // multipart data upload
-    var busBoy = new Busboy({
-      headers: req.headers
-    });
+  createFromFile(name, file, fname) {
+    if (fname.endsWith(".csv")) {
+      return this.parseCSV(name, file);
+    } else {
+      return null;
+    }
 
-    busBoy.on(
-      'file', 
-      ( fieldName, fileStream, fileName, encoding, mimeType ) => {
+  }
 
-        var fileExtension = Helpers.getExtensionFromFileName(fileName);
-
-        // Allow only if the file is a CSV type.
-        if (fileExtension == 'csv') {
-
-          // pipe with the parse Transform stream and read CSV data.
-          fileName = fileName.slice(0, -4);
-          this.parseCSV(fileStream, (err, data) => {
-            if (err) {
-              next(err);
-            } else {
-              console.log('Starting to save uploaded data. DATA:\n' + data.toString());
-              this.uploadSurveyData(
-                fileName, 
-                JSON.parse(data.toString()), 
-                function (err, dbResponse) {
-                  if (err) {
-                    next(err);
-                  } else {
-                    res.json(dbResponse.toObject());
-                  }
-              });
-            }
-          });
-
-        } else {
-          fileStream.resume();
-          next(new Error('Please provide a .csv file only'));
-        }
-
-    });
-
-    req.pipe(busBoy);
+  /**
+   * parse CSV from stream and return promise that resolves to created DB
+   * record.
+   * @param  {[type]} stream Readable stream of CSV file
+   * @return {[type]}        Promise resolving to Survey record
+   */
+  parseCSV(name, stream) {
+    var parser = new SurveyCSVParser({surveyName: name});
+    parser.parse(stream);
+    return parser.promise;
   }
 
   /**
    * @param datastream - The stream of data from upload
-   * @param cb - error first callback
    */
-  parseCSV(dataStream) {
-    return new Promise((res, rej) => {
-      var parser = csv.parse({ delimiter: ',', columns: true });
-      var stringifyer = csv.stringify();
-      var mappingSurveyCSVParser = new MappingSurveyCSVParser();
-      var jsonData = [];
+  // _parseCSV(dataStream) {
+  //   return new Promise((res, rej) => {
+  //     var parser = csv.parse({ delimiter: ',', columns: true });
+  //     var stringifyer = csv.stringify();
+  //     var mappingSurveyCSVParser = new MappingSurveyCSVParser();
+  //     var jsonData = [];
 
-      mappingSurveyCSVParser.on('data', function (data) {
-        jsonData = data;
-      });
-      mappingSurveyCSVParser.on('error', function (err) {
-        rej(err);
-      });
+  //     mappingSurveyCSVParser.on('data', function (data) {
+  //       jsonData = data;
+  //     });
+  //     mappingSurveyCSVParser.on('error', function (err) {
+  //       rej(err);
+  //     });
 
-      mappingSurveyCSVParser.on('finish', function () {
-        res(jsonData);
-      });
-      dataStream.pipe(parser).pipe(stringifyer).pipe(mappingSurveyCSVParser);
-    });
-  }
+  //     mappingSurveyCSVParser.on('finish', function () {
+  //       res(jsonData);
+  //     });
+  //     dataStream.pipe(parser).pipe(stringifyer).pipe(mappingSurveyCSVParser);
+  //   });
+  // }
 
   /**
    * Upload the parsed CSV data.
@@ -132,7 +97,6 @@ class SurveyController extends BaseController {
   uploadSurveyData(surveyName, data) {
     return Survey.saveDeep(surveyName, data);
   }
-
 }
 
 Object.assign(SurveyController, {
