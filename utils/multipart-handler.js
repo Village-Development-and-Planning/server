@@ -13,7 +13,7 @@ module.exports = function(cb) {
         responses.push(
           Promise.resolve(p)
             .then( (data) => {
-              return {field, data};
+              return {name: field, entity: data};
             })
         )
       } else {
