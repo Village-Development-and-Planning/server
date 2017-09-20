@@ -89,7 +89,7 @@ class TreeParser extends CSVParser {
     if (
         parentSection != '' &&
         (
-          recordSection.startsWith(parentSection) ||
+          recordSection.startsWith(parentSection + ".") ||
           (
             recordSection == '' &&
             recordSection[this.subField] != ''

@@ -39,9 +39,9 @@ class SurveyCSVParser extends TreeParser {
           (e) => ({
             position: node['Q.No'].slice(
               (parent['Q.No'].length == 0) ? 0 : parent['Q.No'].length+1
-            ), 
+            ),
             question: e,
-          })
+          })          
       ))
     }
   }
