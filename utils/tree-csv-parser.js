@@ -2,38 +2,59 @@ const CSVParser = require('./csv-parser');
 
 /** 
  * A stack-based parser to parse hierarchical CSVs.
+ *
+ * Uses options:
+ *
+ * {
+ *   csv: CSVParser opts,
+ *   tree: {
+ *     sectionField:  column to use for hierarchical numbering (1, 1.2, 1.2.4, etc.)
+ *   }
+ * }
  */
 class TreeParser extends CSVParser {
   constructor(opts) {
-    super(opts);
-    this.sectionField = opts.sectionField || "Q.No";
-    this.subField = opts.subField || "Opt.No";
-    this.subTextFields = opts.subTextFields || ["Opt.Text.English", "Opt.Text.Tamil"];
-    this.compatibilityMode  = true;
+    opts.csv = Object.assign(opts.csv || {}, {columns: r => this._parseColumn(r)});
+    super(opts.csv);    
+
+    opts = opts.tree;
+    this.sectionField = opts.sectionField || "Section";
+    this.subTextField = opts.subTextField || 'Opt.Text';
+    this.subField = opts.subField || 'Opt.No';
 
     this.on('csvRecord', this._parseRecord.bind(this));
+    this.on('finish', this._onFinish.bind(this));
+
     this.parentStack = [];
+  }
+
+  _parseColumn(row) {
+    if (row.indexOf(this.sectionField) == -1) {
+      throw new Error("Section field: " + this.sectionField + " not found in header.")
+    }
+    this.subTextFields = row.reduce(
+      (acc, e) => {
+        if (e.startsWith(this.subTextField + '.'))
+          acc.push(e);
+        return acc;
+      }
+    , [])
+    return row;
   }
 
   _parseRecord(record) {
 
-    // 1. Ignore record unless it has valid sectionField or subField
-    var recSection = record[this.sectionField]
-    var recSub = record[this.subField]
-    if (recSection == '' && recSub == '')
-      return;
-
-    // 2. Pop from stack until we find parent of the current record.
-    var len = 0;
+    // 1. Pop from stack until we find parent of the current record.
     while (!this._lastIsParent(record)) {
       this._popStack();
     }
 
-    // 3. Push the current record into the stack.
+    // 2. Push the current record into the stack.
     this.parentStack.push(record);
 
-    // 4. Finally, for compatibility emulate records for options stored in the
+    // 3. Finally, for compatibility emulate records for options stored in the
     // same cell as the question itself.
+    var recSection = record[this.sectionField];
     var recSubText = record[this.subTextFields[0]];
     if (recSubText != '' && recSection != '') {
       this._doCompatibilityParsing(record);
@@ -74,26 +95,27 @@ class TreeParser extends CSVParser {
     while (!this._lastIsParent(null)) {
       this._popStack();
     }
-    super._onFinish();
+    this.emit('treeFinish');
   }
 
   _lastIsParent(record) {
     var len = this.parentStack.length;
+
     // An empty stack is always the parent of any record.
     if (len == 0) return true;
+
+    // No record implies end of doc, so we pop out everything.
     if (!record) return false;
 
     var parentRecord = this.parentStack[len-1];
-    var recordSection = record[this.sectionField];
-    var parentSection = parentRecord[this.sectionField];
+    var recordSection = record[this.sectionField] || '';
+    var parentSection = parentRecord[this.sectionField] || '';
+
     if (
         parentSection != '' &&
         (
           recordSection.startsWith(parentSection + ".") ||
-          (
-            recordSection == '' &&
-            recordSection[this.subField] != ''
-          )
+          recordSection == ''
         )
     ) {
       return true;
@@ -102,11 +124,14 @@ class TreeParser extends CSVParser {
   }
 
   _popStack() {
-    var record = this.parentStack.pop();
-    var parent = null;
-    var len = this.parentStack.length;
+    var 
+      record = this.parentStack.pop(), 
+      parent = null,
+      len = this.parentStack.length;
+
     if (len != 0)
       parent = this.parentStack[len - 1];
+
     this.emit('nodeCompleted', {node: record, parent: parent});
     var node = record;
   }

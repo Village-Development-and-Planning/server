@@ -61,17 +61,8 @@ class SurveyController extends BaseController {
    */
   parseCSV(name, stream) {
     var parser = new SurveyCSVParser({surveyName: name});
-    parser.parse(stream);
+    stream.pipe(parser);
     return parser.promise;
-  }
-
-
-  /**
-   * Upload the parsed CSV data.
-   * @param data - The parsed CSV data.
-   */
-  uploadSurveyData(surveyName, data) {
-    return Survey.saveDeep(surveyName, data);
   }
 }
 
@@ -79,5 +70,4 @@ Object.assign(SurveyController, {
   collection: Survey,
   routeName: 'surveys'
 });
-
 module.exports = SurveyController;

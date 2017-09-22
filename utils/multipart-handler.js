@@ -15,7 +15,15 @@ module.exports = function(cb) {
             .then( (data) => {
               return {name: field, entity: data};
             })
-        )
+            .catch(err => {
+              file.resume();
+              console.log(err);
+              return {
+                name: field, 
+                error: err.message,
+              };
+            })
+        );
       } else {
         file.resume();
       }    
@@ -27,7 +35,6 @@ module.exports = function(cb) {
     busboy.on('finish', () => {
       Promise.all(responses)
         .then( (resps) => res.json(resps) )
-        .catch( (err) => next(err) )
     });
     req.pipe(busboy);
   }
