@@ -1,17 +1,20 @@
-var mongoose = require('mongoose');
-var util = require('util');
+const mongoose = require('mongoose');
 
-function Schema(schema) {
-
-  var dSchema = Object.assign({
-      modifiedAt: { type: Date, default: Date.now },
-    }, schema);
-
-  mongoose.Schema.call(this, dSchema);
-};
-
+/**
+ * Wrapper for our document schemas.
+ * 
+ *   Adds modifiedAt property.
+ * 
+ * @class Schema
+ * @extends {mongoose.Schema}
+ */
+class Schema extends mongoose.Schema {
+  constructor(schema) {
+    super(Object.assign({
+      modifiedAt: {type: Date, default: Date.now},
+    }, schema));
+  }
+}
 Schema.Types = mongoose.Schema.Types;
-
-util.inherits(Schema, mongoose.Schema);
 
 module.exports = Schema;

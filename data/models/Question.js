@@ -1,23 +1,20 @@
-var Schema = require('./Schema');
-
-var Text = require('./Text');
-
-var mongoose = require('mongoose');
-
-var questionSchema = new Schema({
-  type: { type: String },
-  tags: [{ type: String }],
-  text: { type: Text, required: true },
-  number: { type: String },
-  info: { type: Object, default: {} },
+const Schema = require('./Schema');
+const Text = require('./Text');
+const mongoose = require('mongoose');
+const questionSchema = new Schema({
+  tye: {type: String},
+  tags: [{type: String}],
+  text: {type: Text, required: true},
+  number: {type: String},
+  info: {type: Object, default: {}},
   options: [{
-    position: { type: String, required: true },
-    option: { type: Schema.Types.ObjectId, ref: 'Option', required: true },
+    position: {type: String, required: true},
+    option: {type: Schema.Types.ObjectId, ref: 'Option', required: true},
   }],
   children: [{
-    position: { type: String, required: true },
-    question: { type: Schema.Types.ObjectId, ref: 'Question', required: true },
-  }]
+    position: {type: String, required: true},
+    question: {type: Schema.Types.ObjectId, ref: 'Question', required: true},
+  }],
 });
 
 questionSchema.statics.fetchDeep = function(query) {
@@ -25,8 +22,10 @@ questionSchema.statics.fetchDeep = function(query) {
     .populate({path: 'options.option'})
     .then(
       (node) => {
-        if (!node) { return node; }
-        node.children = node.children || []
+        if (!node) {
+return node;
+}
+        node.children = node.children || [];
         return Promise.all(node.children.map(
           (child) => {
             if (child.question) {
@@ -34,7 +33,7 @@ questionSchema.statics.fetchDeep = function(query) {
                 .then((cdata) => {
                   child.question = cdata;
                   return child;
-                })
+                });
             } else {
               return child;
             }
@@ -44,7 +43,7 @@ questionSchema.statics.fetchDeep = function(query) {
             return node;
           });
     });
-}
+};
 
 /**
  * Inserts a question and all its options into the db, and references the
@@ -53,28 +52,28 @@ questionSchema.statics.fetchDeep = function(query) {
  * @return {[type]}      promise that resolves when the question is created.
  */
 questionSchema.statics.createWithOptions = function(root) {
-  var Option = this.model("Option");
-  root.options = root.options || []
+  let Option = this.model('Option');
+  root.options = root.options || [];
   return Promise.all(
-    root.options.map( option => Option.create(option) )
+    root.options.map( (option) => Option.create(option) )
   ).then(
     (optionIds) => {
       root.options = optionIds.map(
         (e, i) => ({position: i, option: e}));
       return root;
   }).then((d) => this.create(d));
-}
+};
 
 
 /**
  * Save the question along with its children and option into the database.
  * This method works recrusively to save the root's children. 
  * 
- * @param root - The root question to save. 
- * @return Promise with the inserted question id.
+ * @param {Question} root - The root question to save. 
+ * @return {Promise} resolves to question id.
  */
 questionSchema.statics.saveDeep = function(root) {
-  var self = this;
+  let self = this;
   root.children = root.children || [];
   return Promise.all(
     root.children.map(
@@ -84,6 +83,6 @@ questionSchema.statics.saveDeep = function(root) {
     return root;
   }).then((qdata) => self.createWithOptions(qdata))
   .then((r) => r._id);
-}
+};
 
 module.exports = mongoose.model('Question', questionSchema);

@@ -1,5 +1,5 @@
 const express = require('express');
-let router = express.Router();
+const router = new express.Router();
 
 const SurveyUploadController =
   require('../../controllers/SurveyUploadController');

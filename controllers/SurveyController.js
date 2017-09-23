@@ -1,25 +1,28 @@
-var Survey = require('../data/models/Survey');
-var Question = require('../data/models/Question');
-var BaseController = require('./BaseController');
+const Survey = require('../data/models/Survey');
+const Question = require('../data/models/Question');
+const BaseController = require('./BaseController');
 
-// var csv = require('csv');
-// var MappingSurveyCSVParser = require('../config/parsers/MappingSurveyCSVParser');
+const mpHandler = require('../utils/multipart-handler');
+let SurveyCSVParser = require('../utils/survey-csv-parser');
 
-const MPHandler = require('../utils/multipart-handler');
-var SurveyCSVParser = require('../utils/survey-csv-parser');
 
+/**
+ * Survey document controller.
+ * 
+ * @class SurveyController
+ * @extends {BaseController}
+ */
 class SurveyController extends BaseController {
-
   constructor(opts) {
     super(opts);
     this.router.post(
-      '/import', MPHandler(this.createFromFile.bind(this))
+      '/import', mpHandler(this.createFromFile.bind(this))
     );
   }
 
 
   getFromId(surveyID) {
-    return Survey.findOne({ _id: surveyID })
+    return Survey.findOne({_id: surveyID})
       .exec()
       .then(
         (survey) => {
@@ -47,7 +50,7 @@ class SurveyController extends BaseController {
 
   createFromFile(name, file, fname) {
     if (fname.endsWith('.csv')) {
-      return this.parseCSV(name, file);
+      return this.parseCSV({name, stream: file});
     } else {
       return null;
     }
@@ -59,8 +62,8 @@ class SurveyController extends BaseController {
    * @param  {[type]} stream Readable stream of CSV file
    * @return {[type]}        Promise resolving to Survey record
    */
-  parseCSV(name, stream) {
-    var parser = new SurveyCSVParser({ survey: { name }});      
+  parseCSV({stream, ...surveyOpts}) {
+    let parser = new SurveyCSVParser({survey: surveyOpts});
     stream.pipe(parser);
     return parser.promise;
   }
@@ -68,6 +71,6 @@ class SurveyController extends BaseController {
 
 Object.assign(SurveyController, {
   collection: Survey,
-  routeName: 'surveys'
+  routeName: 'surveys',
 });
 module.exports = SurveyController;
