@@ -1,17 +1,18 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+let router = express.Router();
 
-var SurveyUploadController = require('../../controllers/SurveyUploadController');
+const SurveyUploadController =
+  require('../../controllers/SurveyUploadController');
 
-var surveyUploadController = new SurveyUploadController();
+let surveyUploadController = new SurveyUploadController();
 
 /*
   General /mapping router.
   Following things happen here:
       + puts the specific controller object into the req.controller.<object>
 */
-router.use(function (req, res, next) {
-  var path = req.path;
+router.use(function(req, res, next) {
+  let path = req.path;
 
   req.controller = {};
 

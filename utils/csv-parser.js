@@ -1,24 +1,36 @@
-const EventEmitter = require('events');
-const csv = require('csv')
-const { PassThrough, Writable } = require('stream');
-const { Parser } = require('csv-parse');
+const {Parser} = require('csv-parse');
 
 /**
- * Wrapper class around csv-parse's Parser with our default options.
+ * Abstraction for csv-parse with our default options.
+ * 
+ * @class CSVParser
+ * @extends {Parser}
  */
-
 class CSVParser extends Parser {
+  /**
+   * Creates an instance of CSVParser.
+   * @param {any} opts (passed to csv-parse)
+   * 
+   * @memberOf CSVParser
+   */
   constructor(opts) {
-    opts = Object.assign({ 
+    opts = Object.assign({
       columns: true,
-      delimiter: ',' }, opts);
+      delimiter: ','}, opts);
     super(opts);
     this.on('readable', this._onReadable.bind(this));
-  }  
+  }
 
 
+  /**
+   * 'readable' event listener 
+   * 
+   * 
+   * @memberOf CSVParser
+   * @private
+   */
   _onReadable() {
-    var record = null;
+    let record = null;
     while (record = this.read()) {
       this.emit('csvRecord', record);
     }

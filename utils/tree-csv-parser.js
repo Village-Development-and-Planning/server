@@ -18,7 +18,7 @@ class TreeParser extends CSVParser {
     super(opts.csv);    
 
     opts = opts.tree;
-    this.sectionField = opts.sectionField || "Section";
+    this.sectionField = opts.sectionField || 'Section';
     this.subTextField = opts.subTextField || 'Opt.Text';
     this.subField = opts.subField || 'Opt.No';
 
@@ -30,15 +30,16 @@ class TreeParser extends CSVParser {
 
   _parseColumn(row) {
     if (row.indexOf(this.sectionField) == -1) {
-      throw new Error("Section field: " + this.sectionField + " not found in header.")
+      throw new Error(`Section field: ${this.sectionField} not found in header.`);
     }
     this.subTextFields = row.reduce(
       (acc, e) => {
         if (e.startsWith(this.subTextField + '.'))
           acc.push(e);
         return acc;
-      }
-    , [])
+      },
+      []
+    );
     return row;
   }
 
@@ -62,9 +63,6 @@ class TreeParser extends CSVParser {
   }
 
   _doCompatibilityParsing(record) {
-    var recSection = record[this.sectionField]
-    var recSub = record[this.subField]
-
     var recSubTexts = this.subTextFields.reduce((acc, f) => {
       return record[f].split(/([0-9]+\.)/).reduce((acc, e, i, arr) => {
         var m = null, pos = null;
@@ -75,11 +73,11 @@ class TreeParser extends CSVParser {
           (i < arr.length - 1)
         ) {
           acc[pos] = acc[pos] || {};
-          acc[pos][f] = arr[i+1].trim()
+          acc[pos][f] = arr[i+1].trim();
         }
         return acc;
-      }, acc)
-    }, {})
+      }, acc);
+    }, {});
     for (var k in recSubTexts) {
       var dupRecord = Object.create(record);
       dupRecord[this.sectionField] = '';
@@ -95,7 +93,6 @@ class TreeParser extends CSVParser {
     while (!this._lastIsParent(null)) {
       this._popStack();
     }
-    this.emit('treeFinish');
   }
 
   _lastIsParent(record) {
@@ -112,12 +109,11 @@ class TreeParser extends CSVParser {
     var parentSection = parentRecord[this.sectionField] || '';
 
     if (
-        parentSection != '' &&
-        (
-          recordSection.startsWith(parentSection + ".") ||
-          recordSection == ''
-        )
-    ) {
+      parentSection != '' &&
+      (
+        recordSection.startsWith(parentSection + '.') ||
+        recordSection == ''
+      )) {
       return true;
     }    
     return false;
@@ -133,7 +129,6 @@ class TreeParser extends CSVParser {
       parent = this.parentStack[len - 1];
 
     this.emit('nodeCompleted', {node: record, parent: parent});
-    var node = record;
   }
 }
 module.exports = TreeParser;
