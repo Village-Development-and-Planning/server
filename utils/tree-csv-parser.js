@@ -14,8 +14,8 @@ const CSVParser = require('./csv-parser');
  */
 class TreeParser extends CSVParser {
   constructor(opts) {
-    opts.csv = Object.assign(opts.csv || {}, {columns: r => this._parseColumn(r)});
-    super(opts.csv);    
+    opts.csv = Object.assign(opts.csv || {}, {columns: (r) => this._parseColumn(r)});
+    super(opts.csv);
 
     opts = opts.tree;
     this.sectionField = opts.sectionField || 'Section';
@@ -34,8 +34,9 @@ class TreeParser extends CSVParser {
     }
     this.subTextFields = row.reduce(
       (acc, e) => {
-        if (e.startsWith(this.subTextField + '.'))
-          acc.push(e);
+        if (e.startsWith(this.subTextField + '.')) {
+acc.push(e);
+}
         return acc;
       },
       []
@@ -44,7 +45,6 @@ class TreeParser extends CSVParser {
   }
 
   _parseRecord(record) {
-
     // 1. Pop from stack until we find parent of the current record.
     while (!this._lastIsParent(record)) {
       this._popStack();
@@ -55,19 +55,20 @@ class TreeParser extends CSVParser {
 
     // 3. Finally, for compatibility emulate records for options stored in the
     // same cell as the question itself.
-    var recSection = record[this.sectionField];
-    var recSubText = record[this.subTextFields[0]];
+    let recSection = record[this.sectionField];
+    let recSubText = record[this.subTextFields[0]];
     if (recSubText != '' && recSection != '') {
       this._doCompatibilityParsing(record);
     }
   }
 
   _doCompatibilityParsing(record) {
-    var recSubTexts = this.subTextFields.reduce((acc, f) => {
+    let recSubTexts = this.subTextFields.reduce((acc, f) => {
       return record[f].split(/([0-9]+\.)/).reduce((acc, e, i, arr) => {
-        var m = null, pos = null;
+        let m = null;
+        let pos = null;
         if (
-          (m = e.match(/([0-9]+)\./)) && 
+          (m = e.match(/([0-9]+)\./)) &&
           (m.index == 0) &&
           (pos = m[1]) &&
           (i < arr.length - 1)
@@ -78,11 +79,11 @@ class TreeParser extends CSVParser {
         return acc;
       }, acc);
     }, {});
-    for (var k in recSubTexts) {
-      var dupRecord = Object.create(record);
+    for (let k in recSubTexts) {
+      let dupRecord = Object.create(record);
       dupRecord[this.sectionField] = '';
       dupRecord[this.subField] = k;
-      for (var kk in recSubTexts[k]) {
+      for (let kk in recSubTexts[k]) {
         dupRecord[kk] = recSubTexts[k][kk];
       }
       this._parseRecord(dupRecord);
@@ -96,7 +97,7 @@ class TreeParser extends CSVParser {
   }
 
   _lastIsParent(record) {
-    var len = this.parentStack.length;
+    let len = this.parentStack.length;
 
     // An empty stack is always the parent of any record.
     if (len == 0) return true;
@@ -104,9 +105,9 @@ class TreeParser extends CSVParser {
     // No record implies end of doc, so we pop out everything.
     if (!record) return false;
 
-    var parentRecord = this.parentStack[len-1];
-    var recordSection = record[this.sectionField] || '';
-    var parentSection = parentRecord[this.sectionField] || '';
+    let parentRecord = this.parentStack[len-1];
+    let recordSection = record[this.sectionField] || '';
+    let parentSection = parentRecord[this.sectionField] || '';
 
     if (
       parentSection != '' &&
@@ -115,18 +116,19 @@ class TreeParser extends CSVParser {
         recordSection == ''
       )) {
       return true;
-    }    
+    }
     return false;
   }
 
   _popStack() {
-    var 
-      record = this.parentStack.pop(), 
+    let
+      record = this.parentStack.pop(),
       parent = null,
       len = this.parentStack.length;
 
-    if (len != 0)
-      parent = this.parentStack[len - 1];
+    if (len != 0) {
+parent = this.parentStack[len - 1];
+}
 
     this.emit('nodeCompleted', {node: record, parent: parent});
   }

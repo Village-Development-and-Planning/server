@@ -19,38 +19,38 @@ const questionSchema = new Schema({
 
 questionSchema.statics.fetchDeep = function(query) {
   return this.findOne(query)
-    .populate({path: 'options.option'})
-    .then(
-      (node) => {
-        if (!node) {
-return node;
-}
-        node.children = node.children || [];
-        return Promise.all(node.children.map(
-          (child) => {
-            if (child.question) {
-              return this.fetchDeep({_id: child.question})
-                .then((cdata) => {
-                  child.question = cdata;
-                  return child;
-                });
-            } else {
+  .populate({path: 'options.option'})
+  .then(
+    (node) => {
+      if (!node) {
+        return node;
+      }
+      node.children = node.children || [];
+      return Promise.all(node.children.map(
+        (child) => {
+          if (child.question) {
+            return this.fetchDeep({_id: child.question})
+            .then((cdata) => {
+              child.question = cdata;
               return child;
-            }
-          }))
-          .then((children) => {
-            node.children = children;
-            return node;
-          });
-    });
+            });
+          } else {
+            return child;
+          }
+        }))
+        .then((children) => {
+          node.children = children;
+          return node;
+        });
+      });
 };
 
 /**
- * Inserts a question and all its options into the db, and references the
- * options in the question document.
- * @param  {[type]} root JSON of the whole question, along with all options.
- * @return {[type]}      promise that resolves when the question is created.
- */
+* Inserts a question and all its options into the db, and references the
+* options in the question document.
+* @param  {[type]} root JSON of the whole question, along with all options.
+* @return {[type]}      promise that resolves when the question is created.
+*/
 questionSchema.statics.createWithOptions = function(root) {
   let Option = this.model('Option');
   root.options = root.options || [];
@@ -60,29 +60,31 @@ questionSchema.statics.createWithOptions = function(root) {
     (optionIds) => {
       root.options = optionIds.map(
         (e, i) => ({position: i, option: e}));
-      return root;
-  }).then((d) => this.create(d));
+        return root;
+    }).then((d) => this.create(d));
 };
 
 
 /**
- * Save the question along with its children and option into the database.
- * This method works recrusively to save the root's children. 
- * 
- * @param {Question} root - The root question to save. 
- * @return {Promise} resolves to question id.
- */
+* Save the question along with its children and option into the database.
+* This method works recrusively to save the root's children. 
+* 
+* @param {Question} root - The root question to save. 
+* @return {Promise} resolves to question id.
+*/
 questionSchema.statics.saveDeep = function(root) {
   let self = this;
   root.children = root.children || [];
   return Promise.all(
     root.children.map(
       (child) => this.saveDeep(child)
-  )).then((children) => {
-    root.children = children.map((e, i) => ({position: i, question: e}));
-    return root;
-  }).then((qdata) => self.createWithOptions(qdata))
-  .then((r) => r._id);
+    )).then((children) => {
+      root.children = children.map((e, i) => ({position: i, question: e}));
+      return root;
+    }).then((qdata) => self.createWithOptions(qdata))
+    .then((r) => r._id);
 };
 
 module.exports = mongoose.model('Question', questionSchema);
+
+

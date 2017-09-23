@@ -7,6 +7,7 @@ module.exports = {
     }    
   },
   rules: {
+    "guard-for-in": 0,
     "require-jsdoc": [
       "warn", 
       {

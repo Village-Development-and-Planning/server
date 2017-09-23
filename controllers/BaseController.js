@@ -9,6 +9,7 @@ const express = require('express');
 class BaseController {
   constructor(opts) {
     Object.assign(this, opts);
+    this.router.get('/', this.fetchList.bind(this));
     this.router.get('/:id', this.fetchObject.bind(this));
   }
 
@@ -30,6 +31,20 @@ class BaseController {
    */
   getFromId(_id) {
     return this.constructor.collection.findOne({_id});
+  }
+
+  getList(query) {
+    return this.constructor.collection.find(query);
+  }
+
+  fetchList(req, res, next) {
+    this.getList({})
+      .then((json) => {
+        res.json(json);
+      })
+      .catch((err) => {
+        next(err);
+      });
   }
 
   fetchObject(req, res, next) {

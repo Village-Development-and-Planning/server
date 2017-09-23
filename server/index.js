@@ -1,41 +1,40 @@
 const express = require('express');
 const http = require('http');
-const constants = require('../config/Constants');
-
 
 // Create the server and load the components.
 const app = express();
 
 // 1. Connect to DB (doesn't need the app object)
-require('./database') 
+require('./database');
 
 // 2. Add security to all end points.
-require('./security')(app)
+require('./security')(app);
 
 // 3. Setup body-parser.
-require('./body-parser')(app)
+require('./body-parser')(app);
 
 // 4. Setup the routes:
-require('./routes')(app)
+require('./routes')(app);
 
 // 5. Setup error-handling
-require('./error-handler')(app)
+require('./error-handler')(app);
 
-var port = normalizePort(process.env.PORT || '3000');
+let port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
-var server = http.createServer(app);
+let server = http.createServer(app);
 
 server.listen(port);
 server.on('error', onError);
-server.on('listening', onListening);
 
 /**
- * Normalize a port into a number, string, or false.
+ * Normalize a port into a number, string or false.
+ * 
+ * @param {any} val 
+ * @return {String|Number|Boolean}
  */
-
 function normalizePort(val) {
-  var port = parseInt(val, 10);
+  let port = parseInt(val, 10);
 
   if (isNaN(port)) {
     // named pipe
@@ -51,15 +50,16 @@ function normalizePort(val) {
 }
 
 /**
- * Event listener for HTTP server "error" event.
+ * Event listener for HTTP server "error" event
+ * 
+ * @param {Error} error 
  */
-
 function onError(error) {
   if (error.syscall !== 'listen') {
     throw error;
   }
 
-  var bind = typeof port === 'string'
+  let bind = typeof port === 'string'
     ? 'Pipe ' + port
     : 'Port ' + port;
 
@@ -78,13 +78,3 @@ function onError(error) {
   }
 }
 
-/**
- * Event listener for HTTP server "listening" event.
- */
-
-function onListening() {
-  var addr = server.address();
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
-}

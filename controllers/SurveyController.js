@@ -13,6 +13,12 @@ let SurveyCSVParser = require('../utils/survey-csv-parser');
  * @extends {BaseController}
  */
 class SurveyController extends BaseController {
+  /**
+   * Creates an instance of SurveyController.
+   * @param {any} opts 
+   * 
+   * @memberOf SurveyController
+   */
   constructor(opts) {
     super(opts);
     this.router.post(
