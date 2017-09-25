@@ -7,6 +7,7 @@ Flow consumes a single Question object, and a global-context object and interact
 1. question:  the UI for the question object (ie., the current node).
 1. answer: how to store answer of the current node (and its children) into the context.
 1. child:  flow of the children of the current node.
+1. post: for making post-answer hooks.
 1. exit:  how to exit node?  default:  return to parent;  loop questions may use these.
 
 Each of the above have specific implementations, which together provide various functionalities.
@@ -56,6 +57,18 @@ child: {
     repeat: 'once', // OR 'multiple',
   },
 }
+```
+
+### Post flow
+
+The use-cases are:
+
+1. Load Surveyor data from API call.
+2. Load Districts from Surveyor data, Villages from District, etc.
+
+```js
+post: {
+},
 ```
 
 # Exit Flow
