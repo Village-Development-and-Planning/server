@@ -12,24 +12,34 @@ Flow consumes a single Question object, and a global-context object and interact
 
 Each of the above have specific implementations, which together provide various functionalities.
 
+```js
+module.exports = {
+  flow: {
+```    
+
 # Pre Flow
 
-``` js
+```js
 pre: {
   fill: [
     // eg. {scope: 'global', name: 'selectedDistrict.villages'},
     // eg. {scope: 'answer', name: '2.10'},
   ],
+  skip: {
+    question: null, // eg. '2.5.1'
+    option: [], // eg. [1, 3, 5]
+  }
 },
 ```
 # Question: for question UI, etc.
 
-``` js
+```js
 question: {
   ui: 'SINGLE_CHOICE',
   // 'MULTIPLE_CHOICE',
   // 'GPS',
   // 'INPUT',
+  // 'INFO'
 
   validation: null,
   // 'NUMBER',
@@ -56,10 +66,10 @@ child: {
     ui: 'grid',
     repeat: 'once', // OR 'multiple',
   },
-}
+},
 ```
 
-### Post flow
+# Post flow
 
 The use-cases are:
 
@@ -76,4 +86,11 @@ post: {
 ```js
 exit: {
   strategy: 'parent', // OR 'repeat'
+},
+```
+
+```js
+  }
 }
+```
+

@@ -15,6 +15,7 @@ const questionSchema = new Schema({
     position: {type: String, required: true},
     question: {type: Schema.Types.ObjectId, ref: 'Question', required: true},
   }],
+  flow: {type: Object},
 });
 
 questionSchema.statics.fetchDeep = function(query) {
