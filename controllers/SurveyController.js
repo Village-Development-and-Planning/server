@@ -56,7 +56,7 @@ class SurveyController extends BaseController {
 
   createFromFile(name, file, fname) {
     if (fname.endsWith('.csv')) {
-      return this.parseCSV({name, stream: file});
+      return this.parseCSV(file, {name});
     } else {
       return null;
     }
@@ -65,10 +65,11 @@ class SurveyController extends BaseController {
   /**
    * parse CSV from stream and return promise that resolves to created DB
    * record.
-   * @param  {[type]} stream Readable stream of CSV file
-   * @return {[type]}        Promise resolving to Survey record
+   * @param  {Stream} stream Readable stream of CSV file
+   * @param  {Object} surveyOpts survey options
+   * @return {Promise.<Survey>}        Promise resolving to Survey record
    */
-  parseCSV({stream, ...surveyOpts}) {
+  parseCSV(stream, surveyOpts) {
     let parser = new SurveyCSVParser({survey: surveyOpts});
     stream.pipe(parser);
     return parser.promise;
