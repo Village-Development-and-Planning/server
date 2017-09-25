@@ -2,8 +2,8 @@ const Survey = require('../data/models/Survey');
 const Question = require('../data/models/Question');
 const BaseController = require('./BaseController');
 
-const mpHandler = require('../utils/multipart-handler');
-let SurveyCSVParser = require('../utils/survey-csv-parser');
+const mpHandler = require('../lib/utils/multipart-handler');
+let SurveyCSVParser = require('../lib/csv/survey-csv-parser');
 
 
 /**
