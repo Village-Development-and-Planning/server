@@ -2,7 +2,7 @@ const Schema = require('./Schema');
 const Text = require('./Text');
 const mongoose = require('mongoose');
 const questionSchema = new Schema({
-  tye: {type: String},
+  type: {type: String},
   tags: [{type: String}],
   text: {type: Text, required: true},
   number: {type: String},
@@ -14,7 +14,14 @@ const questionSchema = new Schema({
     position: {type: String, required: true},
     question: {type: Schema.Types.ObjectId, ref: 'Question', required: true},
   }],
-  flow: {type: Object},
+  flow: {
+    pre: {type: Object},
+    question: {type: Object},
+    answer: {type: Object},
+    child: {type: Object},
+    post: {type: Object},
+    exit: {type: Object},
+  },
 });
 
 questionSchema.statics.fetchDeep = function(query) {
