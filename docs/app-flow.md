@@ -1,7 +1,14 @@
 <h1>Mapping App</h1>
 <h2>Flow Specification</h2>
 
-Flow consumes a single Question object, and a global-context object and interacts with the user.  It has the following phases:
+Flow consumes a single Question object, and a global-context object and interacts with the user.  
+
+```js
+module.exports = {
+  flow: {
+```    
+
+It has the following phases:
 
 1. pre:  for loading pre-fill options, etc.
 1. question:  the UI for the question object (ie., the current node).
@@ -12,40 +19,54 @@ Flow consumes a single Question object, and a global-context object and interact
 
 Each of the above have specific implementations, which together provide various functionalities.
 
-```js
-module.exports = {
-  flow: {
-```    
-
 # Pre Flow
 
 ```js
 pre: {
-  fill: [
-    // eg. {scope: 'global', name: 'selectedDistrict.villages'},
-    // eg. {scope: 'answer', name: '2.10'},
-  ],
-  skip: {
-    question: null, // eg. '2.5.1'
-    option: [], // eg. [1, 3, 5]
-  }
+```
+
+1. fill: specifies list of pre-fill entries.
+
+   ```js
+     fill: [
+       // eg. {scope: 'global', name: 'selectedDistrict.villages'},
+       // eg. {scope: 'answer', name: '2.10'},
+     ],
+   ```
+
+2. skip:  specifies pre-requisites to do this question.
+   ```js
+     skip: {
+       question: null, // eg. '2.5.1'
+       option: [], // eg. [1, 3, 5]
+     }
+   ```
+
+```js
 },
 ```
+
 # Question: for question UI, etc.
 
 ```js
 question: {
-  ui: 'SINGLE_CHOICE',
-  // 'MULTIPLE_CHOICE',
-  // 'GPS',
-  // 'INPUT',
-  // 'INFO'
-
-  validation: null,
-  // 'NUMBER',
-  // 'SURVEYOR_CODE ( 4-digit /[0-9]{4}/ ),
-},
 ```
+
+1. ui:  declare UI to use.
+   ```js
+     ui: 'SINGLE_CHOICE',
+     // 'MULTIPLE_CHOICE',
+     // 'GPS',
+     // 'INPUT',
+     // 'INFO'
+   ```
+2. validation: specify validations for the input.
+   ```js
+     validation: null,
+     // 'NUMBER',
+     // 'SURVEYOR_CODE ( 4-digit /[0-9]{4}/ ),
+   },
+   ```
 
 # Answering scope for the question
 
@@ -90,7 +111,7 @@ exit: {
 ```
 
 ```js
-  }
-}
+  } // flow =
+} // module.exports = { flow }
 ```
 

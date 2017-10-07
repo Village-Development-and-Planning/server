@@ -2,9 +2,9 @@ const Schema = require('./Schema');
 const Text = require('./Text');
 const mongoose = require('mongoose');
 const questionSchema = new Schema({
-  tye: {type: String},
+  type: {type: String},
   tags: [{type: String}],
-  text: {type: Text, required: true},
+  text: {type: Text},
   number: {type: String},
   options: [{
     position: {type: String, required: true},
