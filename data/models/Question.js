@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const questionSchema = new Schema({
   type: {type: String},
   tags: [{type: String}],
-  text: {type: Text, required: true},
+  text: {type: Text},
   number: {type: String},
   options: [{
     position: {type: String, required: true},

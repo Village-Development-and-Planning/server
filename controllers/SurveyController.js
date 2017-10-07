@@ -35,22 +35,10 @@ class SurveyController extends BaseController {
           if (!survey) {
             return Promise.reject(new Error('No Survey found!'));
           }
-          survey.questions = survey.questions || [];
-          return Promise.all(survey.questions.map(
-            (q) => {
-              if (q) {
-                return Question.fetchDeep(q.question).then((qData) => {
-                  q.question = qData;
-                  return q;
-                });
-              } else {
-                return null;
-              }
-            }))
-            .then((ques) => {
-              survey.questions = ques;
-              return survey;
-            });
+          return Question.fetchDeep(survey.question).then((q) => {
+            survey.question = q;
+            return survey;
+          });
         });
   }
 
