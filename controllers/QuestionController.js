@@ -1,6 +1,6 @@
 let Question = require('../data/models/Question');
-let BaseController = require('./BaseController');
 
+import EntityController from './EntitiyController';
 
 /**
  * Question document controller
@@ -8,7 +8,7 @@ let BaseController = require('./BaseController');
  * @class QuestionController
  * @extends {BaseController}
  */
-class QuestionController extends BaseController {
+class QuestionController extends EntityController {
   getFromId(questionId) {
     Question.findOne({_id: questionId})
         .populate('options.option')

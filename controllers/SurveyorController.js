@@ -1,5 +1,5 @@
 const Surveyor = require('../data/models/Surveyor');
-const BaseController = require('./BaseController');
+import EntityController from './EntitiyController';
 
 /**
  * Surveyor document controller
@@ -7,11 +7,7 @@ const BaseController = require('./BaseController');
  * @class SurveyorController
  * @extends {BaseController}
  */
-class SurveyorController extends BaseController {
-  getFromID(surveyorID) {
-    return Surveyor.findOne({_id: surveyorID})
-    .exec();
-  }
+class SurveyorController extends EntityController {
 }
 Object.assign(SurveyorController, {
   collection: Surveyor,
