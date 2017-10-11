@@ -9,7 +9,7 @@ import EntityController from './EntitiyController';
  * @extends {BaseController}
  */
 class QuestionController extends EntityController {
-  getFromId(questionId) {
+  findFromId(questionId) {
     Question.findOne({_id: questionId})
         .populate('options.option')
         .populate('children.question')

@@ -27,7 +27,7 @@ class SurveyController extends EntityController {
   }
 
 
-  getFromId(surveyID) {
+  findFromId(surveyID) {
     return Survey.findOne({_id: surveyID})
       .exec()
       .then(
