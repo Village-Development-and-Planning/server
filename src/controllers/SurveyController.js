@@ -1,6 +1,6 @@
 const Survey = require('../data/models/Survey');
 const Question = require('../data/models/Question');
-const BaseController = require('./BaseController');
+import EntityController from './EntitiyController';
 
 const mpHandler = require('../lib/utils/multipart-handler');
 let SurveyCSVParser = require('../lib/csv/survey-csv-parser');
@@ -12,7 +12,7 @@ let SurveyCSVParser = require('../lib/csv/survey-csv-parser');
  * @class SurveyController
  * @extends {BaseController}
  */
-class SurveyController extends BaseController {
+class SurveyController extends EntityController {
   /**
    * Creates an instance of SurveyController.
    * @param {any} opts 
@@ -27,7 +27,7 @@ class SurveyController extends BaseController {
   }
 
 
-  getFromId(surveyID) {
+  findFromId(surveyID) {
     return Survey.findOne({_id: surveyID})
       .exec()
       .then(

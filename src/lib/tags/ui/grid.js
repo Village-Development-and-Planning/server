@@ -1,7 +1,7 @@
 module.exports = {
   tagPrefix: 'GRID',
   adorn(tag, obj) {
-    const suffix = tag.slice(5);
+    let suffix = tag.slice(5);
     if (!suffix) {
       suffix = (obj.child && obj.child.select) || 'multiple';
     }

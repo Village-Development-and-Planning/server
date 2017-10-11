@@ -10,6 +10,7 @@ module.exports = function(cb) {
       if (partNames[field+'Name']) {
         field = partNames[field + 'Name'];
       }
+      let p = null;
       if (p = cb(field, file, fname, encoding, mime)) {
         responses.push(
           Promise.resolve(p)
