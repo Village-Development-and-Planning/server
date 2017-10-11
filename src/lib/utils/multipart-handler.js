@@ -1,43 +1,43 @@
-const Busboy = require('busboy');
+import Busboy from 'busboy';
 
-module.exports = function(cb) {
-  return function(req, res, next) {
-    const busboy = new Busboy({headers: req.headers});
-    const responses = [];
-    const partNames = {};
+/**
+* Our multi-part form handler.
+*/
+class MPHandler extends Busboy {
+  constructor(request, response, fileHandler) {
+    super({headers: request.headers});
 
-    busboy.on('file', (field, file, fname, encoding, mime) => {
-      if (partNames[field+'Name']) {
-        field = partNames[field + 'Name'];
-      }
-      let p = null;
-      if (p = cb(field, file, fname, encoding, mime)) {
-        responses.push(
-          Promise.resolve(p)
-            .then( (data) => {
-              return {name: field, entity: data};
-            })
-            .catch((err) => {
-              file.resume();
-              console.log(err);
-              return {
-                name: field,
-                error: err.message,
-              };
-            })
-        );
-      } else {
+    this.fileHandler = fileHandler || this.fileHandler;
+    this.promise = new Promise((resolve, reject) => {
+      this.data = {};
+      this.on('file', this._fileHandler.bind(this));
+      this.on('field', (field, val) => {
+        this.data[field] = val;
+      });
+      this.on('finish', () => {
+        resolve(this.data);
+        response.json(this.data);
+      });
+    });
+    request.pipe(this);
+  }
+
+  _fileHandler(field, file, fname, encoding, mime) {
+    const filePromise = this.fileHandler(
+      field, file, fname, encoding, mime, this.data
+    );
+    if (filePromise && filePromise.then) {
+      filePromise.then((fileData) => {
+        this.data[field] = fileData;
+      }).catch((err) => {
         file.resume();
-      }
-    });
+        (console.log(err));
+        this.data[field] = {error: err};
+      });
+    } else {
+      file.resume();
+    }
+  }
+}
 
-    busboy.on('field', (field, val) => {
-      partNames[field] = val;
-    });
-    busboy.on('finish', () => {
-      Promise.all(responses)
-        .then( (resps) => res.json(resps) );
-    });
-    req.pipe(busboy);
-  };
-};
+export default MPHandler;

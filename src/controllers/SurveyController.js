@@ -1,6 +1,7 @@
 const Survey = require('../data/models/Survey');
 const Question = require('../data/models/Question');
 import EntityController from './EntitiyController';
+import MPHandler from '../lib/utils/multipart-handler';
 
 const mpHandler = require('../lib/utils/multipart-handler');
 let SurveyCSVParser = require('../lib/csv/survey-csv-parser');
@@ -21,9 +22,29 @@ class SurveyController extends EntityController {
    */
   constructor(opts) {
     super(opts);
-    this.router.post('/', mpHandler(this.createFromFile.bind(this)));
+    this.router.post('/', this.createFromFiles.bind(this));
+    this.router.post('/answer', this.createAnswer.bind(this));
   }
 
+  createAnswer(req, res, next) {
+    res.json({error: 'Unimplemented'});
+  }
+
+  createFromFiles(req, res, next) {
+    new MPHandler(
+      req, res,
+      (field, file, fname, encoding, mime, data) => {
+        if (mime == 'application/octet-stream' || mime == 'text/csv') {
+          return this.parseCSV(file, {
+            name: data[`${field}Name`] || field,
+            description: data[`${field}Description`] || field,
+          });
+        } else {
+          return null;
+        }
+      }
+    );
+  }
 
   findFromId(surveyID) {
     return Survey.findOne({_id: surveyID})
@@ -38,14 +59,6 @@ class SurveyController extends EntityController {
             return survey;
           });
         });
-  }
-
-  createFromFile(name, file, fname) {
-    if (fname.endsWith('.csv')) {
-      return this.parseCSV(file, {name});
-    } else {
-      return null;
-    }
   }
 
   /**
