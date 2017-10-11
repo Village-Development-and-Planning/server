@@ -8,7 +8,7 @@
     "start": "node build/server",
     "dev": "nodemon app",
     "compile": "webpack",
-    "debug": "babel-node --inspect-brk=9229 -- app"
+    "debug": "babel-node --inspect-brk=9229 -- src/app"
   },
   "author": "",
   "license": "ISC",
