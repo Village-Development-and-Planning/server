@@ -21,9 +21,7 @@ class SurveyController extends EntityController {
    */
   constructor(opts) {
     super(opts);
-    this.router.post(
-      '/import', mpHandler(this.createFromFile.bind(this))
-    );
+    this.router.post('/', mpHandler(this.createFromFile.bind(this)));
   }
 
 

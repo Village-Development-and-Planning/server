@@ -12,7 +12,6 @@ class QuestionController extends EntityController {
   findFromId(questionId) {
     Question.findOne({_id: questionId})
         .populate('options.option')
-        .populate('children.question')
         .exec();
   }
 }

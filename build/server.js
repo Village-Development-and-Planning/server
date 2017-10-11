@@ -266,7 +266,14 @@ var questionSchema = new Schema({
     position: { type: String, required: true },
     question: { type: Schema.Types.ObjectId, ref: 'Question', required: true }
   }],
-  flow: { type: Object }
+  flow: {
+    pre: { type: Object },
+    question: { type: Object },
+    answer: { type: Object },
+    child: { type: Object },
+    post: { type: Object },
+    exit: { type: Object }
+  }
 });
 
 questionSchema.statics.fetchDeep = function (query) {
@@ -515,7 +522,7 @@ module.exports = {
       poolSize: 5,
       useMongoClient: true
     },
-    connectionString: "mongodb://localhost/test"
+    connectionString: 'mongodb://localhost/test'
   },
   jwt: {
     secret: 'a general string',
@@ -613,7 +620,7 @@ var QuestionController = function (_EntityController) {
   _createClass(QuestionController, [{
     key: 'findFromId',
     value: function findFromId(questionId) {
-      Question.findOne({ _id: questionId }).populate('options.option').populate('children.question').exec();
+      Question.findOne({ _id: questionId }).populate('options.option').exec();
     }
   }]);
 
@@ -676,7 +683,7 @@ var SurveyController = function (_EntityController) {
 
     var _this = _possibleConstructorReturn(this, (SurveyController.__proto__ || Object.getPrototypeOf(SurveyController)).call(this, opts));
 
-    _this.router.post('/import', mpHandler(_this.createFromFile.bind(_this)));
+    _this.router.post('/', mpHandler(_this.createFromFile.bind(_this)));
     return _this;
   }
 
@@ -766,6 +773,7 @@ module.exports = function (cb) {
       if (partNames[field + 'Name']) {
         field = partNames[field + 'Name'];
       }
+      var p = null;
       if (p = cb(field, file, fname, encoding, mime)) {
         responses.push(Promise.resolve(p).then(function (data) {
           return { name: field, entity: data };
