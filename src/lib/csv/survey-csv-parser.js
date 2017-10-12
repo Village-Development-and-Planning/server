@@ -1,6 +1,4 @@
 const Survey = appRequire('data/models/Survey');
-const Question = appRequire('data/models/Question');
-const Option = appRequire('data/models/Option');
 const TreeParser = require('./tree-csv-parser');
 const tagsParser = appRequire('lib/tags');
 /**
@@ -74,7 +72,7 @@ class SurveyCSVParser extends TreeParser {
     const _tags = node[qParsedTag]._tags;
     for (let k of Object.keys(_tags)) {
       if (!_tags[k]) {
-        console.log(`Unknown tag: ${k}`);
+        (console.log(`Unknown tag: ${k}`));
       }
     }
   }
@@ -140,7 +138,7 @@ class SurveyCSVParser extends TreeParser {
   _createOption(node) {
     let optText = this.surveyOpts.opt + '.Text.';
     let optType = this.surveyOpts.opt + '.Type';
-    return Option.create({
+    return Promise.resolve({
       type: node[optType] || 'GENERIC',
       text: this._createTextJson(node, optText),
     });
@@ -177,15 +175,14 @@ class SurveyCSVParser extends TreeParser {
           option: node[qPreOpt],
         };
       }
-      return Question.create(
-        Object.assign(q, {
-          text: this._createTextJson(node, qText),
-          type: node[qType] || 'GENERIC',
-          tags: node[qTags],
-          number: node[qNo],
-          flow: node[qParsedTag],
-        })
-      );
+      // return Question.create(
+      return Object.assign(q, {
+        text: this._createTextJson(node, qText),
+        type: node[qType] || 'GENERIC',
+        tags: node[qTags],
+        number: node[qNo],
+        flow: node[qParsedTag],
+      });
     });
   }
 
@@ -231,7 +228,7 @@ class SurveyCSVParser extends TreeParser {
 
     // Create the root Question object.
     Promise.all(this.rootQuestion.childrenPromises).then((ch) => {
-      return Question.create({type: 'ROOT', options: [], children: ch});
+      return {type: 'ROOT', options: [], children: ch};
     }).then((q) => {
       this.survey.question = q;
       return Survey.create(this.survey);

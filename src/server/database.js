@@ -9,7 +9,7 @@ mongoose.connect(
   options.connectionOptions,
   (err) => {
     if (err) {
-      console.log(`Error connecting to the DB: ${err}`);
+      (console.log(`Error connecting to the DB: ${err}`));
     }
   });
 

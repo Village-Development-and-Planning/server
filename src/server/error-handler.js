@@ -1,7 +1,7 @@
 module.exports = function(app) {
   // Remove console log in production mode
   if (process.env.NODE_ENV == 'production') {
-    console.log = () => {};
+    (console.log = () => {});
     app.use(function(err, req, res, next) {
       res.status(err.status || 500);
       res.json({

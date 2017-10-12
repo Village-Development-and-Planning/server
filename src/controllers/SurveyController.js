@@ -1,9 +1,6 @@
 const Survey = require('../data/models/Survey');
-const Question = require('../data/models/Question');
 import EntityController from './EntitiyController';
 import MPHandler from '../lib/utils/multipart-handler';
-
-const mpHandler = require('../lib/utils/multipart-handler');
 let SurveyCSVParser = require('../lib/csv/survey-csv-parser');
 
 
@@ -23,7 +20,6 @@ class SurveyController extends EntityController {
   constructor(opts) {
     super(opts);
     this.router.post('/', this.createFromFiles.bind(this));
-    this.router.post('/answer', this.createAnswer.bind(this));
   }
 
   createAnswer(req, res, next) {
@@ -54,10 +50,11 @@ class SurveyController extends EntityController {
           if (!survey) {
             return Promise.reject(new Error('No Survey found!'));
           }
-          return Question.fetchDeep(survey.question).then((q) => {
-            survey.question = q;
-            return survey;
-          });
+          return survey;
+          // return Question.fetchDeep(survey.question).then((q) => {
+          //   survey.question = q;
+          //   return survey;
+          // });
         });
   }
 

@@ -1,4 +1,3 @@
-const mongoose = require('mongoose');
 const express = require('express');
 
 /**
@@ -13,7 +12,7 @@ class BaseController {
 
   static registerRoute(app) {
     if (this.routeName) {
-      console.log(`Registering: /${this.routeName} => ${this.name}`);
+      (console.log(`Registering: /${this.routeName} => ${this.name}`));
       let ctrl = new this({router: new express.Router()});
       app.use('/' + this.routeName, ctrl.router);
     }

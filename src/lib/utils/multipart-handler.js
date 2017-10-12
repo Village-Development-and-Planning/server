@@ -7,6 +7,7 @@ class MPHandler extends Busboy {
   constructor(request, response, fileHandler) {
     super({headers: request.headers});
 
+    this.childPromises = [];
     this.fileHandler = fileHandler || this.fileHandler;
     this.promise = new Promise((resolve, reject) => {
       this.data = {};
@@ -15,8 +16,14 @@ class MPHandler extends Busboy {
         this.data[field] = val;
       });
       this.on('finish', () => {
-        resolve(this.data);
-        response.json(this.data);
+        resolve(
+          Promise.all(
+            this.childPromises
+          ).then(() => {
+            response.json(this.data);
+            return this.data;
+          }),
+        );
       });
     });
     request.pipe(this);
@@ -27,6 +34,7 @@ class MPHandler extends Busboy {
       field, file, fname, encoding, mime, this.data
     );
     if (filePromise && filePromise.then) {
+      this.childPromises.push(filePromise);
       filePromise.then((fileData) => {
         this.data[field] = fileData;
       }).catch((err) => {
