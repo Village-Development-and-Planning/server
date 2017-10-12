@@ -12,6 +12,7 @@ class EntityController extends BaseController {
     super(opts);
     this.router.get('/', this.getList.bind(this));
     this.router.get('/:id', this.getOne.bind(this));
+    this.router.post('/', this.create.bind(this));
   }
 
 
@@ -63,6 +64,24 @@ class EntityController extends BaseController {
     } else {
       next(new Error('Object ID missing or invalid.'));
     }
+  }
+
+  create(req, res, next) {
+    if (req.is('multipart/form-data')) {
+      this.createFromFiles(req, res, next);
+    } else if (req.is('application/json') && req.body) {
+      this.createFromJson(req, res, next);
+    } else {
+      res.status(400);
+    }
+  }
+
+  createFromFiles(_, res, __) {
+    res.status(400);
+  }
+
+  createFromJson(_, res, __) {
+    res.status(400);
   }
 };
 

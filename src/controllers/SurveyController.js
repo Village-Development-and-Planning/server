@@ -11,21 +11,6 @@ let SurveyCSVParser = require('../lib/csv/survey-csv-parser');
  * @extends {BaseController}
  */
 class SurveyController extends EntityController {
-  /**
-   * Creates an instance of SurveyController.
-   * @param {any} opts 
-   * 
-   * @memberOf SurveyController
-   */
-  constructor(opts) {
-    super(opts);
-    this.router.post('/', this.createFromFiles.bind(this));
-  }
-
-  createAnswer(req, res, next) {
-    res.json({error: 'Unimplemented'});
-  }
-
   createFromFiles(req, res, next) {
     new MPHandler(
       req, res,

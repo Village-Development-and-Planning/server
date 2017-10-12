@@ -8,12 +8,12 @@ import EntityController from './EntitiyController';
  * @extends {BaseController}
  */
 class AnswerController extends EntityController {
-  constructor(opts) {
-    super(opts);
-    this.router.post('/', this.createFromJson.bind(this));
-  }
-
   createFromJson(req, res, next) {
+    const answer = req.body;
+    Answer
+      .create(answer)
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
   }
 }
 Object.assign(AnswerController, {

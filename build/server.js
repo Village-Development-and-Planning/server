@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 8);
+/******/ 	return __webpack_require__(__webpack_require__.s = 9);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -124,7 +124,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _BaseController2 = __webpack_require__(12);
+var _BaseController2 = __webpack_require__(4);
 
 var _BaseController3 = _interopRequireDefault(_BaseController2);
 
@@ -153,6 +153,7 @@ var EntityController = function (_BaseController) {
 
     _this.router.get('/', _this.getList.bind(_this));
     _this.router.get('/:id', _this.getOne.bind(_this));
+    _this.router.post('/', _this.create.bind(_this));
     return _this;
   }
 
@@ -211,6 +212,27 @@ var EntityController = function (_BaseController) {
         next(new Error('Object ID missing or invalid.'));
       }
     }
+  }, {
+    key: 'create',
+    value: function create(req, res, next) {
+      if (req.is('multipart/form-data')) {
+        this.createFromFiles(req, res, next);
+      } else if (req.is('application/json') && req.body) {
+        this.createFromJson(req, res, next);
+      } else {
+        res.status(400);
+      }
+    }
+  }, {
+    key: 'createFromFiles',
+    value: function createFromFiles(_, res, __) {
+      res.status(400);
+    }
+  }, {
+    key: 'createFromJson',
+    value: function createFromJson(_, res, __) {
+      res.status(400);
+    }
   }]);
 
   return EntityController;
@@ -239,12 +261,60 @@ module.exports = function (app) {
 
 /***/ }),
 /* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var express = __webpack_require__(5);
+
+/**
+ * Base Controller.
+ * 
+ * @class BaseController
+ */
+
+var BaseController = function () {
+  function BaseController(_ref) {
+    var router = _ref.router;
+
+    _classCallCheck(this, BaseController);
+
+    this.router = router;
+  }
+
+  _createClass(BaseController, null, [{
+    key: 'registerRoute',
+    value: function registerRoute(app) {
+      if (this.routeName) {
+        console.log('Registering: /' + this.routeName + ' => ' + this.name);
+        var ctrl = new this({ router: new express.Router() });
+        app.use('/' + this.routeName, ctrl.router);
+      }
+    }
+  }]);
+
+  return BaseController;
+}();
+
+exports.default = BaseController;
+
+/***/ }),
+/* 5 */
 /***/ (function(module, exports) {
 
 module.exports = require("express");
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -260,7 +330,7 @@ module.exports = new Schema({
 });
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -305,13 +375,13 @@ var tagModules = [].concat([__webpack_require__(24), __webpack_require__(25), __
 // );
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var express = __webpack_require__(4);
+var express = __webpack_require__(5);
 var http = __webpack_require__(42);
 
 // Create the server and load the components.
@@ -390,7 +460,7 @@ function onError(error) {
 }
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -402,7 +472,7 @@ global.appRequire = function (name) {
 appRequire('server');
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -423,7 +493,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -435,7 +505,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Answer = __webpack_require__(11);
+var _Answer = __webpack_require__(12);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 
@@ -460,18 +530,22 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var AnswerController = function (_EntityController) {
   _inherits(AnswerController, _EntityController);
 
-  function AnswerController(opts) {
+  function AnswerController() {
     _classCallCheck(this, AnswerController);
 
-    var _this = _possibleConstructorReturn(this, (AnswerController.__proto__ || Object.getPrototypeOf(AnswerController)).call(this, opts));
-
-    _this.router.post('/', _this.createFromJson.bind(_this));
-    return _this;
+    return _possibleConstructorReturn(this, (AnswerController.__proto__ || Object.getPrototypeOf(AnswerController)).apply(this, arguments));
   }
 
   _createClass(AnswerController, [{
     key: 'createFromJson',
-    value: function createFromJson(req, res, next) {}
+    value: function createFromJson(req, res, next) {
+      var answer = req.body;
+      _Answer2.default.create(answer).then(function (data) {
+        return res.json(data);
+      }).catch(function (err) {
+        return next(err);
+      });
+    }
   }]);
 
   return AnswerController;
@@ -485,7 +559,7 @@ module.exports = AnswerController;
 exports.default = AnswerController;
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -508,54 +582,6 @@ var surveyorSchema = new _Schema2.default({
 });
 
 module.exports = _mongoose2.default.model('Answer', surveyorSchema);
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var express = __webpack_require__(4);
-
-/**
- * Base Controller.
- * 
- * @class BaseController
- */
-
-var BaseController = function () {
-  function BaseController(_ref) {
-    var router = _ref.router;
-
-    _classCallCheck(this, BaseController);
-
-    this.router = router;
-  }
-
-  _createClass(BaseController, null, [{
-    key: 'registerRoute',
-    value: function registerRoute(app) {
-      if (this.routeName) {
-        console.log('Registering: /' + this.routeName + ' => ' + this.name);
-        var ctrl = new this({ router: new express.Router() });
-        app.use('/' + this.routeName, ctrl.router);
-      }
-    }
-  }]);
-
-  return BaseController;
-}();
-
-exports.default = BaseController;
 
 /***/ }),
 /* 13 */
@@ -620,7 +646,7 @@ module.exports = QuestionController;
 
 
 var Schema = __webpack_require__(0);
-var Text = __webpack_require__(5);
+var Text = __webpack_require__(6);
 var mongoose = __webpack_require__(1);
 var questionSchema = new Schema({
   type: { type: String },
@@ -759,27 +785,13 @@ var SurveyCSVParser = __webpack_require__(18);
 var SurveyController = function (_EntityController) {
   _inherits(SurveyController, _EntityController);
 
-  /**
-   * Creates an instance of SurveyController.
-   * @param {any} opts 
-   * 
-   * @memberOf SurveyController
-   */
-  function SurveyController(opts) {
+  function SurveyController() {
     _classCallCheck(this, SurveyController);
 
-    var _this = _possibleConstructorReturn(this, (SurveyController.__proto__ || Object.getPrototypeOf(SurveyController)).call(this, opts));
-
-    _this.router.post('/', _this.createFromFiles.bind(_this));
-    return _this;
+    return _possibleConstructorReturn(this, (SurveyController.__proto__ || Object.getPrototypeOf(SurveyController)).apply(this, arguments));
   }
 
   _createClass(SurveyController, [{
-    key: 'createAnswer',
-    value: function createAnswer(req, res, next) {
-      res.json({ error: 'Unimplemented' });
-    }
-  }, {
     key: 'createFromFiles',
     value: function createFromFiles(req, res, next) {
       var _this2 = this;
@@ -1757,7 +1769,7 @@ var Surveyor = appRequire('data/models/Surveyor');
 
 
 var jwt = __webpack_require__(43);
-var constants = __webpack_require__(9);
+var constants = __webpack_require__(10);
 
 module.exports = function (app) {
   app.use(jwt(constants.jwt));
@@ -1787,13 +1799,12 @@ module.exports = function (app) {
 "use strict";
 
 
-var express = __webpack_require__(4);
+var express = __webpack_require__(5);
 var cmsRouter = new express.Router();
 
-__webpack_require__(13).registerRoute(cmsRouter);
-__webpack_require__(15).registerRoute(cmsRouter);
-__webpack_require__(21).registerRoute(cmsRouter);
-__webpack_require__(10).registerRoute(cmsRouter);
+['Survey', 'Surveyor', 'Answer'].forEach(function (ctrlName) {
+  __webpack_require__(45)("./" + ctrlName + 'Controller').registerRoute(cmsRouter);
+});
 
 module.exports = cmsRouter;
 
@@ -1804,7 +1815,7 @@ module.exports = cmsRouter;
 "use strict";
 
 
-var express = __webpack_require__(4);
+var express = __webpack_require__(5);
 var app = new express.Router();
 
 module.exports = app;
@@ -1853,7 +1864,7 @@ module.exports = function (app) {
 
 var Schema = __webpack_require__(0);
 
-var Text = __webpack_require__(5);
+var Text = __webpack_require__(6);
 
 var mongoose = __webpack_require__(1);
 
@@ -1898,14 +1909,14 @@ module.exports = _mongoose2.default.model('Surveyee', surveyorSchema);
 /***/ (function(module, exports, __webpack_require__) {
 
 var map = {
-	"./app": 8,
-	"./app.js": 8,
-	"./config/Constants": 9,
-	"./config/Constants.js": 9,
-	"./controllers/AnswerController": 10,
-	"./controllers/AnswerController.js": 10,
-	"./controllers/BaseController": 12,
-	"./controllers/BaseController.js": 12,
+	"./app": 9,
+	"./app.js": 9,
+	"./config/Constants": 10,
+	"./config/Constants.js": 10,
+	"./controllers/AnswerController": 11,
+	"./controllers/AnswerController.js": 11,
+	"./controllers/BaseController": 4,
+	"./controllers/BaseController.js": 4,
 	"./controllers/EntitiyController": 2,
 	"./controllers/EntitiyController.js": 2,
 	"./controllers/QuestionController": 13,
@@ -1914,8 +1925,8 @@ var map = {
 	"./controllers/SurveyController.js": 15,
 	"./controllers/SurveyorController": 21,
 	"./controllers/SurveyorController.js": 21,
-	"./data/models/Answer": 11,
-	"./data/models/Answer.js": 11,
+	"./data/models/Answer": 12,
+	"./data/models/Answer.js": 12,
 	"./data/models/Option": 37,
 	"./data/models/Option.js": 37,
 	"./data/models/Question": 14,
@@ -1928,16 +1939,16 @@ var map = {
 	"./data/models/Surveyee.js": 38,
 	"./data/models/Surveyor": 22,
 	"./data/models/Surveyor.js": 22,
-	"./data/models/Text": 5,
-	"./data/models/Text.js": 5,
+	"./data/models/Text": 6,
+	"./data/models/Text.js": 6,
 	"./lib/csv/csv-parser": 20,
 	"./lib/csv/csv-parser.js": 20,
 	"./lib/csv/survey-csv-parser": 18,
 	"./lib/csv/survey-csv-parser.js": 18,
 	"./lib/csv/tree-csv-parser": 19,
 	"./lib/csv/tree-csv-parser.js": 19,
-	"./lib/tags": 6,
-	"./lib/tags/": 6,
+	"./lib/tags": 7,
+	"./lib/tags/": 7,
 	"./lib/tags/core/loop": 26,
 	"./lib/tags/core/loop.js": 26,
 	"./lib/tags/core/select": 27,
@@ -1946,8 +1957,8 @@ var map = {
 	"./lib/tags/data/auth.js": 25,
 	"./lib/tags/data/pre-fill": 24,
 	"./lib/tags/data/pre-fill.js": 24,
-	"./lib/tags/index": 6,
-	"./lib/tags/index.js": 6,
+	"./lib/tags/index": 7,
+	"./lib/tags/index.js": 7,
 	"./lib/tags/question-default": 23,
 	"./lib/tags/question-default.js": 23,
 	"./lib/tags/ui/grid": 28,
@@ -1958,16 +1969,16 @@ var map = {
 	"./lib/tags/ui/number.js": 30,
 	"./lib/utils/multipart-handler": 16,
 	"./lib/utils/multipart-handler.js": 16,
-	"./server": 7,
-	"./server/": 7,
+	"./server": 8,
+	"./server/": 8,
 	"./server/body-parser": 33,
 	"./server/body-parser.js": 33,
 	"./server/database": 31,
 	"./server/database.js": 31,
 	"./server/error-handler": 36,
 	"./server/error-handler.js": 36,
-	"./server/index": 7,
-	"./server/index.js": 7,
+	"./server/index": 8,
+	"./server/index.js": 8,
 	"./server/routes": 3,
 	"./server/routes/": 3,
 	"./server/routes/app": 35,
@@ -2024,6 +2035,34 @@ module.exports = require("express-jwt");
 /***/ (function(module, exports) {
 
 module.exports = require("body-parser");
+
+/***/ }),
+/* 45 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var map = {
+	"./AnswerController": 11,
+	"./BaseController": 4,
+	"./EntitiyController": 2,
+	"./QuestionController": 13,
+	"./SurveyController": 15,
+	"./SurveyorController": 21
+};
+function webpackContext(req) {
+	return __webpack_require__(webpackContextResolve(req));
+};
+function webpackContextResolve(req) {
+	var id = map[req];
+	if(!(id + 1)) // check for number or string
+		throw new Error("Cannot find module '" + req + "'.");
+	return id;
+};
+webpackContext.keys = function webpackContextKeys() {
+	return Object.keys(map);
+};
+webpackContext.resolve = webpackContextResolve;
+module.exports = webpackContext;
+webpackContext.id = 45;
 
 /***/ })
 /******/ ]);
