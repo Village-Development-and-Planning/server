@@ -154,6 +154,7 @@ var EntityController = function (_BaseController) {
     _this.router.get('/', _this.getList.bind(_this));
     _this.router.get('/:id', _this.getOne.bind(_this));
     _this.router.post('/', _this.create.bind(_this));
+    _this.router.patch('/:id', _this.patch.bind(_this));
     return _this;
   }
 
@@ -169,14 +170,32 @@ var EntityController = function (_BaseController) {
   _createClass(EntityController, [{
     key: 'findFromId',
     value: function findFromId(_ref) {
+      var _this2 = this;
+
       var _id = _ref._id;
 
-      return this.constructor.collection.findOne({ _id: _id }).exec();
+      return this.constructor.collection.findOne({ _id: _id }).exec().then(function (e) {
+        return e || Promise.reject(_this2._httpError(404));
+      });
     }
   }, {
     key: 'findAll',
     value: function findAll(query) {
       return this.constructor.collection.find(query);
+    }
+  }, {
+    key: 'updateFromId',
+    value: function updateFromId(_ref2) {
+      var _id = _ref2._id;
+
+      return Promise.reject(this._httpError(405));
+    }
+  }, {
+    key: '_httpError',
+    value: function _httpError(code, message) {
+      var err = new Error(message);
+      err.status = code;
+      return err;
     }
   }, {
     key: '_servePromise',
@@ -209,7 +228,17 @@ var EntityController = function (_BaseController) {
       if (_id && mongoose.Types.ObjectId.isValid(_id)) {
         this._servePromise(this.findFromId({ _id: _id }), res, next);
       } else {
-        next(new Error('Object ID missing or invalid.'));
+        next(this._httpError(400));
+      }
+    }
+  }, {
+    key: 'patch',
+    value: function patch(req, res, next) {
+      var _id = req.params.id;
+      if (_id && mongoose.Types.ObjectId.isValid(_id)) {
+        this._servePromise(this.updateFromId({ _id: _id }), res, next);
+      } else {
+        next(this._httpError(400));
       }
     }
   }, {
@@ -220,18 +249,18 @@ var EntityController = function (_BaseController) {
       } else if (req.is('application/json') && req.body) {
         this.createFromJson(req, res, next);
       } else {
-        res.status(400);
+        res.status(400).end();
       }
     }
   }, {
     key: 'createFromFiles',
     value: function createFromFiles(_, res, __) {
-      res.status(400);
+      res.status(400).end();
     }
   }, {
     key: 'createFromJson',
     value: function createFromJson(_, res, __) {
-      res.status(400);
+      res.status(400).end();
     }
   }]);
 
@@ -359,7 +388,7 @@ var tagsParser = function tagsParser(type, tags, parentContext) {
     return tagModules.reduce(function (acc2, m) {
       if (tag.startsWith(m.tagPrefix)) {
         m.adorn(tag, acc2);
-        acc._tags[tag] = m.tagPrefix;
+        acc2._tags[tag] = m.tagPrefix;
       };
       return acc2;
     }, acc);
@@ -540,11 +569,11 @@ var AnswerController = function (_EntityController) {
     key: 'createFromJson',
     value: function createFromJson(req, res, next) {
       var answer = req.body;
-      _Answer2.default.create(answer).then(function (data) {
-        return res.json(data);
-      }).catch(function (err) {
-        return next(err);
-      });
+      if (answer) {
+        this._servePromise(_Answer2.default.create(answer), res, next);
+      } else {
+        next(this._httpError(400));
+      }
     }
   }]);
 
@@ -671,10 +700,15 @@ var questionSchema = new Schema({
   }
 });
 
+questionSchema.pre('findOne', function (next) {
+  undefined.populate({ path: 'options.option' });
+  next();
+});
+
 questionSchema.statics.fetchDeep = function (query) {
   var _this = this;
 
-  return this.findOne(query).populate({ path: 'options.option' }).then(function (node) {
+  return this.findOne(query).then(function (node) {
     if (!node) {
       return node;
     }
@@ -807,20 +841,6 @@ var SurveyController = function (_EntityController) {
         }
       });
     }
-  }, {
-    key: 'findFromId',
-    value: function findFromId(surveyID) {
-      return Survey.findOne({ _id: surveyID }).exec().then(function (survey) {
-        if (!survey) {
-          return Promise.reject(new Error('No Survey found!'));
-        }
-        return survey;
-        // return Question.fetchDeep(survey.question).then((q) => {
-        //   survey.question = q;
-        //   return survey;
-        // });
-      });
-    }
 
     /**
      * parse CSV from stream and return promise that resolves to created DB
@@ -941,8 +961,8 @@ var mongoose = __webpack_require__(1);
 
 var surveySchema = new Schema({
   name: { type: String, required: true },
-  question: { type: {}, required: true },
-  description: { type: String }
+  description: { type: String },
+  question: { type: {}, required: true }
 });
 
 module.exports = mongoose.model('Survey', surveySchema);
@@ -1673,7 +1693,6 @@ module.exports = {
 module.exports = {
   tagPrefix: 'SELECT_',
   adorn: function adorn(tag, obj) {
-    obj.question.strategy = 'LOOP';
     var suffix = tag.slice(7);
     if (suffix == 'ONCE') {
       obj.answer.scope = 'once';
@@ -1754,13 +1773,6 @@ mongoose.connect(options.connectionString, options.connectionOptions, function (
   }
 });
 
-// import so the schema is initially created. 
-/* eslint-disable no-unused-vars */
-var Survey = appRequire('data/models/Survey');
-var Question = appRequire('data/models/Question');
-var Option = appRequire('data/models/Option');
-var Surveyor = appRequire('data/models/Surveyor');
-
 /***/ }),
 /* 32 */
 /***/ (function(module, exports, __webpack_require__) {
@@ -1834,8 +1846,10 @@ module.exports = function (app) {
     app.use(function (err, req, res, next) {
       res.status(err.status || 500);
       res.json({
-        message: err.message,
-        error: {}
+        error: {
+          message: err.message,
+          details: err.details || {}
+        }
       });
     });
   } else {

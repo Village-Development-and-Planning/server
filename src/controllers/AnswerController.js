@@ -10,10 +10,11 @@ import EntityController from './EntitiyController';
 class AnswerController extends EntityController {
   createFromJson(req, res, next) {
     const answer = req.body;
-    Answer
-      .create(answer)
-      .then((data) => res.json(data))
-      .catch((err) => next(err));
+    if (answer) {
+      this._servePromise(Answer.create(answer), res, next);
+    } else {
+      next(this._httpError(400));
+    }
   }
 }
 Object.assign(AnswerController, {

@@ -23,7 +23,7 @@ const tagsParser = (type, tags, parentContext) => {
         (acc2, m) => {
           if (tag.startsWith(m.tagPrefix)) {
             m.adorn(tag, acc2);
-            acc._tags[tag] = m.tagPrefix;
+            acc2._tags[tag] = m.tagPrefix;
           };
           return acc2;
         }, acc,

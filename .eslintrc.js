@@ -19,6 +19,8 @@ module.exports = {
           "ClassDeclaration": true,
           "ArrowFunctionExpression": false
         }
-      }]
+      }
+    ],
+    "no-invalid-this": 0,
   }
 };

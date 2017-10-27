@@ -27,22 +27,6 @@ class SurveyController extends EntityController {
     );
   }
 
-  findFromId(surveyID) {
-    return Survey.findOne({_id: surveyID})
-      .exec()
-      .then(
-        (survey) => {
-          if (!survey) {
-            return Promise.reject(new Error('No Survey found!'));
-          }
-          return survey;
-          // return Question.fetchDeep(survey.question).then((q) => {
-          //   survey.question = q;
-          //   return survey;
-          // });
-        });
-  }
-
   /**
    * parse CSV from stream and return promise that resolves to created DB
    * record.

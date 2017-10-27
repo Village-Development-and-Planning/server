@@ -5,8 +5,10 @@ module.exports = function(app) {
     app.use(function(err, req, res, next) {
       res.status(err.status || 500);
       res.json({
-        message: err.message,
-        error: {},
+        error: {
+          message: err.message,
+          details: err.details || {},
+        },
       });
     });
   } else {
