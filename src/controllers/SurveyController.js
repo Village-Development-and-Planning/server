@@ -11,6 +11,11 @@ let SurveyCSVParser = require('../lib/csv/survey-csv-parser');
  * @extends {BaseController}
  */
 class SurveyController extends EntityController {
+  findAll(query) {
+    return super
+    .findAll(query)
+    .select('name description modifiedAt');
+  }
   createFromFiles(req, res, next) {
     new MPHandler(
       req, res,

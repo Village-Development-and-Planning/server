@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 import BaseController from './BaseController';
+import Renderer from '../lib/utils/render';
 
 /**
 * Controller class for documents exposed via CMS APIs.
@@ -10,6 +11,10 @@ import BaseController from './BaseController';
 class EntityController extends BaseController {
   constructor(opts) {
     super(opts);
+    this.router.use((req, res, next) => {
+      this.renderer = new Renderer({res, next});
+      next();
+    });
     this.router.get('/', this.getList.bind(this));
     this.router.get('/:id', this.getOne.bind(this));
     this.router.post('/', this.create.bind(this));
@@ -26,7 +31,7 @@ class EntityController extends BaseController {
   */
   findFromId({_id}) {
     return this.constructor.collection
-      .findOne({_id}).exec()
+      .findOne({_id})
       .then((e) => e || Promise.reject(this._httpError(404)));
   }
 
@@ -44,12 +49,6 @@ class EntityController extends BaseController {
     return err;
   }
 
-  _servePromise(p, res, next) {
-    return p
-    .then((json) => res.json(json))
-    .catch((err) => next(err));
-  }
-
   /**
   * Serve a list of items matching query.
   * Base implementation returns all objects using `findAll`.
@@ -59,20 +58,16 @@ class EntityController extends BaseController {
   * @param {Next} next 
   */
   getList(req, res, next) {
-    this._servePromise(
+    this.renderer.renderPromise(
       this.findAll({}),
-      res,
-      next
     );
   }
 
   getOne(req, res, next) {
     let _id = req.params.id;
     if (_id && mongoose.Types.ObjectId.isValid(_id)) {
-      this._servePromise(
+      this.renderer.renderPromise(
         this.findFromId({_id}),
-        res,
-        next,
       );
     } else {
       next(this._httpError(400));
@@ -82,9 +77,8 @@ class EntityController extends BaseController {
   patch(req, res, next) {
     let _id = req.params.id;
     if (_id && mongoose.Types.ObjectId.isValid(_id)) {
-      this._servePromise(
-        this.updateFromId({_id}),
-        res, next
+      this.renderer.renderPromise(
+        this.updateFromId({_id})
       );
     } else {
       next(this._httpError(400));

@@ -128,6 +128,10 @@ var _BaseController2 = __webpack_require__(4);
 
 var _BaseController3 = _interopRequireDefault(_BaseController2);
 
+var _render = __webpack_require__(13);
+
+var _render2 = _interopRequireDefault(_render);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -151,6 +155,10 @@ var EntityController = function (_BaseController) {
 
     var _this = _possibleConstructorReturn(this, (EntityController.__proto__ || Object.getPrototypeOf(EntityController)).call(this, opts));
 
+    _this.router.use(function (req, res, next) {
+      _this.renderer = new _render2.default({ res: res, next: next });
+      next();
+    });
     _this.router.get('/', _this.getList.bind(_this));
     _this.router.get('/:id', _this.getOne.bind(_this));
     _this.router.post('/', _this.create.bind(_this));
@@ -174,7 +182,7 @@ var EntityController = function (_BaseController) {
 
       var _id = _ref._id;
 
-      return this.constructor.collection.findOne({ _id: _id }).exec().then(function (e) {
+      return this.constructor.collection.findOne({ _id: _id }).then(function (e) {
         return e || Promise.reject(_this2._httpError(404));
       });
     }
@@ -197,15 +205,6 @@ var EntityController = function (_BaseController) {
       err.status = code;
       return err;
     }
-  }, {
-    key: '_servePromise',
-    value: function _servePromise(p, res, next) {
-      return p.then(function (json) {
-        return res.json(json);
-      }).catch(function (err) {
-        return next(err);
-      });
-    }
 
     /**
     * Serve a list of items matching query.
@@ -219,14 +218,14 @@ var EntityController = function (_BaseController) {
   }, {
     key: 'getList',
     value: function getList(req, res, next) {
-      this._servePromise(this.findAll({}), res, next);
+      this.renderer.renderPromise(this.findAll({}));
     }
   }, {
     key: 'getOne',
     value: function getOne(req, res, next) {
       var _id = req.params.id;
       if (_id && mongoose.Types.ObjectId.isValid(_id)) {
-        this._servePromise(this.findFromId({ _id: _id }), res, next);
+        this.renderer.renderPromise(this.findFromId({ _id: _id }));
       } else {
         next(this._httpError(400));
       }
@@ -236,7 +235,7 @@ var EntityController = function (_BaseController) {
     value: function patch(req, res, next) {
       var _id = req.params.id;
       if (_id && mongoose.Types.ObjectId.isValid(_id)) {
-        this._servePromise(this.updateFromId({ _id: _id }), res, next);
+        this.renderer.renderPromise(this.updateFromId({ _id: _id }));
       } else {
         next(this._httpError(400));
       }
@@ -279,8 +278,8 @@ exports.default = EntityController;
 
 
 module.exports = function (app) {
-  app.use('/cms', __webpack_require__(34));
-  app.use('/app', __webpack_require__(35));
+  app.use('/cms', __webpack_require__(35));
+  app.use('/app', __webpack_require__(36));
 
   // redirect the home to /cms
   app.get('/', function (req, res) {
@@ -365,7 +364,7 @@ module.exports = new Schema({
 "use strict";
 
 
-var questionDefault = __webpack_require__(23);
+var questionDefault = __webpack_require__(24);
 
 /**
  * Helper to split string into tags
@@ -396,7 +395,7 @@ var tagsParser = function tagsParser(type, tags, parentContext) {
 };
 module.exports = tagsParser;
 
-var tagModules = [].concat([__webpack_require__(24), __webpack_require__(25), __webpack_require__(26), __webpack_require__(27), __webpack_require__(28), __webpack_require__(29), __webpack_require__(30)]);
+var tagModules = [].concat([__webpack_require__(25), __webpack_require__(26), __webpack_require__(27), __webpack_require__(28), __webpack_require__(29), __webpack_require__(30), __webpack_require__(31)]);
 // .reduce(
 //   (acc, m) => {
 //     return acc[m.tagPrefix] = m;
@@ -411,25 +410,25 @@ var tagModules = [].concat([__webpack_require__(24), __webpack_require__(25), __
 
 
 var express = __webpack_require__(5);
-var http = __webpack_require__(42);
+var http = __webpack_require__(43);
 
 // Create the server and load the components.
 var app = express();
 
 // 1. Connect to DB (doesn't need the app object)
-__webpack_require__(31);
+__webpack_require__(32);
 
 // 2. Add security to all end points.
-__webpack_require__(32)(app);
+__webpack_require__(33)(app);
 
 // 3. Setup body-parser.
-__webpack_require__(33)(app);
+__webpack_require__(34)(app);
 
 // 4. Setup the routes:
 __webpack_require__(3)(app);
 
 // 5. Setup error-handling
-__webpack_require__(36)(app);
+__webpack_require__(37)(app);
 
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
@@ -496,7 +495,7 @@ function onError(error) {
 
 
 global.appRequire = function (name) {
-  return __webpack_require__(39)("./" + name);
+  return __webpack_require__(40)("./" + name);
 };
 appRequire('server');
 
@@ -619,6 +618,80 @@ module.exports = _mongoose2.default.model('Answer', surveyorSchema);
 "use strict";
 
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * Render helper
+ */
+var Renderer = function () {
+  function Renderer(_ref) {
+    var res = _ref.res,
+        next = _ref.next;
+
+    _classCallCheck(this, Renderer);
+
+    this.res = res;
+    this.next = next;
+  }
+
+  _createClass(Renderer, [{
+    key: "render",
+    value: function render(err, data) {
+      if (err) {
+        this.next(err);
+      } else {
+        this.res.json(data);
+      }
+    }
+  }, {
+    key: "renderTemplate",
+    value: function renderTemplate(template, data) {
+      this.res.render(template, data, this._renderCallback.bind(this));
+    }
+  }, {
+    key: "_renderCallback",
+    value: function _renderCallback(err, data) {
+      console.log(data);
+    }
+  }, {
+    key: "renderPromise",
+    value: function renderPromise(p) {
+      var _this = this;
+
+      return p.then(function (data) {
+        if (data && data.template) {
+          var json = data.json,
+              template = data.template;
+
+          _this.renderTemplate(template, json);
+        } else {
+          _this.render(null, data);
+        }
+      }).catch(function (err) {
+        return _this.render(err, {});
+      });
+    }
+  }]);
+
+  return Renderer;
+}();
+
+exports.default = Renderer;
+;
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _EntitiyController = __webpack_require__(2);
@@ -633,7 +706,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Question = __webpack_require__(14);
+var Question = __webpack_require__(15);
 
 /**
  * Question document controller
@@ -668,7 +741,7 @@ Object.assign(QuestionController, {
 module.exports = QuestionController;
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -781,7 +854,7 @@ questionSchema.statics.saveDeep = function (root) {
 module.exports = mongoose.model('Question', questionSchema);
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -789,11 +862,13 @@ module.exports = mongoose.model('Question', questionSchema);
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
 var _EntitiyController = __webpack_require__(2);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
-var _multipartHandler = __webpack_require__(16);
+var _multipartHandler = __webpack_require__(17);
 
 var _multipartHandler2 = _interopRequireDefault(_multipartHandler);
 
@@ -805,9 +880,9 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Survey = __webpack_require__(17);
+var Survey = __webpack_require__(18);
 
-var SurveyCSVParser = __webpack_require__(18);
+var SurveyCSVParser = __webpack_require__(19);
 
 /**
  * Survey document controller.
@@ -826,6 +901,11 @@ var SurveyController = function (_EntityController) {
   }
 
   _createClass(SurveyController, [{
+    key: 'findAll',
+    value: function findAll(query) {
+      return _get(SurveyController.prototype.__proto__ || Object.getPrototypeOf(SurveyController.prototype), 'findAll', this).call(this, query).select('name description modifiedAt');
+    }
+  }, {
     key: 'createFromFiles',
     value: function createFromFiles(req, res, next) {
       var _this2 = this;
@@ -869,7 +949,7 @@ Object.assign(SurveyController, {
 module.exports = SurveyController;
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -881,7 +961,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _busboy = __webpack_require__(40);
+var _busboy = __webpack_require__(41);
 
 var _busboy2 = _interopRequireDefault(_busboy);
 
@@ -950,7 +1030,7 @@ var MPHandler = function (_Busboy) {
 exports.default = MPHandler;
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -968,7 +1048,7 @@ var surveySchema = new Schema({
 module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -985,7 +1065,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var Survey = appRequire('data/models/Survey');
-var TreeParser = __webpack_require__(19);
+var TreeParser = __webpack_require__(20);
 var tagsParser = appRequire('lib/tags');
 /**
 * Tree based parser for questions provided in CSV for mapping/household survey.
@@ -1290,7 +1370,7 @@ var SurveyCSVParser = function (_TreeParser) {
 module.exports = SurveyCSVParser;
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1304,7 +1384,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var CSVParser = __webpack_require__(20);
+var CSVParser = __webpack_require__(21);
 
 /** 
  * A stack-based parser to parse hierarchical CSVs.
@@ -1452,7 +1532,7 @@ var TreeParser = function (_CSVParser) {
 module.exports = TreeParser;
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1466,7 +1546,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var _require = __webpack_require__(41),
+var _require = __webpack_require__(42),
     Parser = _require.Parser;
 
 /**
@@ -1524,7 +1604,7 @@ var CSVParser = function (_Parser) {
 module.exports = CSVParser;
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1542,7 +1622,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Surveyor = __webpack_require__(22);
+var Surveyor = __webpack_require__(23);
 
 /**
  * Surveyor document controller
@@ -1570,7 +1650,7 @@ Object.assign(SurveyorController, {
 module.exports = SurveyorController;
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1590,7 +1670,7 @@ var surveyorSchema = new Schema({
 module.exports = mongoose.model('Surveyor', surveyorSchema);
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1634,7 +1714,7 @@ module.exports = function (type, parent) {
 };
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1649,7 +1729,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1664,7 +1744,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1684,7 +1764,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1705,7 +1785,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1727,7 +1807,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1741,7 +1821,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1755,7 +1835,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1774,13 +1854,13 @@ mongoose.connect(options.connectionString, options.connectionOptions, function (
 });
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var jwt = __webpack_require__(43);
+var jwt = __webpack_require__(44);
 var constants = __webpack_require__(10);
 
 module.exports = function (app) {
@@ -1788,13 +1868,13 @@ module.exports = function (app) {
 };
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var bodyParser = __webpack_require__(44);
+var bodyParser = __webpack_require__(45);
 
 module.exports = function (app) {
   // parse application/x-www-form-urlencoded 
@@ -1805,7 +1885,7 @@ module.exports = function (app) {
 };
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1815,13 +1895,13 @@ var express = __webpack_require__(5);
 var cmsRouter = new express.Router();
 
 ['Survey', 'Surveyor', 'Answer'].forEach(function (ctrlName) {
-  __webpack_require__(45)("./" + ctrlName + 'Controller').registerRoute(cmsRouter);
+  __webpack_require__(46)("./" + ctrlName + 'Controller').registerRoute(cmsRouter);
 });
 
 module.exports = cmsRouter;
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1833,7 +1913,7 @@ var app = new express.Router();
 module.exports = app;
 
 /***/ }),
-/* 36 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1870,7 +1950,7 @@ module.exports = function (app) {
 };
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1896,7 +1976,7 @@ optionSchema.index({
 module.exports = mongoose.model('Option', optionSchema);
 
 /***/ }),
-/* 38 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1919,7 +1999,7 @@ var surveyorSchema = new _Schema2.default({
 module.exports = _mongoose2.default.model('Surveyee', surveyorSchema);
 
 /***/ }),
-/* 39 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var map = {
@@ -1933,76 +2013,78 @@ var map = {
 	"./controllers/BaseController.js": 4,
 	"./controllers/EntitiyController": 2,
 	"./controllers/EntitiyController.js": 2,
-	"./controllers/QuestionController": 13,
-	"./controllers/QuestionController.js": 13,
-	"./controllers/SurveyController": 15,
-	"./controllers/SurveyController.js": 15,
-	"./controllers/SurveyorController": 21,
-	"./controllers/SurveyorController.js": 21,
+	"./controllers/QuestionController": 14,
+	"./controllers/QuestionController.js": 14,
+	"./controllers/SurveyController": 16,
+	"./controllers/SurveyController.js": 16,
+	"./controllers/SurveyorController": 22,
+	"./controllers/SurveyorController.js": 22,
 	"./data/models/Answer": 12,
 	"./data/models/Answer.js": 12,
-	"./data/models/Option": 37,
-	"./data/models/Option.js": 37,
-	"./data/models/Question": 14,
-	"./data/models/Question.js": 14,
+	"./data/models/Option": 38,
+	"./data/models/Option.js": 38,
+	"./data/models/Question": 15,
+	"./data/models/Question.js": 15,
 	"./data/models/Schema": 0,
 	"./data/models/Schema.js": 0,
-	"./data/models/Survey": 17,
-	"./data/models/Survey.js": 17,
-	"./data/models/Surveyee": 38,
-	"./data/models/Surveyee.js": 38,
-	"./data/models/Surveyor": 22,
-	"./data/models/Surveyor.js": 22,
+	"./data/models/Survey": 18,
+	"./data/models/Survey.js": 18,
+	"./data/models/Surveyee": 39,
+	"./data/models/Surveyee.js": 39,
+	"./data/models/Surveyor": 23,
+	"./data/models/Surveyor.js": 23,
 	"./data/models/Text": 6,
 	"./data/models/Text.js": 6,
-	"./lib/csv/csv-parser": 20,
-	"./lib/csv/csv-parser.js": 20,
-	"./lib/csv/survey-csv-parser": 18,
-	"./lib/csv/survey-csv-parser.js": 18,
-	"./lib/csv/tree-csv-parser": 19,
-	"./lib/csv/tree-csv-parser.js": 19,
+	"./lib/csv/csv-parser": 21,
+	"./lib/csv/csv-parser.js": 21,
+	"./lib/csv/survey-csv-parser": 19,
+	"./lib/csv/survey-csv-parser.js": 19,
+	"./lib/csv/tree-csv-parser": 20,
+	"./lib/csv/tree-csv-parser.js": 20,
 	"./lib/tags": 7,
 	"./lib/tags/": 7,
-	"./lib/tags/core/loop": 26,
-	"./lib/tags/core/loop.js": 26,
-	"./lib/tags/core/select": 27,
-	"./lib/tags/core/select.js": 27,
-	"./lib/tags/data/auth": 25,
-	"./lib/tags/data/auth.js": 25,
-	"./lib/tags/data/pre-fill": 24,
-	"./lib/tags/data/pre-fill.js": 24,
+	"./lib/tags/core/loop": 27,
+	"./lib/tags/core/loop.js": 27,
+	"./lib/tags/core/select": 28,
+	"./lib/tags/core/select.js": 28,
+	"./lib/tags/data/auth": 26,
+	"./lib/tags/data/auth.js": 26,
+	"./lib/tags/data/pre-fill": 25,
+	"./lib/tags/data/pre-fill.js": 25,
 	"./lib/tags/index": 7,
 	"./lib/tags/index.js": 7,
-	"./lib/tags/question-default": 23,
-	"./lib/tags/question-default.js": 23,
-	"./lib/tags/ui/grid": 28,
-	"./lib/tags/ui/grid.js": 28,
-	"./lib/tags/ui/images": 29,
-	"./lib/tags/ui/images.js": 29,
-	"./lib/tags/ui/number": 30,
-	"./lib/tags/ui/number.js": 30,
-	"./lib/utils/multipart-handler": 16,
-	"./lib/utils/multipart-handler.js": 16,
+	"./lib/tags/question-default": 24,
+	"./lib/tags/question-default.js": 24,
+	"./lib/tags/ui/grid": 29,
+	"./lib/tags/ui/grid.js": 29,
+	"./lib/tags/ui/images": 30,
+	"./lib/tags/ui/images.js": 30,
+	"./lib/tags/ui/number": 31,
+	"./lib/tags/ui/number.js": 31,
+	"./lib/utils/multipart-handler": 17,
+	"./lib/utils/multipart-handler.js": 17,
+	"./lib/utils/render": 13,
+	"./lib/utils/render.js": 13,
 	"./server": 8,
 	"./server/": 8,
-	"./server/body-parser": 33,
-	"./server/body-parser.js": 33,
-	"./server/database": 31,
-	"./server/database.js": 31,
-	"./server/error-handler": 36,
-	"./server/error-handler.js": 36,
+	"./server/body-parser": 34,
+	"./server/body-parser.js": 34,
+	"./server/database": 32,
+	"./server/database.js": 32,
+	"./server/error-handler": 37,
+	"./server/error-handler.js": 37,
 	"./server/index": 8,
 	"./server/index.js": 8,
 	"./server/routes": 3,
 	"./server/routes/": 3,
-	"./server/routes/app": 35,
-	"./server/routes/app.js": 35,
-	"./server/routes/cms": 34,
-	"./server/routes/cms.js": 34,
+	"./server/routes/app": 36,
+	"./server/routes/app.js": 36,
+	"./server/routes/cms": 35,
+	"./server/routes/cms.js": 35,
 	"./server/routes/index": 3,
 	"./server/routes/index.js": 3,
-	"./server/security": 32,
-	"./server/security.js": 32
+	"./server/security": 33,
+	"./server/security.js": 33
 };
 function webpackContext(req) {
 	return __webpack_require__(webpackContextResolve(req));
@@ -2018,49 +2100,49 @@ webpackContext.keys = function webpackContextKeys() {
 };
 webpackContext.resolve = webpackContextResolve;
 module.exports = webpackContext;
-webpackContext.id = 39;
-
-/***/ }),
-/* 40 */
-/***/ (function(module, exports) {
-
-module.exports = require("busboy");
+webpackContext.id = 40;
 
 /***/ }),
 /* 41 */
 /***/ (function(module, exports) {
 
-module.exports = require("csv-parse");
+module.exports = require("busboy");
 
 /***/ }),
 /* 42 */
 /***/ (function(module, exports) {
 
-module.exports = require("http");
+module.exports = require("csv-parse");
 
 /***/ }),
 /* 43 */
 /***/ (function(module, exports) {
 
-module.exports = require("express-jwt");
+module.exports = require("http");
 
 /***/ }),
 /* 44 */
 /***/ (function(module, exports) {
 
-module.exports = require("body-parser");
+module.exports = require("express-jwt");
 
 /***/ }),
 /* 45 */
+/***/ (function(module, exports) {
+
+module.exports = require("body-parser");
+
+/***/ }),
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var map = {
 	"./AnswerController": 11,
 	"./BaseController": 4,
 	"./EntitiyController": 2,
-	"./QuestionController": 13,
-	"./SurveyController": 15,
-	"./SurveyorController": 21
+	"./QuestionController": 14,
+	"./SurveyController": 16,
+	"./SurveyorController": 22
 };
 function webpackContext(req) {
 	return __webpack_require__(webpackContextResolve(req));
@@ -2076,7 +2158,7 @@ webpackContext.keys = function webpackContextKeys() {
 };
 webpackContext.resolve = webpackContextResolve;
 module.exports = webpackContext;
-webpackContext.id = 45;
+webpackContext.id = 46;
 
 /***/ })
 /******/ ]);
