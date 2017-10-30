@@ -22,7 +22,7 @@ class EntityController extends BaseController {
     return Promise.reject({status: 405});
   }
 
-  _deleteQuery(query) {
+  deleteFromId(query) {
     return this.constructor.collection.remove(query);
   }
 
@@ -45,7 +45,7 @@ class EntityController extends BaseController {
   delete() {
     this.renderer.renderPromise(
       this._validateId()
-        .then(({_id}) => this._deleteQuery({_id}))
+        .then(({_id}) => this.deleteFromId({_id}))
     );
   }
 

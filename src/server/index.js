@@ -7,16 +7,19 @@ const app = express();
 // 1. Connect to DB (doesn't need the app object)
 require('./database');
 
-// 2. Add security to all end points.
+// 2.1 Setup cookies
+require('./cookies')(app);
+
+// 2.2. Add security to all end points.
 require('./security')(app);
 
-// 3. Setup body-parser.
+// 2.3. Setup body-parser.
 require('./body-parser')(app);
 
-// 4. Setup the routes:
+// 10. Setup the routes:
 require('./routes')(app);
 
-// 5. Setup error-handling
+// 99. Setup error-handling
 require('./error-handler')(app);
 
 let port = normalizePort(process.env.PORT || '3000');

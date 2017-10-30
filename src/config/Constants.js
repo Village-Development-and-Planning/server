@@ -10,5 +10,4 @@ module.exports = {
     secret: 'a general string',
     requestProperty: 'auth',
   },
-}
-;
+};
