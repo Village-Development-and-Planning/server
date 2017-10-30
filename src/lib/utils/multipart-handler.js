@@ -4,7 +4,7 @@ import Busboy from 'busboy';
 * Our multi-part form handler.
 */
 class MPHandler extends Busboy {
-  constructor(request, response, fileHandler) {
+  constructor(request, fileHandler) {
     super({headers: request.headers});
 
     this.childPromises = [];
@@ -20,7 +20,6 @@ class MPHandler extends Busboy {
           Promise.all(
             this.childPromises
           ).then(() => {
-            response.json(this.data);
             return this.data;
           }),
         );

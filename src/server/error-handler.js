@@ -18,8 +18,7 @@ module.exports = function(app) {
       res.status(err.status || 500);
       res.json({
         message: err.message,
-        error: err,
-        stack: err.stack.split('\n'),
+        stack: err.stack && err.stack.split('\n'),
       });
     });
   }

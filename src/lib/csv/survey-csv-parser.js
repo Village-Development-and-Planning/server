@@ -228,7 +228,12 @@ class SurveyCSVParser extends TreeParser {
 
     // Create the root Question object.
     Promise.all(this.rootQuestion.childrenPromises).then((ch) => {
-      return {type: 'ROOT', options: [], children: ch};
+      return {
+        type: 'ROOT',
+        options: [],
+        children: ch,
+        flow: require('../tags/question-default')('NONE', null),
+      };
     }).then((q) => {
       this.survey.question = q;
       return Survey.create(this.survey);

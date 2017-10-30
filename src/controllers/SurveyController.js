@@ -14,21 +14,23 @@ class SurveyController extends EntityController {
   findAll(query) {
     return super
     .findAll(query)
-    .select('name description modifiedAt');
+    .select('name description enabled modifiedAt');
   }
-  createFromFiles(req, res, next) {
-    new MPHandler(
-      req, res,
-      (field, file, fname, encoding, mime, data) => {
-        if (mime == 'application/octet-stream' || mime == 'text/csv') {
-          return this.parseCSV(file, {
-            name: data[`${field}Name`] || field,
-            description: data[`${field}Description`] || field,
-          });
-        } else {
-          return null;
+  createFromMultipart() {
+    this.renderer.renderPromise(
+      new MPHandler(
+        this.req,
+        (field, file, fname, encoding, mime, data) => {
+          if (mime == 'application/octet-stream' || mime == 'text/csv') {
+            return this.parseCSV(file, {
+              name: data[`${field}Name`] || field,
+              description: data[`${field}Description`] || field,
+            });
+          } else {
+            return null;
+          }
         }
-      }
+      ).promise
     );
   }
 

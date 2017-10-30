@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
 import BaseController from './BaseController';
-import Renderer from '../lib/utils/render';
 
 /**
 * Controller class for documents exposed via CMS APIs.
@@ -9,30 +8,10 @@ import Renderer from '../lib/utils/render';
 * @class EntityController
 */
 class EntityController extends BaseController {
-  constructor(opts) {
-    super(opts);
-    this.router.use((req, res, next) => {
-      this.renderer = new Renderer({res, next});
-      next();
-    });
-    this.router.get('/', this.getList.bind(this));
-    this.router.get('/:id', this.getOne.bind(this));
-    this.router.post('/', this.create.bind(this));
-    this.router.patch('/:id', this.patch.bind(this));
-  }
-
-
-  /**
-  * Get one object matching query.
-  * Uses findOne with _id of Object.
-  * Derived controllers can augment behaviour.
-  * @param  {Object.<_id>} _id Object ID to search for.
-  * @return {Promise} Document.
-  */
   findFromId({_id}) {
     return this.constructor.collection
       .findOne({_id})
-      .then((e) => e || Promise.reject(this._httpError(404)));
+      .then((e) => e || Promise.reject({status: 404}));
   }
 
   findAll(query) {
@@ -40,67 +19,73 @@ class EntityController extends BaseController {
   }
 
   updateFromId({_id}) {
-    return Promise.reject(this._httpError(405));
+    return Promise.reject({status: 405});
   }
 
-  _httpError(code, message) {
-    const err = new Error(message);
-    err.status = code;
-    return err;
+  _deleteQuery(query) {
+    return this.constructor.collection.remove(query);
   }
 
-  /**
-  * Serve a list of items matching query.
-  * Base implementation returns all objects using `findAll`.
-  * 
-  * @param {Request} req 
-  * @param {Response} res 
-  * @param {Next} next 
-  */
-  getList(req, res, next) {
+  _validateId() {
+    let _id = this.req.params.id;
+    if (_id && mongoose.Types.ObjectId.isValid(_id)) {
+      return Promise.resolve({_id});
+    } else {
+      return Promise.reject({status: 400, details: 'Unreadable Id'});
+    }
+  }
+
+
+  index() {
     this.renderer.renderPromise(
       this.findAll({}),
     );
   }
 
-  getOne(req, res, next) {
-    let _id = req.params.id;
-    if (_id && mongoose.Types.ObjectId.isValid(_id)) {
-      this.renderer.renderPromise(
-        this.findFromId({_id}),
-      );
-    } else {
-      next(this._httpError(400));
-    }
+  delete() {
+    this.renderer.renderPromise(
+      this._validateId()
+        .then(({_id}) => this._deleteQuery({_id}))
+    );
   }
 
-  patch(req, res, next) {
-    let _id = req.params.id;
-    if (_id && mongoose.Types.ObjectId.isValid(_id)) {
-      this.renderer.renderPromise(
-        this.updateFromId({_id})
-      );
-    } else {
-      next(this._httpError(400));
-    }
+  get() {
+    this.renderer.renderPromise(
+      this._validateId()
+        .then(({_id}) => this.findFromId({_id}))
+    );
   }
 
-  create(req, res, next) {
+  update() {
+    this.renderer.renderPromise(
+      this._validateId()
+        .then(({_id}) => this.updateFromId({_id}))
+    );
+  }
+
+  create() {
+    const req = this.req;
     if (req.is('multipart/form-data')) {
-      this.createFromFiles(req, res, next);
+      this.createFromMultipart();
     } else if (req.is('application/json') && req.body) {
-      this.createFromJson(req, res, next);
+      this.createFromJson();
     } else {
-      res.status(400).end();
+      this.renderer.sendError({
+        status: 400, details: 'Unsupported upload type.',
+      });
     }
   }
 
-  createFromFiles(_, res, __) {
-    res.status(400).end();
+  createFromMultipart() {
+    this.renderer.sendError({
+      status: 400, details: 'Multipart is not implemented.',
+    });
   }
 
-  createFromJson(_, res, __) {
-    res.status(400).end();
+  createFromJson() {
+    this.renderer.sendError({
+      status: 400, details: 'JSON is not supported.',
+    });
   }
 };
 

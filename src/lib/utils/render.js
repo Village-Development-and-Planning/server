@@ -7,9 +7,18 @@ export default class Renderer {
     this.next = next;
   }
 
+  sendError(err) {
+    if (!err.message) {
+      if (err.status == '400') err.message = 'Bad request';
+      if (err.status == '404') err.message = 'Not found';
+      if (err.status == '405') err.message = 'Method not allowed';
+    }
+    this.next(err);
+  }
+
   render(err, data) {
     if (err) {
-      this.next(err);
+      this.sendError(err);
     } else {
       this.res.json(data);
     }

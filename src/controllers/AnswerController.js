@@ -13,7 +13,10 @@ class AnswerController extends EntityController {
     if (answer) {
       this._servePromise(Answer.create(answer), res, next);
     } else {
-      next(this._httpError(400));
+      this.renderer.sendError({
+        status: 400,
+        details: 'Answer missing.',
+      });
     }
   }
 }
