@@ -1897,7 +1897,6 @@ var jwtOpts = Object.assign({
 
 module.exports = function (app) {
   app.use(function (req, res, next) {
-    console.log(req.cookies);
     next();
   }, jwt(jwtOpts).unless({
     path: ['/auth']

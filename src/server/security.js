@@ -21,7 +21,6 @@ const jwtOpts = Object.assign({
 module.exports = function(app) {
   app.use(
     (req, res, next) => {
-      console.log(req.cookies);
       next();
     },
     jwt(jwtOpts).unless({
