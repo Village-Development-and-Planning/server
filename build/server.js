@@ -167,11 +167,29 @@ var EntityController = function (_BaseController) {
       return this.constructor.collection.find(query);
     }
   }, {
+    key: '_updateableAttributes',
+    value: function _updateableAttributes() {
+      return null;
+    }
+  }, {
     key: 'updateFromId',
     value: function updateFromId(_ref2) {
+      var _this2 = this;
+
       var _id = _ref2._id;
 
-      return Promise.reject({ status: 405 });
+      var updateableAttributes = void 0;
+      if (!(updateableAttributes = this._updateableAttributes())) {
+        return Promise.reject({ status: 405 });
+      } else {
+        var updation = Object.keys(updateableAttributes).reduce(function (acc, key) {
+          if (_this2.req.query[key]) {
+            acc[key] = _this2.req.query[key];
+          }
+          return acc;
+        }, {});
+        return this.constructor.collection.findOneAndUpdate({ _id: _id }, updation);
+      }
     }
   }, {
     key: 'deleteFromId',
@@ -196,31 +214,31 @@ var EntityController = function (_BaseController) {
   }, {
     key: 'delete',
     value: function _delete() {
-      var _this2 = this;
+      var _this3 = this;
 
       this.renderer.renderPromise(this._validateId().then(function (_ref3) {
         var _id = _ref3._id;
-        return _this2.deleteFromId({ _id: _id });
+        return _this3.deleteFromId({ _id: _id });
       }));
     }
   }, {
     key: 'get',
     value: function get() {
-      var _this3 = this;
+      var _this4 = this;
 
       this.renderer.renderPromise(this._validateId().then(function (_ref4) {
         var _id = _ref4._id;
-        return _this3.findFromId({ _id: _id });
+        return _this4.findFromId({ _id: _id });
       }));
     }
   }, {
     key: 'update',
     value: function update() {
-      var _this4 = this;
+      var _this5 = this;
 
       this.renderer.renderPromise(this._validateId().then(function (_ref5) {
         var _id = _ref5._id;
-        return _this4.updateFromId({ _id: _id });
+        return _this5.updateFromId({ _id: _id });
       }));
     }
   }, {
@@ -891,6 +909,11 @@ var SurveyController = function (_EntityController) {
       var parser = new SurveyCSVParser({ survey: surveyOpts });
       stream.pipe(parser);
       return parser.promise;
+    }
+  }, {
+    key: '_updateableAttributes',
+    value: function _updateableAttributes() {
+      return { enabled: true, name: true, description: true };
     }
   }]);
 

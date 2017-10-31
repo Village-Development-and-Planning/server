@@ -18,8 +18,27 @@ class EntityController extends BaseController {
     return this.constructor.collection.find(query);
   }
 
+  _updateableAttributes() {
+    return null;
+  }
+
   updateFromId({_id}) {
-    return Promise.reject({status: 405});
+    let updateableAttributes;
+    if (!(updateableAttributes = this._updateableAttributes())) {
+      return Promise.reject({status: 405});
+    } else {
+      const updation = Object.keys(updateableAttributes).reduce(
+        (acc, key) => {
+          if (this.req.query[key]) {
+            acc[key] = this.req.query[key];
+          }
+          return acc;
+        },
+        {},
+      );
+      return this.constructor.collection
+        .findOneAndUpdate({_id}, updation);
+    }
   }
 
   deleteFromId(query) {

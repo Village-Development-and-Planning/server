@@ -46,6 +46,10 @@ class SurveyController extends EntityController {
     stream.pipe(parser);
     return parser.promise;
   }
+
+  _updateableAttributes() {
+    return {enabled: true, name: true, description: true};
+  }
 }
 
 Object.assign(SurveyController, {
