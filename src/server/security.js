@@ -9,6 +9,7 @@ const jwtOpts = Object.assign({
       req.headers.authorization
       && req.headers.authorization.split(' ')[0] === 'Bearer'
     ) {
+      req.skipCSRF = true;
       return req.headers.authorization.split(' ')[1];
     } else if (req.cookies && req.cookies.ptracking_jwt) {
       return req.cookies.ptracking_jwt;

@@ -17,11 +17,13 @@ class SurveyController extends EntityController {
     .select('name description enabled modifiedAt');
   }
   createFromMultipart() {
+    const entities = [];
     this.renderer.renderPromise(
       new MPHandler(
         this.req,
         (field, file, fname, encoding, mime, data) => {
           if (mime == 'application/octet-stream' || mime == 'text/csv') {
+            entities.push(field);
             return this.parseCSV(file, {
               name: data[`${field}Name`] || field,
               description: data[`${field}Description`] || field,
@@ -29,8 +31,12 @@ class SurveyController extends EntityController {
           } else {
             return null;
           }
-        }
-      ).promise
+        },
+      ).promise.then(
+        (body) => entities.map(
+          (key) => body[key]
+        )
+      )
     );
   }
 
@@ -44,7 +50,10 @@ class SurveyController extends EntityController {
   parseCSV(stream, surveyOpts) {
     let parser = new SurveyCSVParser({survey: surveyOpts});
     stream.pipe(parser);
-    return parser.promise;
+    return parser.promise.catch((e) => {
+      e.status = 400;
+      return Promise.reject(e);
+    });
   }
 
   _updateableAttributes() {

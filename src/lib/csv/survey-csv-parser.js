@@ -1,6 +1,7 @@
 const Survey = appRequire('data/models/Survey');
-const TreeParser = require('./tree-csv-parser');
 const tagsParser = appRequire('lib/tags');
+
+const TreeParser = require('./tree-csv-parser');
 /**
 * Tree based parser for questions provided in CSV for mapping/household survey.
 * 
@@ -17,7 +18,7 @@ class SurveyCSVParser extends TreeParser {
   constructor(opts) {
     opts.survey = Object.assign({
       name: 'Unnamed',
-      description: 'Generic uploaded from CSV',
+      description: 'Created via CSV.',
       question: 'Q',
       opt: 'Opt',
       default: 'English',
@@ -46,6 +47,8 @@ class SurveyCSVParser extends TreeParser {
     this.promise = new Promise((res, rej) => {
       this.res = res; this.rej = rej;
     });
+
+    this.warnings = [];
   }
 
 
@@ -60,6 +63,7 @@ class SurveyCSVParser extends TreeParser {
     const qParsedTag = '_parsedTag';
     const qTags = this.surveyOpts.question + '.Tags';
     const qType = this.surveyOpts.question + '.Type';
+    const qNo = this.surveyOpts.question + '.No';
     const node = stack[stack.length - 1];
     let parent = null;
     if (stack.length > 1) {
@@ -72,7 +76,9 @@ class SurveyCSVParser extends TreeParser {
     const _tags = node[qParsedTag]._tags;
     for (let k of Object.keys(_tags)) {
       if (!_tags[k]) {
-        (console.log(`Unknown tag: ${k}`));
+        this.warnings.push(
+          {message: `Unknown tag ${k} in ${qNo} ${node[qNo]}`}
+        );
       }
     }
   }
@@ -163,6 +169,12 @@ class SurveyCSVParser extends TreeParser {
     const qPreOpt = qPre + this.surveyOpts.opt;
     const qParsedTag = '_parsedTag';
 
+    if (!node[qType]) {
+      this.warnings.push(
+        {message: `Missing ${qType} in ${qNo} ${node[qNo]}`}
+      );
+    }
+
     this._createPromises(node);
     return Promise.all(node.childrenPromises).then((ch) => {
       return Promise.all(node.optionPromises).then((opts) => {
@@ -238,9 +250,9 @@ class SurveyCSVParser extends TreeParser {
       this.survey.question = q;
       return Survey.create(this.survey);
     }).then((s) => {
-      this.res({survey: s._id});
+      this.res({survey: s._id, warnings: this.warnings});
     }).catch((err) => {
-      this.rej(err);
+      this.rej({error: err});
     });
   }
 

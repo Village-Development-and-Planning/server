@@ -33,14 +33,15 @@ class MPHandler extends Busboy {
       field, file, fname, encoding, mime, this.data
     );
     if (filePromise && filePromise.then) {
-      this.childPromises.push(filePromise);
-      filePromise.then((fileData) => {
-        this.data[field] = fileData;
-      }).catch((err) => {
-        file.resume();
-        (console.log(err));
-        this.data[field] = {error: err};
-      });
+      this.childPromises.push(
+        filePromise.then((fileData) => {
+          this.data[field] = fileData;
+        }).catch((err) => {
+          file.resume();
+          this.data[field] = {error: err};
+          return {};
+        })
+      );
     } else {
       file.resume();
     }

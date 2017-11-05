@@ -11,7 +11,7 @@ function registerCmsRoutes(app, Controller) {
 
   router.get('/', dispatcher(Controller, 'index'));
   router.post('/', dispatcher(Controller, 'create'));
-
+  router.get('/new', dispatcher(Controller, 'new'));
   router.get('/:id', dispatcher(Controller, 'get'));
   router.patch('/:id', dispatcher(Controller, 'update'));
   router.delete('/:id', dispatcher(Controller, 'delete'));

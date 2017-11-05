@@ -188,7 +188,9 @@ var EntityController = function (_BaseController) {
           }
           return acc;
         }, {});
-        return this.constructor.collection.findOneAndUpdate({ _id: _id }, updation);
+        return this.constructor.collection.findOneAndUpdate({ _id: _id }, updation, { new: true }).then(function (e) {
+          return e || Promise.reject({ status: 404 });
+        });
       }
     }
   }, {
@@ -254,6 +256,11 @@ var EntityController = function (_BaseController) {
           status: 400, details: 'Unsupported upload type.'
         });
       }
+    }
+  }, {
+    key: 'new',
+    value: function _new() {
+      this.renderer.render(null, {});
     }
   }, {
     key: 'createFromMultipart',
@@ -883,8 +890,10 @@ var SurveyController = function (_EntityController) {
     value: function createFromMultipart() {
       var _this2 = this;
 
+      var entities = [];
       this.renderer.renderPromise(new _multipartHandler2.default(this.req, function (field, file, fname, encoding, mime, data) {
         if (mime == 'application/octet-stream' || mime == 'text/csv') {
+          entities.push(field);
           return _this2.parseCSV(file, {
             name: data[field + 'Name'] || field,
             description: data[field + 'Description'] || field
@@ -892,7 +901,11 @@ var SurveyController = function (_EntityController) {
         } else {
           return null;
         }
-      }).promise);
+      }).promise.then(function (body) {
+        return entities.map(function (key) {
+          return body[key];
+        });
+      }));
     }
 
     /**
@@ -908,7 +921,10 @@ var SurveyController = function (_EntityController) {
     value: function parseCSV(stream, surveyOpts) {
       var parser = new SurveyCSVParser({ survey: surveyOpts });
       stream.pipe(parser);
-      return parser.promise;
+      return parser.promise.catch(function (e) {
+        e.status = 400;
+        return Promise.reject(e);
+      });
     }
   }, {
     key: '_updateableAttributes',
@@ -987,14 +1003,13 @@ var MPHandler = function (_Busboy) {
 
       var filePromise = this.fileHandler(field, file, fname, encoding, mime, this.data);
       if (filePromise && filePromise.then) {
-        this.childPromises.push(filePromise);
-        filePromise.then(function (fileData) {
+        this.childPromises.push(filePromise.then(function (fileData) {
           _this2.data[field] = fileData;
         }).catch(function (err) {
           file.resume();
-          console.log(err);
           _this2.data[field] = { error: err };
-        });
+          return {};
+        }));
       } else {
         file.resume();
       }
@@ -1043,8 +1058,9 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var Survey = appRequire('data/models/Survey');
-var TreeParser = __webpack_require__(19);
 var tagsParser = appRequire('lib/tags');
+
+var TreeParser = __webpack_require__(19);
 /**
 * Tree based parser for questions provided in CSV for mapping/household survey.
 * 
@@ -1066,7 +1082,7 @@ var SurveyCSVParser = function (_TreeParser) {
 
     opts.survey = Object.assign({
       name: 'Unnamed',
-      description: 'Generic uploaded from CSV',
+      description: 'Created via CSV.',
       question: 'Q',
       opt: 'Opt',
       default: 'English'
@@ -1095,6 +1111,8 @@ var SurveyCSVParser = function (_TreeParser) {
     _this.promise = new Promise(function (res, rej) {
       _this.res = res;_this.rej = rej;
     });
+
+    _this.warnings = [];
     return _this;
   }
 
@@ -1113,6 +1131,7 @@ var SurveyCSVParser = function (_TreeParser) {
       var qParsedTag = '_parsedTag';
       var qTags = this.surveyOpts.question + '.Tags';
       var qType = this.surveyOpts.question + '.Type';
+      var qNo = this.surveyOpts.question + '.No';
       var node = stack[stack.length - 1];
       var parent = null;
       if (stack.length > 1) {
@@ -1129,7 +1148,7 @@ var SurveyCSVParser = function (_TreeParser) {
           var k = _step.value;
 
           if (!_tags[k]) {
-            console.log('Unknown tag: ' + k);
+            this.warnings.push({ message: 'Unknown tag ' + k + ' in ' + qNo + ' ' + node[qNo] });
           }
         }
       } catch (err) {
@@ -1244,6 +1263,10 @@ var SurveyCSVParser = function (_TreeParser) {
       var qPreOpt = qPre + this.surveyOpts.opt;
       var qParsedTag = '_parsedTag';
 
+      if (!node[qType]) {
+        this.warnings.push({ message: 'Missing ' + qType + ' in ' + qNo + ' ' + node[qNo] });
+      }
+
       this._createPromises(node);
       return Promise.all(node.childrenPromises).then(function (ch) {
         return Promise.all(node.optionPromises).then(function (opts) {
@@ -1326,9 +1349,9 @@ var SurveyCSVParser = function (_TreeParser) {
         _this3.survey.question = q;
         return Survey.create(_this3.survey);
       }).then(function (s) {
-        _this3.res({ survey: s._id });
+        _this3.res({ survey: s._id, warnings: _this3.warnings });
       }).catch(function (err) {
-        _this3.rej(err);
+        _this3.rej({ error: err });
       });
     }
 
@@ -1505,7 +1528,7 @@ var TreeParser = function (_CSVParser) {
         parent = this.parentStack[len - 1];
       }
 
-      this.emit('nodeCompleted', { node: record, parent: parent });
+      this.emit('nodeCompleted', { node: record, parent: parent, stack: this.parentStack });
     }
   }]);
 
@@ -1909,6 +1932,7 @@ var httpDigest = __webpack_require__(35);
 var jwtOpts = Object.assign({
   getToken: function getToken(req) {
     if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+      req.skipCSRF = true;
       return req.headers.authorization.split(' ')[1];
     } else if (req.cookies && req.cookies.ptracking_jwt) {
       return req.cookies.ptracking_jwt;
@@ -2007,7 +2031,7 @@ function registerCmsRoutes(app, Controller) {
 
   router.get('/', (0, _dispatcher2.default)(Controller, 'index'));
   router.post('/', (0, _dispatcher2.default)(Controller, 'create'));
-
+  router.get('/new', (0, _dispatcher2.default)(Controller, 'new'));
   router.get('/:id', (0, _dispatcher2.default)(Controller, 'get'));
   router.patch('/:id', (0, _dispatcher2.default)(Controller, 'update'));
   router.delete('/:id', (0, _dispatcher2.default)(Controller, 'delete'));

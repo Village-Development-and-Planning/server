@@ -134,7 +134,10 @@ class TreeParser extends CSVParser {
       parent = this.parentStack[len - 1];
     }
 
-    this.emit('nodeCompleted', {node: record, parent: parent});
+    this.emit(
+      'nodeCompleted',
+      {node: record, parent: parent, stack: this.parentStack},
+    );
   }
 }
 

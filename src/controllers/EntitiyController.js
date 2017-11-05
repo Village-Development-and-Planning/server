@@ -37,7 +37,8 @@ class EntityController extends BaseController {
         {},
       );
       return this.constructor.collection
-        .findOneAndUpdate({_id}, updation);
+        .findOneAndUpdate({_id}, updation, {new: true})
+        .then((e) => e || Promise.reject({status: 404}));
     }
   }
 
@@ -93,6 +94,10 @@ class EntityController extends BaseController {
         status: 400, details: 'Unsupported upload type.',
       });
     }
+  }
+
+  new() {
+    this.renderer.render(null, {});
   }
 
   createFromMultipart() {
