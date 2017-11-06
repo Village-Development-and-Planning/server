@@ -15,6 +15,7 @@ function registerCmsRoutes(app, Controller) {
   router.get('/:id', dispatcher(Controller, 'get'));
   router.patch('/:id', dispatcher(Controller, 'update'));
   router.delete('/:id', dispatcher(Controller, 'delete'));
+  router.get('/:id/edit', dispatcher(Controller, 'edit'));
   app.use(`/${Controller.routeName}`, router);
   console.log(
     `Registered @ /${Controller.routeName} for ${Controller.name}`

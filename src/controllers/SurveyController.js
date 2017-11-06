@@ -29,6 +29,7 @@ class SurveyController extends EntityController {
               description: data[`${field}Description`] || field,
             });
           } else {
+            (console.log(`File has unknown mime-type: ${mime}`));
             return null;
           }
         },

@@ -100,6 +100,10 @@ class EntityController extends BaseController {
     this.renderer.render(null, {});
   }
 
+  edit() {
+    this.renderer.render(null, {});
+  }
+
   createFromMultipart() {
     this.renderer.sendError({
       status: 400, details: 'Multipart is not implemented.',

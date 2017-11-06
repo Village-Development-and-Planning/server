@@ -263,6 +263,11 @@ var EntityController = function (_BaseController) {
       this.renderer.render(null, {});
     }
   }, {
+    key: 'edit',
+    value: function edit() {
+      this.renderer.render(null, {});
+    }
+  }, {
     key: 'createFromMultipart',
     value: function createFromMultipart() {
       this.renderer.sendError({
@@ -899,6 +904,7 @@ var SurveyController = function (_EntityController) {
             description: data[field + 'Description'] || field
           });
         } else {
+          console.log('File has unknown mime-type: ' + mime);
           return null;
         }
       }).promise.then(function (body) {
@@ -2035,6 +2041,7 @@ function registerCmsRoutes(app, Controller) {
   router.get('/:id', (0, _dispatcher2.default)(Controller, 'get'));
   router.patch('/:id', (0, _dispatcher2.default)(Controller, 'update'));
   router.delete('/:id', (0, _dispatcher2.default)(Controller, 'delete'));
+  router.get('/:id/edit', (0, _dispatcher2.default)(Controller, 'edit'));
   app.use('/' + Controller.routeName, router);
   console.log('Registered @ /' + Controller.routeName + ' for ' + Controller.name);
 }
