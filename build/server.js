@@ -897,7 +897,7 @@ var SurveyController = function (_EntityController) {
 
       var entities = [];
       this.renderer.renderPromise(new _multipartHandler2.default(this.req, function (field, file, fname, encoding, mime, data) {
-        if (mime == 'application/octet-stream' || mime == 'text/csv') {
+        if (mime == 'application/octet-stream' || mime == 'text/csv' || mime == 'application/vnd.ms-excel') {
           entities.push(field);
           return _this2.parseCSV(file, {
             name: data[field + 'Name'] || field,

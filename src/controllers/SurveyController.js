@@ -22,7 +22,10 @@ class SurveyController extends EntityController {
       new MPHandler(
         this.req,
         (field, file, fname, encoding, mime, data) => {
-          if (mime == 'application/octet-stream' || mime == 'text/csv') {
+          if (mime == 'application/octet-stream' ||
+            mime == 'text/csv' ||
+            mime == 'application/vnd.ms-excel'
+          ) {
             entities.push(field);
             return this.parseCSV(file, {
               name: data[`${field}Name`] || field,
