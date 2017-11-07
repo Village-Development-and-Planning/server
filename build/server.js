@@ -298,8 +298,8 @@ exports.default = EntityController;
 
 
 module.exports = function (app) {
-  app.use('/cms', __webpack_require__(37));
-  app.use('/app', __webpack_require__(39));
+  app.use('/cms', __webpack_require__(38));
+  app.use('/app', __webpack_require__(40));
 
   // redirect the home to /cms
   app.get('/', function (req, res) {
@@ -469,7 +469,7 @@ var tagsParser = function tagsParser(type, tags, parentContext) {
 };
 module.exports = tagsParser;
 
-var tagModules = [].concat([__webpack_require__(23), __webpack_require__(24), __webpack_require__(25), __webpack_require__(26), __webpack_require__(27), __webpack_require__(28), __webpack_require__(29)]);
+var tagModules = [].concat([__webpack_require__(23), __webpack_require__(24), __webpack_require__(25), __webpack_require__(26), __webpack_require__(27), __webpack_require__(28), __webpack_require__(29), __webpack_require__(30)]);
 // .reduce(
 //   (acc, m) => {
 //     return acc[m.tagPrefix] = m;
@@ -483,29 +483,29 @@ var tagModules = [].concat([__webpack_require__(23), __webpack_require__(24), __
 "use strict";
 
 
-var express = __webpack_require__(31);
-var http = __webpack_require__(46);
+var express = __webpack_require__(32);
+var http = __webpack_require__(47);
 
 // Create the server and load the components.
 var app = express();
 
 // 1. Connect to DB (doesn't need the app object)
-__webpack_require__(32);
+__webpack_require__(33);
 
 // 2.1 Setup cookies
-__webpack_require__(33)(app);
-
-// 2.2. Add security to all end points.
 __webpack_require__(34)(app);
 
+// 2.2. Add security to all end points.
+__webpack_require__(35)(app);
+
 // 2.3. Setup body-parser.
-__webpack_require__(36)(app);
+__webpack_require__(37)(app);
 
 // 10. Setup the routes:
 __webpack_require__(3)(app);
 
 // 99. Setup error-handling
-__webpack_require__(40)(app);
+__webpack_require__(41)(app);
 
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
@@ -572,7 +572,7 @@ function onError(error) {
 
 
 global.appRequire = function (name) {
-  return __webpack_require__(43)("./" + name);
+  return __webpack_require__(44)("./" + name);
 };
 appRequire('server');
 
@@ -961,7 +961,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _busboy = __webpack_require__(44);
+var _busboy = __webpack_require__(45);
 
 var _busboy2 = _interopRequireDefault(_busboy);
 
@@ -1558,7 +1558,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var _require = __webpack_require__(45),
+var _require = __webpack_require__(46),
     Parser = _require.Parser;
 
 /**
@@ -1809,6 +1809,20 @@ module.exports = {
 "use strict";
 
 
+module.exports = {
+  tagPrefix: 'SHOWN_TOGETHER',
+  adorn: function adorn(tag, obj) {
+    obj.child.strategy = 'together';
+  }
+};
+
+/***/ }),
+/* 31 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -1887,13 +1901,13 @@ exports.default = Renderer;
 ;
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports) {
 
 module.exports = require("express");
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1912,28 +1926,28 @@ mongoose.connect(options.connectionString, options.connectionOptions, function (
 });
 
 /***/ }),
-/* 33 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var cookieParser = __webpack_require__(47);
-module.exports = function (app) {
-  return app.use(cookieParser());
-};
-
-/***/ }),
 /* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var jwt = __webpack_require__(48);
+var cookieParser = __webpack_require__(48);
+module.exports = function (app) {
+  return app.use(cookieParser());
+};
+
+/***/ }),
+/* 35 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var jwt = __webpack_require__(49);
 var constants = __webpack_require__(4);
 
-var httpDigest = __webpack_require__(35);
+var httpDigest = __webpack_require__(36);
 
 var jwtOpts = Object.assign({
   getToken: function getToken(req) {
@@ -1964,15 +1978,15 @@ module.exports = function (app) {
 };
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var passport = __webpack_require__(49);
-var Digest = __webpack_require__(50).DigestStrategy;
-var jwt = __webpack_require__(51);
+var passport = __webpack_require__(50);
+var Digest = __webpack_require__(51).DigestStrategy;
+var jwt = __webpack_require__(52);
 var Constants = __webpack_require__(4);
 
 passport.use(new Digest({ qop: 'auth' }, function (username, cb) {
@@ -1995,13 +2009,13 @@ module.exports = function (app, path) {
 };
 
 /***/ }),
-/* 36 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var bodyParser = __webpack_require__(52);
+var bodyParser = __webpack_require__(53);
 
 module.exports = function (app) {
   // parse application/x-www-form-urlencoded 
@@ -2012,19 +2026,19 @@ module.exports = function (app) {
 };
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _dispatcher = __webpack_require__(38);
+var _dispatcher = __webpack_require__(39);
 
 var _dispatcher2 = _interopRequireDefault(_dispatcher);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var express = __webpack_require__(31);
+var express = __webpack_require__(32);
 
 
 /**
@@ -2048,12 +2062,12 @@ function registerCmsRoutes(app, Controller) {
 
 var cmsRouter = new express.Router();
 ['Survey', 'Surveyor', 'Answer'].forEach(function (ctrlName) {
-  registerCmsRoutes(cmsRouter, __webpack_require__(53)("./" + ctrlName + 'Controller'));
+  registerCmsRoutes(cmsRouter, __webpack_require__(54)("./" + ctrlName + 'Controller'));
 });
 module.exports = cmsRouter;
 
 /***/ }),
-/* 38 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2064,7 +2078,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = dispatcher;
 
-var _render = __webpack_require__(30);
+var _render = __webpack_require__(31);
 
 var _render2 = _interopRequireDefault(_render);
 
@@ -2084,19 +2098,19 @@ function dispatcher(Controller, method) {
 }
 
 /***/ }),
-/* 39 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var express = __webpack_require__(31);
+var express = __webpack_require__(32);
 var app = new express.Router();
 
 module.exports = app;
 
 /***/ }),
-/* 40 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2132,7 +2146,7 @@ module.exports = function (app) {
 };
 
 /***/ }),
-/* 41 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2158,7 +2172,7 @@ optionSchema.index({
 module.exports = mongoose.model('Option', optionSchema);
 
 /***/ }),
-/* 42 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2181,7 +2195,7 @@ var surveyorSchema = new _Schema2.default({
 module.exports = _mongoose2.default.model('Surveyee', surveyorSchema);
 
 /***/ }),
-/* 43 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var map = {
@@ -2203,16 +2217,16 @@ var map = {
 	"./controllers/SurveyorController.js": 21,
 	"./data/models/Answer": 12,
 	"./data/models/Answer.js": 12,
-	"./data/models/Option": 41,
-	"./data/models/Option.js": 41,
+	"./data/models/Option": 42,
+	"./data/models/Option.js": 42,
 	"./data/models/Question": 14,
 	"./data/models/Question.js": 14,
 	"./data/models/Schema": 0,
 	"./data/models/Schema.js": 0,
 	"./data/models/Survey": 17,
 	"./data/models/Survey.js": 17,
-	"./data/models/Surveyee": 42,
-	"./data/models/Surveyee.js": 42,
+	"./data/models/Surveyee": 43,
+	"./data/models/Surveyee.js": 43,
 	"./data/models/Surveyor": 22,
 	"./data/models/Surveyor.js": 22,
 	"./data/models/Text": 6,
@@ -2243,36 +2257,38 @@ var map = {
 	"./lib/tags/ui/images.js": 28,
 	"./lib/tags/ui/number": 29,
 	"./lib/tags/ui/number.js": 29,
+	"./lib/tags/ui/together": 30,
+	"./lib/tags/ui/together.js": 30,
 	"./lib/utils/multipart-handler": 16,
 	"./lib/utils/multipart-handler.js": 16,
-	"./lib/utils/render": 30,
-	"./lib/utils/render.js": 30,
+	"./lib/utils/render": 31,
+	"./lib/utils/render.js": 31,
 	"./server": 9,
 	"./server/": 9,
-	"./server/body-parser": 36,
-	"./server/body-parser.js": 36,
-	"./server/cookies": 33,
-	"./server/cookies.js": 33,
-	"./server/database": 32,
-	"./server/database.js": 32,
-	"./server/digest-auth": 35,
-	"./server/digest-auth.js": 35,
-	"./server/error-handler": 40,
-	"./server/error-handler.js": 40,
+	"./server/body-parser": 37,
+	"./server/body-parser.js": 37,
+	"./server/cookies": 34,
+	"./server/cookies.js": 34,
+	"./server/database": 33,
+	"./server/database.js": 33,
+	"./server/digest-auth": 36,
+	"./server/digest-auth.js": 36,
+	"./server/error-handler": 41,
+	"./server/error-handler.js": 41,
 	"./server/index": 9,
 	"./server/index.js": 9,
 	"./server/routes": 3,
 	"./server/routes/": 3,
-	"./server/routes/app": 39,
-	"./server/routes/app.js": 39,
-	"./server/routes/cms": 37,
-	"./server/routes/cms.js": 37,
-	"./server/routes/dispatcher": 38,
-	"./server/routes/dispatcher.js": 38,
+	"./server/routes/app": 40,
+	"./server/routes/app.js": 40,
+	"./server/routes/cms": 38,
+	"./server/routes/cms.js": 38,
+	"./server/routes/dispatcher": 39,
+	"./server/routes/dispatcher.js": 39,
 	"./server/routes/index": 3,
 	"./server/routes/index.js": 3,
-	"./server/security": 34,
-	"./server/security.js": 34
+	"./server/security": 35,
+	"./server/security.js": 35
 };
 function webpackContext(req) {
 	return __webpack_require__(webpackContextResolve(req));
@@ -2288,64 +2304,64 @@ webpackContext.keys = function webpackContextKeys() {
 };
 webpackContext.resolve = webpackContextResolve;
 module.exports = webpackContext;
-webpackContext.id = 43;
-
-/***/ }),
-/* 44 */
-/***/ (function(module, exports) {
-
-module.exports = require("busboy");
+webpackContext.id = 44;
 
 /***/ }),
 /* 45 */
 /***/ (function(module, exports) {
 
-module.exports = require("csv-parse");
+module.exports = require("busboy");
 
 /***/ }),
 /* 46 */
 /***/ (function(module, exports) {
 
-module.exports = require("http");
+module.exports = require("csv-parse");
 
 /***/ }),
 /* 47 */
 /***/ (function(module, exports) {
 
-module.exports = require("cookie-parser");
+module.exports = require("http");
 
 /***/ }),
 /* 48 */
 /***/ (function(module, exports) {
 
-module.exports = require("express-jwt");
+module.exports = require("cookie-parser");
 
 /***/ }),
 /* 49 */
 /***/ (function(module, exports) {
 
-module.exports = require("passport");
+module.exports = require("express-jwt");
 
 /***/ }),
 /* 50 */
 /***/ (function(module, exports) {
 
-module.exports = require("passport-http");
+module.exports = require("passport");
 
 /***/ }),
 /* 51 */
 /***/ (function(module, exports) {
 
-module.exports = require("jsonwebtoken");
+module.exports = require("passport-http");
 
 /***/ }),
 /* 52 */
 /***/ (function(module, exports) {
 
-module.exports = require("body-parser");
+module.exports = require("jsonwebtoken");
 
 /***/ }),
 /* 53 */
+/***/ (function(module, exports) {
+
+module.exports = require("body-parser");
+
+/***/ }),
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var map = {
@@ -2370,7 +2386,7 @@ webpackContext.keys = function webpackContextKeys() {
 };
 webpackContext.resolve = webpackContextResolve;
 module.exports = webpackContext;
-webpackContext.id = 53;
+webpackContext.id = 54;
 
 /***/ })
 /******/ ]);

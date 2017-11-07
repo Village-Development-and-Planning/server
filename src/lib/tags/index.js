@@ -46,6 +46,7 @@ const tagModules = [].concat([
   require('./ui/grid'),
   require('./ui/images'),
   require('./ui/number'),
+  require('./ui/together'),
 
 ]);
 // .reduce(
