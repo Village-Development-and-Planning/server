@@ -16,26 +16,30 @@ class SurveyController extends EntityController {
     .findAll(query)
     .select('name description enabled modifiedAt');
   }
+
+  _questionParser({mime, field}) {
+    if (mime == 'application/octet-stream' ||
+      mime == 'text/csv' ||
+      mime == 'application/vnd.ms-excel'
+    ) {
+      entities.push(field);
+      return this.parseCSV(file, {
+        name: data[`${field}Name`] || field,
+        description: data[`${field}Description`] || field,
+      });
+    } else {
+      (console.log(`File has unknown mime-type: ${mime}`));
+      return null;
+    }
+  }
+
   createFromMultipart() {
     const entities = [];
     this.renderer.renderPromise(
       new MPHandler(
         this.req,
-        (field, file, fname, encoding, mime, data) => {
-          if (mime == 'application/octet-stream' ||
-            mime == 'text/csv' ||
-            mime == 'application/vnd.ms-excel'
-          ) {
-            entities.push(field);
-            return this.parseCSV(file, {
-              name: data[`${field}Name`] || field,
-              description: data[`${field}Description`] || field,
-            });
-          } else {
-            (console.log(`File has unknown mime-type: ${mime}`));
-            return null;
-          }
-        },
+        (field, file, fname, encoding, mime, data) =>
+          this._questionParser({mime, field}),
       ).promise.then(
         (body) => entities.map(
           (key) => body[key]
@@ -54,10 +58,14 @@ class SurveyController extends EntityController {
   parseCSV(stream, surveyOpts) {
     let parser = new SurveyCSVParser({survey: surveyOpts});
     stream.pipe(parser);
-    return parser.promise.catch((e) => {
-      e.status = 400;
-      return Promise.reject(e);
-    });
+    return parser.promise
+      .then((s) => {
+        return Survey.create(this.survey);
+      })
+      .catch((e) => {
+        e.status = 400;
+        return Promise.reject(e);
+      });
   }
 
   _updateableAttributes() {

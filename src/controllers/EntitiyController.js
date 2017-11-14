@@ -1,13 +1,16 @@
 const mongoose = require('mongoose');
 
 import BaseController from './BaseController';
+import Mixin from '../lib/Mixin';
+
+import Create from './concerns/CreateConcerns';
 
 /**
 * Controller class for documents exposed via CMS APIs.
 * 
 * @class EntityController
 */
-class EntityController extends BaseController {
+class EntityController extends Mixin.mixin(BaseController, Create) {
   findFromId({_id}) {
     return this.constructor.collection
       .findOne({_id})
@@ -83,18 +86,6 @@ class EntityController extends BaseController {
     );
   }
 
-  create() {
-    const req = this.req;
-    if (req.is('multipart/form-data')) {
-      this.createFromMultipart();
-    } else if (req.is('application/json') && req.body) {
-      this.createFromJson();
-    } else {
-      this.renderer.sendError({
-        status: 400, details: 'Unsupported upload type.',
-      });
-    }
-  }
 
   new() {
     this.renderer.render(null, {});
@@ -102,18 +93,6 @@ class EntityController extends BaseController {
 
   edit() {
     this.renderer.render(null, {});
-  }
-
-  createFromMultipart() {
-    this.renderer.sendError({
-      status: 400, details: 'Multipart is not implemented.',
-    });
-  }
-
-  createFromJson() {
-    this.renderer.sendError({
-      status: 400, details: 'JSON is not supported.',
-    });
   }
 };
 

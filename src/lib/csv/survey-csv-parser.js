@@ -1,4 +1,3 @@
-const Survey = appRequire('data/models/Survey');
 const tagsParser = appRequire('lib/tags');
 
 const TreeParser = require('./tree-csv-parser');
@@ -248,9 +247,7 @@ class SurveyCSVParser extends TreeParser {
       };
     }).then((q) => {
       this.survey.question = q;
-      return Survey.create(this.survey);
-    }).then((s) => {
-      this.res({survey: s._id, warnings: this.warnings});
+      this.res(this.survey);
     }).catch((err) => {
       this.rej({error: err});
     });
