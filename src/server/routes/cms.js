@@ -23,7 +23,7 @@ function registerCmsRoutes(app, Controller) {
 }
 
 const cmsRouter = new express.Router();
-['Survey', 'Surveyor', 'Answer'].forEach((ctrlName) => {
+['Survey', 'Answer'].forEach((ctrlName) => {
   registerCmsRoutes(
     cmsRouter,
     require(`../../controllers/${ctrlName}Controller`),

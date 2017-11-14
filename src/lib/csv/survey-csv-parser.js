@@ -15,6 +15,7 @@ class SurveyCSVParser extends TreeParser {
   * @memberOf SurveyCSVParser
   */
   constructor(opts) {
+    opts = opts || {};
     opts.survey = Object.assign({
       name: 'Unnamed',
       description: 'Created via CSV.',
@@ -32,10 +33,6 @@ class SurveyCSVParser extends TreeParser {
     this.surveyOpts = opts.survey;
     let qNo = this.surveyOpts.question + '.No';
 
-    this.survey = {
-      name: this.surveyOpts.name,
-      description: this.surveyOpts.description,
-    };
     this.rootQuestion = {};
     this.rootQuestion[qNo] = '';
 
@@ -246,8 +243,7 @@ class SurveyCSVParser extends TreeParser {
         flow: require('../tags/question-default')('NONE', null),
       };
     }).then((q) => {
-      this.survey.question = q;
-      this.res(this.survey);
+      this.res({root: q, warnings: this.warnings});
     }).catch((err) => {
       this.rej({error: err});
     });

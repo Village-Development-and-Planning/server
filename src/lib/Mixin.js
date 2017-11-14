@@ -3,22 +3,22 @@
  */
 export default class Mixin {
   constructor(klass) {
-    return Mixin.mixin(klass, this.constructor);
+    const C = class extends klass {};
+    Mixin._copyMethods(C.prototype, this.constructor.prototype);
+    return C;
   }
 
-  static _copyMethods(target, ...srcs) {
-    srcs.forEach((src) => {
-      Object.keys(src).forEach((prop) => {
+  static _copyMethods(target, src) {
+    Object.getOwnPropertyNames(src).forEach((prop) => {
+      if (prop !== 'constructor') {
         target[prop] = src[prop];
-      });
+      }
     });
   }
 
   static mixin(klass, ...mixins) {
-    return mixins.reduce((klass, mixin) => {
-      const C = class extends klass {};
-      Mixin._copyMethods(C, mixin.prototype);
-      return C;
+    return mixins.reduce((klass, Mix) => {
+      return new Mix(klass);
     }, klass);
   }
 };

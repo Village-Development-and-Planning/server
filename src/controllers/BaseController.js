@@ -10,13 +10,18 @@ class BaseController {
   }
 
   dispatch(method) {
-    if (this[`_pre${method}`]) {
-      this[`_pre${method}`]();
-    }
-    this[method]();
-    if (this[`_post${method}`]) {
-      this[`_post${method}`]();
-    }
+    let promise = Promise.resolve(
+      (this[`_pre${method}`]) &&
+      (this[`_pre${method}`])()
+    );
+    promise = promise.then(() => this[method]());
+    promise = promise.then(
+      () => (
+        (this[`_post${method}`]) &&
+        (this[`_post${method}`])()
+      )
+    );
+    return promise;
   }
 }
 export default BaseController;

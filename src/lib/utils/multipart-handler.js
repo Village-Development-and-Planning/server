@@ -30,7 +30,7 @@ class MPHandler extends Busboy {
 
   _fileHandler(field, file, fname, encoding, mime) {
     const filePromise = this.fileHandler(
-      field, file, fname, encoding, mime, this.data
+      {field, file, fname, encoding, mime, fields: this.data}
     );
     if (filePromise && filePromise.then) {
       this.childPromises.push(
