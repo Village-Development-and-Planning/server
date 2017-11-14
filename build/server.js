@@ -1217,16 +1217,23 @@ var SurveyController = function (_EntityController) {
             csv = _ref.csv,
             enabled = _ref.enabled;
 
-        if (csv && csv.warnings) {
-          var _parseWarnings;
-
-          (_parseWarnings = _this2._parseWarnings).push.apply(_parseWarnings, _toConsumableArray(csv.warnings));
+        var entity = {};
+        if (name) {
+          entity.name = name;
         }
-        return {
-          name: name, description: description,
-          question: csv.root,
-          enabled: enabled || false
-        };
+        if (description) {
+          entity.description = description;
+        }
+        if (csv) {
+          if (csv.warnings) {
+            var _parseWarnings;
+
+            (_parseWarnings = _this2._parseWarnings).push.apply(_parseWarnings, _toConsumableArray(csv.warnings));
+          }
+          entity.question = csv.root;
+        }
+        entity.enabled = enabled;
+        return entity;
       });
     }
   }, {
