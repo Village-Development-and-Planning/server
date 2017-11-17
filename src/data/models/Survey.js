@@ -6,6 +6,7 @@ const surveySchema = new Schema({
   description: {type: String},
   enabled: {type: Boolean, default: true},
   question: {type: {}, required: true},
+  respondents: {type: []},
 });
 
 
