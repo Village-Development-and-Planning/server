@@ -29,7 +29,6 @@ export default class Renderer {
   }
 
   _renderCallback(err, data) {
-    console.log(data);
   }
 
   renderPromise(p) {

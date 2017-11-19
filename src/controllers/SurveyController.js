@@ -51,9 +51,8 @@ class SurveyController extends EntityController {
       mime == 'text/csv' ||
       mime == 'application/vnd.ms-excel'
     ) {
-      return this.parseCSV(file);
+      return this._parseCSV(file);
     } else {
-      (console.log(`File has unknown mime-type: ${mime}`));
       return null;
     }
   }
@@ -64,7 +63,7 @@ class SurveyController extends EntityController {
    * @param  {Stream} stream Readable stream of CSV file
    * @return {Promise.<Survey>} Promise resolving to Survey record
    */
-  parseCSV(stream) {
+  _parseCSV(stream) {
     const parser = new SurveyCSVParser();
     stream.pipe(parser);
     return parser.promise;

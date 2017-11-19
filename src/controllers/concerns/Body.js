@@ -16,7 +16,7 @@ export default class BodyConcerns extends Mixin {
     ).promise;
   }
 
-  _parseJSON() {
+  _parseJson() {
     return Promise.resolve(this.req.body);
   }
 
@@ -26,7 +26,7 @@ export default class BodyConcerns extends Mixin {
     if (req.is('multipart/form-data')) {
       return this._parseMultipart();
     } else if (req.is('application/json') && req.body) {
-      return this._createFromJson();
+      return this._parseJson();
     } else {
       return Promise.reject(new Error('Unsupported upload type.'));
     }
