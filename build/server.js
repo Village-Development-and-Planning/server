@@ -229,6 +229,10 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
 var _BaseController = __webpack_require__(13);
 
 var _BaseController2 = _interopRequireDefault(_BaseController);
@@ -284,6 +288,25 @@ var EntityController = function (_Mixin$mixin) {
 
     return _possibleConstructorReturn(this, (EntityController.__proto__ || Object.getPrototypeOf(EntityController)).apply(this, arguments));
   }
+
+  _createClass(EntityController, [{
+    key: '_parseBody',
+    value: function _parseBody() {
+      var _this2 = this;
+
+      return _get(EntityController.prototype.__proto__ || Object.getPrototypeOf(EntityController.prototype), '_parseBody', this).call(this).then(function (obj) {
+        if (Array.isArray(obj)) {
+          return obj.map(function (o) {
+            return _this2._parseEntity(o);
+          });
+        } else {
+          obj = _this2._parseEntity(obj);
+          console.log(obj);
+          return obj;
+        }
+      });
+    }
+  }]);
 
   return EntityController;
 }(_Mixin2.default.mixin(_BaseController2.default, _Listing2.default, _Get2.default, _Delete2.default, _Body2.default, _Create2.default, _Update2.default));
@@ -650,6 +673,8 @@ var AnsweredQuestion = function () {
 }();
 
 var answerSchema = new _Schema2.default({
+  name: { type: String },
+  description: { type: String },
   survey: { type: _Schema2.default.Types.ObjectId, ref: 'Survey', required: true },
   surveyor: { type: _Schema2.default.Types.ObjectId, ref: 'Surveyor' },
   rootQuestion: { type: {}, required: true, get: function get(a) {
@@ -825,7 +850,7 @@ var GetConcerns = function (_Mixin) {
       this.renderer.renderPromise(Promise.resolve(query && this._findOne(query)).then(function (e) {
         return e || Promise.reject(new Error('Entity not found.'));
       }).catch(function (e) {
-        return Object.assign(e, { status: 404 });
+        return Promise.reject(Object.assign(e, { status: 404 }));
       }));
     }
   }]);
@@ -945,6 +970,22 @@ var BodyConcerns = function (_Mixin) {
     key: '_parseMultipart',
     value: function _parseMultipart() {
       return new _multipartHandler2.default(this.req, this._parseFileField.bind(this)).promise;
+    }
+  }, {
+    key: '_filterObject',
+    value: function _filterObject(obj, keys) {
+      return keys.reduce(function (acc, key) {
+        if (obj[key] !== undefined) acc[key] = obj[key];
+        return acc;
+      }, {});
+    }
+  }, {
+    key: '_setIf',
+    value: function _setIf(dest, key, val) {
+      if (val) {
+        dest[key] = val;
+      }
+      return dest;
     }
   }, {
     key: '_parseJson',
@@ -2228,17 +2269,12 @@ var AnswerController = function (_EntityController) {
   _createClass(AnswerController, [{
     key: '_find',
     value: function _find(query) {
-      return _get(AnswerController.prototype.__proto__ || Object.getPrototypeOf(AnswerController.prototype), '_find', this).call(this, query).select('survey modifiedAt');
+      return _get(AnswerController.prototype.__proto__ || Object.getPrototypeOf(AnswerController.prototype), '_find', this).call(this, query).select('name description surveyor survey modifiedAt');
     }
   }, {
-    key: '_parseBody',
-    value: function _parseBody() {
-      return _get(AnswerController.prototype.__proto__ || Object.getPrototypeOf(AnswerController.prototype), '_parseBody', this).call(this).then(function (_ref) {
-        var survey = _ref.survey,
-            rootQuestion = _ref.rootQuestion,
-            surveyor = _ref.surveyor;
-        return { survey: survey, rootQuestion: rootQuestion, surveyor: surveyor };
-      });
+    key: '_parseEntity',
+    value: function _parseEntity(obj) {
+      return this._filterObject(obj, ['name', 'description', 'rootQuestion', 'surveyor', 'survey']);
     }
   }, {
     key: 'download',
@@ -2339,48 +2375,29 @@ var SurveyController = function (_EntityController) {
       return _get(SurveyController.prototype.__proto__ || Object.getPrototypeOf(SurveyController.prototype), '_find', this).call(this, query).select('name description enabled modifiedAt');
     }
   }, {
-    key: '_setIf',
-    value: function _setIf(dest, key, val) {
-      if (val) {
-        dest[key] = val;
-      }
-      return dest;
-    }
-  }, {
-    key: '_parseBody',
-    value: function _parseBody() {
-      var _this2 = this;
+    key: '_parseEntity',
+    value: function _parseEntity(obj) {
+      obj.enabled = !!obj.enabled;
+      obj.respondents = obj.respondents && obj.respondents.split(',');
 
-      return _get(SurveyController.prototype.__proto__ || Object.getPrototypeOf(SurveyController.prototype), '_parseBody', this).call(this).then(function (_ref) {
-        var name = _ref.name,
-            description = _ref.description,
-            csv = _ref.csv,
-            enabled = _ref.enabled,
-            respondents = _ref.respondents;
+      if (obj.csv) {
+        if (obj.csv.warnings) {
+          var _parseWarnings;
 
-        var entity = {};
-        _this2._setIf(entity, 'name', name);
-        _this2._setIf(entity, 'description', description);
-        _this2._setIf(entity, 'respondents', respondents && respondents.split(','));
-        if (csv) {
-          if (csv.warnings) {
-            var _parseWarnings;
-
-            (_parseWarnings = _this2._parseWarnings).push.apply(_parseWarnings, _toConsumableArray(csv.warnings));
-          }
-          entity.question = csv.root;
+          (_parseWarnings = this._parseWarnings).push.apply(_parseWarnings, _toConsumableArray(obj.csv.warnings));
         }
-        entity.enabled = !!enabled;
-        return entity;
-      });
+        obj.question = obj.csv.root;
+      }
+
+      return this._filterObject(obj, ['name', 'description', 'respondents', 'enabled', 'question']);
     }
   }, {
     key: '_parseFileField',
-    value: function _parseFileField(_ref2) {
-      var mime = _ref2.mime,
-          field = _ref2.field,
-          file = _ref2.file,
-          fields = _ref2.fields;
+    value: function _parseFileField(_ref) {
+      var mime = _ref.mime,
+          field = _ref.field,
+          file = _ref.file,
+          fields = _ref.fields;
 
       if (mime == 'application/octet-stream' || mime == 'text/csv' || mime == 'application/vnd.ms-excel') {
         return this._parseCSV(file);

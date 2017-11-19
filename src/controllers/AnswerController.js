@@ -11,12 +11,12 @@ import CSVWriter from 'csv-write-stream';
 class AnswerController extends EntityController {
   _find(query) {
     return super._find(query)
-      .select('survey modifiedAt');
+      .select('name description surveyor survey modifiedAt');
   }
 
-  _parseBody() {
-    return super._parseBody().then(
-      ({survey, rootQuestion, surveyor}) => ({survey, rootQuestion, surveyor})
+  _parseEntity(obj) {
+    return this._filterObject(obj,
+      ['name', 'description', 'rootQuestion', 'surveyor', 'survey']
     );
   }
 

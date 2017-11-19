@@ -21,6 +21,17 @@ class EntityController
     Listing, Get, Delete,
     Body, Create, Update,
   ) {
+    _parseBody() {
+      return super._parseBody().then((obj) => {
+        if (Array.isArray(obj)) {
+          return obj.map((o) => this._parseEntity(o));
+        } else {
+          obj = this._parseEntity(obj);
+          console.log(obj);
+          return obj;
+        }
+      });
+    }
 };
 
 export default EntityController;

@@ -51,6 +51,8 @@ class AnsweredQuestion {
 }
 
 const answerSchema = new Schema({
+  name: {type: String},
+  description: {type: String},
   survey: {type: Schema.Types.ObjectId, ref: 'Survey', required: true},
   surveyor: {type: Schema.Types.ObjectId, ref: 'Surveyor'},
   rootQuestion: {type: {}, required: true, get: (a) => new AnsweredQuestion(a)},

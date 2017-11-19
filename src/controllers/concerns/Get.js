@@ -26,7 +26,7 @@ export default class GetConcerns extends Mixin {
         query && this._findOne(query)
       )
       .then((e) => e || Promise.reject(new Error('Entity not found.')))
-      .catch((e) => Object.assign(e, {status: 404}))
+      .catch((e) => Promise.reject(Object.assign(e, {status: 404})))
     );
   }
 }

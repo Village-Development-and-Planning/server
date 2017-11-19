@@ -16,6 +16,20 @@ export default class BodyConcerns extends Mixin {
     ).promise;
   }
 
+  _filterObject(obj, keys) {
+    return keys.reduce((acc, key) => {
+      if (obj[key] !== undefined) acc[key] = obj[key];
+      return acc;
+    }, {});
+  }
+
+  _setIf(dest, key, val) {
+    if (val) {
+      dest[key] = val;
+    }
+    return dest;
+  }
+
   _parseJson() {
     return Promise.resolve(this.req.body);
   }

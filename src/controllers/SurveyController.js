@@ -16,33 +16,21 @@ class SurveyController extends EntityController {
       .select('name description enabled modifiedAt');
   }
 
-  _setIf(dest, key, val) {
-    if (val) {
-      dest[key] = val;
-    }
-    return dest;
-  }
 
-  _parseBody() {
-    return super._parseBody().then(
-      ({name, description, csv,
-        enabled, respondents}) => {
-        const entity = {};
-        this._setIf(entity, 'name', name);
-        this._setIf(entity, 'description', description);
-        this._setIf(
-          entity,
-          'respondents', respondents && respondents.split(',')
-        );
-        if (csv) {
-          if (csv.warnings) {
-            this._parseWarnings.push(...csv.warnings);
-          }
-          entity.question = csv.root;
-        }
-        entity.enabled = !!enabled;
-        return entity;
+  _parseEntity(obj) {
+    obj.enabled = !!obj.enabled;
+    obj.respondents = obj.respondents && obj.respondents.split(',');
+
+    if (obj.csv) {
+      if (obj.csv.warnings) {
+        this._parseWarnings.push(...obj.csv.warnings);
       }
+      obj.question = obj.csv.root;
+    }
+
+    return this._filterObject(
+      obj,
+      ['name', 'description', 'respondents', 'enabled', 'question'],
     );
   }
 
