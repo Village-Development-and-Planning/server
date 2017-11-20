@@ -14,6 +14,11 @@ class AnswerController extends EntityController {
       .select('name description surveyor survey modifiedAt');
   }
 
+  _create(...args) {
+    return super._create(...args)
+      .then(({_id, name, description, surveyor, survey, modifiedAt}) =>
+        ({_id, name, description, surveyor, survey, modifiedAt}));
+  }
   _parseDataFile(json, fields) {
     if (!json) return null;
     fields.version = fields.version || json.version || 0;

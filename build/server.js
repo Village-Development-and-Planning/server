@@ -2275,6 +2275,25 @@ var AnswerController = function (_EntityController) {
       return _get(AnswerController.prototype.__proto__ || Object.getPrototypeOf(AnswerController.prototype), '_find', this).call(this, query).select('name description surveyor survey modifiedAt');
     }
   }, {
+    key: '_create',
+    value: function _create() {
+      var _get2;
+
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      return (_get2 = _get(AnswerController.prototype.__proto__ || Object.getPrototypeOf(AnswerController.prototype), '_create', this)).call.apply(_get2, [this].concat(args)).then(function (_ref) {
+        var _id = _ref._id,
+            name = _ref.name,
+            description = _ref.description,
+            surveyor = _ref.surveyor,
+            survey = _ref.survey,
+            modifiedAt = _ref.modifiedAt;
+        return { _id: _id, name: name, description: description, surveyor: surveyor, survey: survey, modifiedAt: modifiedAt };
+      });
+    }
+  }, {
     key: '_parseDataFile',
     value: function _parseDataFile(json, fields) {
       if (!json) return null;
@@ -2289,13 +2308,13 @@ var AnswerController = function (_EntityController) {
     }
   }, {
     key: '_parseFileField',
-    value: function _parseFileField(_ref) {
+    value: function _parseFileField(_ref2) {
       var _this2 = this;
 
-      var mime = _ref.mime,
-          field = _ref.field,
-          file = _ref.file,
-          fields = _ref.fields;
+      var mime = _ref2.mime,
+          field = _ref2.field,
+          file = _ref2.file,
+          fields = _ref2.fields;
 
       if (field === 'dataFile') {
         return (0, _streamToString2.default)(file).then(function (jsonStr) {
