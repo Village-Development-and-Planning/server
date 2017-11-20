@@ -39,7 +39,7 @@ class MPHandler extends Busboy {
         }).catch((err) => {
           file.resume();
           this.data[field] = {error: err};
-          return {};
+          return Promise.reject(err);
         })
       );
     } else {

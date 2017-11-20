@@ -27,7 +27,6 @@ class EntityController
           return obj.map((o) => this._parseEntity(o));
         } else {
           obj = this._parseEntity(obj);
-          console.log(obj);
           return obj;
         }
       });

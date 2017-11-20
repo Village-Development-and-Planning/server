@@ -301,7 +301,6 @@ var EntityController = function (_Mixin$mixin) {
           });
         } else {
           obj = _this2._parseEntity(obj);
-          console.log(obj);
           return obj;
         }
       });
@@ -381,7 +380,7 @@ var MPHandler = function (_Busboy) {
         }).catch(function (err) {
           file.resume();
           _this2.data[field] = { error: err };
-          return {};
+          return Promise.reject(err);
         }));
       } else {
         file.resume();
@@ -507,7 +506,7 @@ var tagModules = [].concat([__webpack_require__(24), __webpack_require__(25), __
 
 
 var express = __webpack_require__(33);
-var http = __webpack_require__(54);
+var http = __webpack_require__(55);
 
 // Create the server and load the components.
 var app = express();
@@ -1698,7 +1697,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var _require = __webpack_require__(53),
+var _require = __webpack_require__(54),
     Parser = _require.Parser;
 
 /**
@@ -2002,7 +2001,7 @@ mongoose.connect(options.connectionString, options.connectionOptions, function (
 "use strict";
 
 
-var cookieParser = __webpack_require__(55);
+var cookieParser = __webpack_require__(56);
 module.exports = function (app) {
   return app.use(cookieParser());
 };
@@ -2014,7 +2013,7 @@ module.exports = function (app) {
 "use strict";
 
 
-var jwt = __webpack_require__(56);
+var jwt = __webpack_require__(57);
 var constants = __webpack_require__(4);
 
 var httpDigest = __webpack_require__(37);
@@ -2054,9 +2053,9 @@ module.exports = function (app) {
 "use strict";
 
 
-var passport = __webpack_require__(57);
-var Digest = __webpack_require__(58).DigestStrategy;
-var jwt = __webpack_require__(59);
+var passport = __webpack_require__(58);
+var Digest = __webpack_require__(59).DigestStrategy;
+var jwt = __webpack_require__(60);
 var Constants = __webpack_require__(4);
 
 passport.use(new Digest({ qop: 'auth' }, function (username, cb) {
@@ -2085,7 +2084,7 @@ module.exports = function (app, path) {
 "use strict";
 
 
-var bodyParser = __webpack_require__(60);
+var bodyParser = __webpack_require__(61);
 
 module.exports = function (app) {
   // parse application/x-www-form-urlencoded 
@@ -2243,6 +2242,10 @@ var _csvWriteStream = __webpack_require__(44);
 
 var _csvWriteStream2 = _interopRequireDefault(_csvWriteStream);
 
+var _streamToString = __webpack_require__(53);
+
+var _streamToString2 = _interopRequireDefault(_streamToString);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -2272,6 +2275,42 @@ var AnswerController = function (_EntityController) {
       return _get(AnswerController.prototype.__proto__ || Object.getPrototypeOf(AnswerController.prototype), '_find', this).call(this, query).select('name description surveyor survey modifiedAt');
     }
   }, {
+    key: '_parseDataFile',
+    value: function _parseDataFile(json, fields) {
+      if (!json) return null;
+      fields.version = fields.version || json.version || 0;
+      if (fields.version == 0) {
+        if (json.id) fields.survey = json.id;
+        if (json.questions && json.questions[0]) {
+          fields.rootQuestion = json.questions[0];
+        }
+      }
+      return null;
+    }
+  }, {
+    key: '_parseFileField',
+    value: function _parseFileField(_ref) {
+      var _this2 = this;
+
+      var mime = _ref.mime,
+          field = _ref.field,
+          file = _ref.file,
+          fields = _ref.fields;
+
+      if (field === 'dataFile') {
+        return (0, _streamToString2.default)(file).then(function (jsonStr) {
+          return JSON.parse(jsonStr);
+        }).then(function (json) {
+          return _this2._parseDataFile ? _this2._parseDataFile(json, fields) : Promise.reject({
+            message: 'Unknown data format: ' + field,
+            status: 400
+          });
+        });
+      } else {
+        return null;
+      }
+    }
+  }, {
     key: '_parseEntity',
     value: function _parseEntity(obj) {
       return this._filterObject(obj, ['name', 'description', 'rootQuestion', 'surveyor', 'survey']);
@@ -2279,15 +2318,15 @@ var AnswerController = function (_EntityController) {
   }, {
     key: 'download',
     value: function download() {
-      var _this2 = this;
+      var _this3 = this;
 
       var query = this._getQuery();
       Promise.resolve(query && this._findOne(query)).then(function (e) {
         return e || Promise.reject(new Error('Entity not found.'));
       }).catch(function (err) {
-        return _this2.renderer.renderPromise(Promise.reject(err));
+        return _this3.renderer.renderPromise(Promise.reject(err));
       }).then(function (answer) {
-        var res = _this2.renderer.res;
+        var res = _this3.renderer.res;
         res.attachment(answer._id + '.csv');
 
         var csvWriter = new _csvWriteStream2.default();
@@ -2734,46 +2773,52 @@ module.exports = require("busboy");
 /* 53 */
 /***/ (function(module, exports) {
 
-module.exports = require("csv-parse");
+module.exports = require("stream-to-string");
 
 /***/ }),
 /* 54 */
 /***/ (function(module, exports) {
 
-module.exports = require("http");
+module.exports = require("csv-parse");
 
 /***/ }),
 /* 55 */
 /***/ (function(module, exports) {
 
-module.exports = require("cookie-parser");
+module.exports = require("http");
 
 /***/ }),
 /* 56 */
 /***/ (function(module, exports) {
 
-module.exports = require("express-jwt");
+module.exports = require("cookie-parser");
 
 /***/ }),
 /* 57 */
 /***/ (function(module, exports) {
 
-module.exports = require("passport");
+module.exports = require("express-jwt");
 
 /***/ }),
 /* 58 */
 /***/ (function(module, exports) {
 
-module.exports = require("passport-http");
+module.exports = require("passport");
 
 /***/ }),
 /* 59 */
 /***/ (function(module, exports) {
 
-module.exports = require("jsonwebtoken");
+module.exports = require("passport-http");
 
 /***/ }),
 /* 60 */
+/***/ (function(module, exports) {
+
+module.exports = require("jsonwebtoken");
+
+/***/ }),
+/* 61 */
 /***/ (function(module, exports) {
 
 module.exports = require("body-parser");

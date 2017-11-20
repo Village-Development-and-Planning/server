@@ -1,7 +1,7 @@
 import Answer from '../data/models/Answer';
 import EntityController from './EntitiyController';
 import CSVWriter from 'csv-write-stream';
-
+import streamToString from 'stream-to-string';
 /**
  * Question document controller
  * 
@@ -12,6 +12,36 @@ class AnswerController extends EntityController {
   _find(query) {
     return super._find(query)
       .select('name description surveyor survey modifiedAt');
+  }
+
+  _parseDataFile(json, fields) {
+    if (!json) return null;
+    fields.version = fields.version || json.version || 0;
+    if (fields.version == 0) {
+      if (json.id) fields.survey = json.id;
+      if (json.questions && json.questions[0]) {
+        fields.rootQuestion = json.questions[0];
+      }
+    }
+    return null;
+  }
+
+  _parseFileField({mime, field, file, fields}) {
+    if (field === 'dataFile') {
+      return streamToString(file)
+        .then((jsonStr) => JSON.parse(jsonStr))
+        .then(
+          (json) =>
+            this._parseDataFile ?
+              this._parseDataFile(json, fields) :
+              Promise.reject({
+                message: `Unknown data format: ${field}`,
+                status: 400,
+              })
+        );
+    } else {
+      return null;
+    }
   }
 
   _parseEntity(obj) {
