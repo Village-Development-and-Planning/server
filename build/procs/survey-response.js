@@ -1263,7 +1263,8 @@ var SurveyResponseProcessor = function () {
       return new Promise(function (res, rej) {
         var count = 0;
         var cursor = _Answer2.default.find({
-          lastExport: null
+          lastExport: null,
+          survey: _this.surveyId
         }).cursor();
 
         var keys = _this._readCSVHeader() || [];
@@ -3184,7 +3185,8 @@ var SurveyResponseProcessor = function () {
       return new Promise(function (res, rej) {
         var count = 0;
         var cursor = _Answer2.default.find({
-          lastExport: null
+          lastExport: null,
+          survey: _this.surveyId
         }).cursor();
 
         var keys = _this._readCSVHeader() || [];
