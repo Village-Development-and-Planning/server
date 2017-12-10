@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 43);
+/******/ 	return __webpack_require__(__webpack_require__.s = 68);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -3117,6 +3117,158 @@ module.exports = require("jsonwebtoken");
 /***/ (function(module, exports) {
 
 module.exports = require("body-parser");
+
+/***/ }),
+/* 68 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(69);
+module.exports = __webpack_require__(45);
+
+
+/***/ }),
+/* 69 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = global["Proc"] = __webpack_require__(70);
+
+/***/ }),
+/* 70 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _fs = __webpack_require__(44);
+
+var _fs2 = _interopRequireDefault(_fs);
+
+var _csvStringify = __webpack_require__(56);
+
+var _csvStringify2 = _interopRequireDefault(_csvStringify);
+
+var _Survey = __webpack_require__(5);
+
+var _Survey2 = _interopRequireDefault(_Survey);
+
+var _Answer = __webpack_require__(4);
+
+var _Answer2 = _interopRequireDefault(_Answer);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * Batch post-processor for Survey responses
+ */
+var SurveyResponseProcessor = function () {
+  function SurveyResponseProcessor(surveyId) {
+    _classCallCheck(this, SurveyResponseProcessor);
+
+    this.surveyId = surveyId;
+    this.survey = _Survey2.default.findOne({ _id: surveyId });
+  }
+
+  _createClass(SurveyResponseProcessor, [{
+    key: 'processAnswers',
+    value: function processAnswers() {
+      var _this = this;
+
+      return new Promise(function (res, rej) {
+        var count = 0;
+        var cursor = _Answer2.default.find({
+          lastExport: null
+        }).cursor();
+
+        var keys = _this._readCSVHeader() || [];
+        var csvWriter = _this._csvWriter();
+
+        cursor.on('data', function (answer) {
+          if (answer && answer.rootQuestion) {
+            var obj = answer.rootQuestion.collect(undefined, keys);
+            csvWriter.write(keys.map(function (k) {
+              return obj[k];
+            }));
+            answer.lastExport = Date.now();
+            answer.save();
+            console.log('Processed ' + answer._id);
+            ++count;
+          }
+        });
+
+        cursor.on('error', function (err) {
+          return rej(err);
+        });
+
+        cursor.on('end', function () {
+          csvWriter.end();
+          _this._writeCSVHeader(keys);
+          console.log('Processed ' + count + ' responses');
+          res(count);
+        });
+      });
+    }
+  }, {
+    key: '_readCSVHeader',
+    value: function _readCSVHeader() {
+      var filePath = this.constructor.csvHeaderPath(this.surveyId);
+      try {
+        var keys = _fs2.default.readFileSync(filePath, 'utf8').trim().split(',');
+        keys.forEach(function (e) {
+          return keys['pos' + e] = true;
+        });
+        return keys;
+      } catch (e) {
+        return null;
+      }
+    }
+  }, {
+    key: '_writeCSVHeader',
+    value: function _writeCSVHeader(keys) {
+      var filePath = this.constructor.csvHeaderPath(this.surveyId);
+      var csvWriter = this._csvWriter(filePath);
+      csvWriter.write(keys);
+      csvWriter.end();
+    }
+  }, {
+    key: '_csvWriter',
+    value: function _csvWriter(path, mode) {
+      if (!path) {
+        path = this.constructor.csvPath(this.surveyId);
+        mode = 'a';
+      }
+      if (!mode) mode = 'w';
+      var fileStream = _fs2.default.createWriteStream(path, { encoding: 'utf8', flags: mode });
+      var csvWriter = new _csvStringify2.default();
+      csvWriter.pipe(fileStream);
+      csvWriter.on('end', function () {
+        return fileStream.end();
+      });
+      return csvWriter;
+    }
+  }], [{
+    key: 'csvPath',
+    value: function csvPath(surveyId) {
+      return 'data/survey-response/' + surveyId + '.csv';
+    }
+  }, {
+    key: 'csvHeaderPath',
+    value: function csvHeaderPath(surveyId) {
+      return 'data/survey-response/' + surveyId + '-header.csv';
+    }
+  }]);
+
+  return SurveyResponseProcessor;
+}();
+
+exports.default = SurveyResponseProcessor;
 
 /***/ })
 /******/ ]);

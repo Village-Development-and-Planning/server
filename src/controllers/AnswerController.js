@@ -16,19 +16,22 @@ class AnswerController extends EntityController {
 
   _create(...args) {
     return super._create(...args)
-      .then(({_id, name, description, surveyor, survey, modifiedAt}) =>
-        ({_id, name, description, surveyor, survey, modifiedAt}));
+      .then(({_id, name, description, version, surveyor, survey, modifiedAt}) =>
+        ({_id, name, description, version, surveyor, survey, modifiedAt}));
   }
   _parseDataFile(json, fields) {
-    if (!json) return null;
+    if (!json) return;
     fields.version = fields.version || json.version || 0;
     if (fields.version == 0) {
       if (json.id) fields.survey = json.id;
       if (json.questions && json.questions[0]) {
         fields.rootQuestion = json.questions[0];
       }
+    } else {
+      fields.rootQuestion = json.question;
+      fields.survey = json._id;
     }
-    return null;
+    return;
   }
 
   _parseFileField({mime, field, file, fields}) {
@@ -51,7 +54,7 @@ class AnswerController extends EntityController {
 
   _parseEntity(obj) {
     return this._filterObject(obj,
-      ['name', 'description', 'rootQuestion', 'surveyor', 'survey']
+      ['name', 'description', 'rootQuestion', 'surveyor', 'survey', 'version']
     );
   }
 

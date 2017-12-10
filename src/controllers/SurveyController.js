@@ -1,8 +1,9 @@
 const Survey = require('../data/models/Survey');
+import fs from 'fs';
+import StreamConcat from 'stream-concat';
 import EntityController from './EntitiyController';
-import MPHandler from '../lib/utils/multipart-handler';
 let SurveyCSVParser = require('../lib/csv/survey-csv-parser');
-
+import SurveyResponse from '../procs/survey-response.proc';
 
 /**
  * Survey document controller.
@@ -11,6 +12,33 @@ let SurveyCSVParser = require('../lib/csv/survey-csv-parser');
  * @extends {BaseController}
  */
 class SurveyController extends EntityController {
+  download() {
+    return Promise.resolve(this._getQuery())
+    .then((e) => e || Promise.reject(new Error('Entity not found.')))
+    .catch((err) => this.renderer.renderPromise(Promise.reject(err)))
+    .then(({_id}) => {
+      const path = SurveyResponse.csvPath(_id);
+      const headerPath = SurveyResponse.csvHeaderPath(_id);
+      if (fs.existsSync(path) && fs.existsSync(headerPath)) {
+        const csvOutput = new StreamConcat([
+          fs.createReadStream(headerPath),
+          fs.createReadStream(path),
+        ]);
+        const res = this.renderer.res;
+        res.attachment(`${_id}.csv`);
+        csvOutput.on('end', () => res.end());
+        csvOutput.pipe(res);
+      } else {
+        this.renderer.renderPromise(
+          Promise.reject(
+            new Error('Export file not found.')
+          )
+        );
+      }
+    });
+  }
+
+
   _find(query) {
     return super._find(query)
       .select('name description enabled modifiedAt');

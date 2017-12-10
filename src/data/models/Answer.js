@@ -5,8 +5,9 @@ import mongoose from 'mongoose';
  * Provides export functionalities
  */
 class AnsweredQuestion {
-  constructor(obj) {
+  constructor(obj, position) {
     Object.assign(this, obj);
+    if (position) this.position = position;
   }
 
   getValue(idx) {
@@ -26,7 +27,7 @@ class AnsweredQuestion {
     return (this.answers ? (this.answers.reduce(
       (acc, ans, idx) => {
         let ansKey = `${prefix}${this.position || ''}`;
-        if (idx) ansKey += `/${idx}`;
+        if (idx) ansKey += `_${idx}`;
 
         acc[ansKey] = this.getValue(idx);
         if (keys && !keys[`pos${ansKey}`]) {
@@ -37,8 +38,18 @@ class AnsweredQuestion {
         if (ans.children) {
           ans.children.reduce(
             (acc, child, childIdx) => {
-              return (new AnsweredQuestion(child))
-                .collect(`${ansKey}.`, keys, acc);
+              let childAnswer;
+              if (child.question) {
+                // Version 1
+                childAnswer = new AnsweredQuestion(
+                  child.question, child.position
+                );
+              } else {
+                childAnswer = new AnsweredQuestion(child);
+              }
+              return childAnswer.collect(
+                `${ansKey}_`, keys, acc
+              );
             },
             acc,
           );
@@ -55,8 +66,15 @@ const answerSchema = new Schema({
   description: {type: String},
   survey: {type: Schema.Types.ObjectId, ref: 'Survey', required: true},
   surveyor: {type: Schema.Types.ObjectId, ref: 'Surveyor'},
-  rootQuestion: {type: {}, required: true, get: (a) => new AnsweredQuestion(a)},
-});
+  version: {type: Number, default: 0},
+  rootQuestion: {
+    type: {}, required: true,
+    get: (a) => new AnsweredQuestion(a),
+  },
 
+  // Post-processing concerns
+  lastExport: {type: Date},
+});
+answerSchema.index({survey: 1, lastExport: 1});
 
 module.exports = mongoose.model('Answer', answerSchema);

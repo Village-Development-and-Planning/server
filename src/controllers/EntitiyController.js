@@ -1,5 +1,3 @@
-const mongoose = require('mongoose');
-
 import BaseController from './BaseController';
 import Mixin from '../lib/Mixin';
 
