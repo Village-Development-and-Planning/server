@@ -18,6 +18,7 @@ export default class SurveyResponseProcessor {
       let count = 0;
       const cursor = Answer.find({
         lastExport: null,
+        survey: this.surveyId,
       }).cursor();
 
       const keys = this._readCSVHeader() || [];
