@@ -1,11 +1,13 @@
 import Schema from './Schema';
 import mongoose from 'mongoose';
+import Question from './Question';
 
 /**
  * Provides export functionalities
  */
-class AnsweredQuestion {
+class AnsweredQuestion extends Question {
   constructor(obj, position) {
+    super(obj);
     Object.assign(this, obj);
     if (position) this.position = position;
   }
@@ -22,42 +24,113 @@ class AnsweredQuestion {
         .join(',');
   }
 
-  collect(prefix='Q', keys, acc) {
+
+  findRespondents({acc, prefix, keys, respondents, idx, cb}) {
+    const number = respondents[idx];
+    if (!this.isParent(number)) return;
+    if (!this.answers) return;
+
     acc = acc || {};
+    prefix = prefix || 'Q';
+    keys = keys || [];
+    prefix = `${prefix}${this.position || ''}`;
+
+    if (this.number === number) {
+      cb(this, {acc, keys, prefix});
+      return;
+    }
+
+    this.answers.forEach((ans, ansIdx) => {
+      if (ans.children) {
+        let respChild = null;
+        ans.children.find(
+          (child, idx) => {
+            child = AnsweredQuestion.fromChild(child);
+            if (child.isParent(number)) {
+              return respChild = child;
+            } else {
+              return false;
+            }
+          }
+        );
+        if (respChild) {
+          const newAcc = this.collectAnswer({
+            ans, keys,
+            idx: ansIdx,
+            ansKey: prefix,
+
+            ignore: respondents,
+            acc: Object.assign({}, acc),
+          });
+          respChild.findRespondents({
+            acc: newAcc,
+            prefix, keys, respondents, idx, cb,
+          });
+        }
+      }
+    });
+  }
+
+
+  collectAnswer({ans, idx, acc, ansKey, keys, ignore}) {
+    acc = acc || {};
+    ansKey = ansKey || 'Q';
+    keys = keys || [];
+
+    acc[ansKey] = this.getValue(idx);
+    if (!keys[`pos${ansKey}`]) {
+      console.log(`Pushing: ${ansKey} (from ${this.number})`);
+      keys.push(ansKey);
+      keys[`pos${ansKey}`] = true;
+    }
+
+    if (ans.children) {
+      ans.children.reduce(
+        (acc, child) => {
+          const childAnswer = AnsweredQuestion.fromChild(child);
+          if (ignore && ignore.reduce(
+            (acc, ign) => (acc || childAnswer.isParent(ign)),
+            false,
+          )) return acc;
+
+          return childAnswer.collect({
+            prefix: `${ansKey}_`,
+            keys, acc, ignore,
+          });
+        },
+        acc,
+      );
+    }
+    return acc;
+  }
+
+  collect({acc, prefix, keys, ignore}) {
+    acc = acc || {};
+    prefix = prefix || 'Q';
+    keys = keys || [];
+
+    prefix = `${prefix}${this.position || ''}`;
     return (this.answers ? (this.answers.reduce(
       (acc, ans, idx) => {
-        let ansKey = `${prefix}${this.position || ''}`;
-        if (idx) ansKey += `_${idx}`;
-
-        acc[ansKey] = this.getValue(idx);
-        if (keys && !keys[`pos${ansKey}`]) {
-          keys.push(ansKey);
-          keys[`pos${ansKey}`] = true;
-        }
-
-        if (ans.children) {
-          ans.children.reduce(
-            (acc, child, childIdx) => {
-              let childAnswer;
-              if (child.question) {
-                // Version 1
-                childAnswer = new AnsweredQuestion(
-                  child.question, child.position
-                );
-              } else {
-                childAnswer = new AnsweredQuestion(child);
-              }
-              return childAnswer.collect(
-                `${ansKey}_`, keys, acc
-              );
-            },
-            acc,
-          );
-        }
-        return acc;
+        let ansKey = prefix;
+        if (idx) ansKey = `${ansKey}_a${idx}`;
+        return this.collectAnswer({ans, idx, acc, ansKey, keys, ignore});
       },
       acc,
     )) : acc);
+  }
+
+  static fromChild(child) {
+    let childAnswer;
+    if (child.question) {
+      // Version 1
+      childAnswer = new AnsweredQuestion(
+        child.question, child.position
+      );
+    } else {
+      childAnswer = new AnsweredQuestion(child);
+    }
+    return childAnswer;
   }
 }
 

@@ -188,8 +188,8 @@ exports.default = Mixin;
 
 
 module.exports = function (app) {
-  app.use('/cms', __webpack_require__(39));
-  app.use('/app', __webpack_require__(41));
+  app.use('/cms', __webpack_require__(40));
+  app.use('/app', __webpack_require__(42));
 
   // redirect the home to /cms
   app.get('/', function (req, res) {
@@ -214,19 +214,32 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
+var _Question2 = __webpack_require__(13);
+
+var _Question3 = _interopRequireDefault(_Question2);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
 /**
  * Provides export functionalities
  */
-var AnsweredQuestion = function () {
+var AnsweredQuestion = function (_Question) {
+  _inherits(AnsweredQuestion, _Question);
+
   function AnsweredQuestion(obj, position) {
     _classCallCheck(this, AnsweredQuestion);
 
-    Object.assign(this, obj);
-    if (position) this.position = position;
+    var _this = _possibleConstructorReturn(this, (AnsweredQuestion.__proto__ || Object.getPrototypeOf(AnsweredQuestion)).call(this, obj));
+
+    Object.assign(_this, obj);
+    if (position) _this.position = position;
+    return _this;
   }
 
   _createClass(AnsweredQuestion, [{
@@ -238,45 +251,132 @@ var AnsweredQuestion = function () {
       }).join(',');
     }
   }, {
-    key: 'collect',
-    value: function collect() {
-      var prefix = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'Q';
+    key: 'findRespondents',
+    value: function findRespondents(_ref) {
+      var _this2 = this;
 
-      var _this = this;
+      var acc = _ref.acc,
+          prefix = _ref.prefix,
+          keys = _ref.keys,
+          respondents = _ref.respondents,
+          idx = _ref.idx,
+          cb = _ref.cb;
 
-      var keys = arguments[1];
-      var acc = arguments[2];
+      var number = respondents[idx];
+      if (!this.isParent(number)) return;
+      if (!this.answers) return;
 
       acc = acc || {};
-      return this.answers ? this.answers.reduce(function (acc, ans, idx) {
-        var ansKey = '' + prefix + (_this.position || '');
-        if (idx) ansKey += '_' + idx;
+      prefix = prefix || 'Q';
+      keys = keys || [];
+      prefix = '' + prefix + (this.position || '');
 
-        acc[ansKey] = _this.getValue(idx);
-        if (keys && !keys['pos' + ansKey]) {
-          keys.push(ansKey);
-          keys['pos' + ansKey] = true;
-        }
+      if (this.number === number) {
+        cb(this, { acc: acc, keys: keys, prefix: prefix });
+        return;
+      }
 
+      this.answers.forEach(function (ans, ansIdx) {
         if (ans.children) {
-          ans.children.reduce(function (acc, child, childIdx) {
-            var childAnswer = void 0;
-            if (child.question) {
-              // Version 1
-              childAnswer = new AnsweredQuestion(child.question, child.position);
+          var respChild = null;
+          ans.children.find(function (child, idx) {
+            child = AnsweredQuestion.fromChild(child);
+            if (child.isParent(number)) {
+              return respChild = child;
             } else {
-              childAnswer = new AnsweredQuestion(child);
+              return false;
             }
-            return childAnswer.collect(ansKey + '_', keys, acc);
-          }, acc);
+          });
+          if (respChild) {
+            var newAcc = _this2.collectAnswer({
+              ans: ans, keys: keys,
+              idx: ansIdx,
+              ansKey: prefix,
+
+              ignore: respondents,
+              acc: Object.assign({}, acc)
+            });
+            respChild.findRespondents({
+              acc: newAcc,
+              prefix: prefix, keys: keys, respondents: respondents, idx: idx, cb: cb
+            });
+          }
         }
-        return acc;
+      });
+    }
+  }, {
+    key: 'collectAnswer',
+    value: function collectAnswer(_ref2) {
+      var ans = _ref2.ans,
+          idx = _ref2.idx,
+          acc = _ref2.acc,
+          ansKey = _ref2.ansKey,
+          keys = _ref2.keys,
+          ignore = _ref2.ignore;
+
+      acc = acc || {};
+      ansKey = ansKey || 'Q';
+      keys = keys || [];
+
+      acc[ansKey] = this.getValue(idx);
+      if (!keys['pos' + ansKey]) {
+        console.log('Pushing: ' + ansKey + ' (from ' + this.number + ')');
+        keys.push(ansKey);
+        keys['pos' + ansKey] = true;
+      }
+
+      if (ans.children) {
+        ans.children.reduce(function (acc, child) {
+          var childAnswer = AnsweredQuestion.fromChild(child);
+          if (ignore && ignore.reduce(function (acc, ign) {
+            return acc || childAnswer.isParent(ign);
+          }, false)) return acc;
+
+          return childAnswer.collect({
+            prefix: ansKey + '_',
+            keys: keys, acc: acc, ignore: ignore
+          });
+        }, acc);
+      }
+      return acc;
+    }
+  }, {
+    key: 'collect',
+    value: function collect(_ref3) {
+      var _this3 = this;
+
+      var acc = _ref3.acc,
+          prefix = _ref3.prefix,
+          keys = _ref3.keys,
+          ignore = _ref3.ignore;
+
+      acc = acc || {};
+      prefix = prefix || 'Q';
+      keys = keys || [];
+
+      prefix = '' + prefix + (this.position || '');
+      return this.answers ? this.answers.reduce(function (acc, ans, idx) {
+        var ansKey = prefix;
+        if (idx) ansKey = ansKey + '_a' + idx;
+        return _this3.collectAnswer({ ans: ans, idx: idx, acc: acc, ansKey: ansKey, keys: keys, ignore: ignore });
       }, acc) : acc;
+    }
+  }], [{
+    key: 'fromChild',
+    value: function fromChild(child) {
+      var childAnswer = void 0;
+      if (child.question) {
+        // Version 1
+        childAnswer = new AnsweredQuestion(child.question, child.position);
+      } else {
+        childAnswer = new AnsweredQuestion(child);
+      }
+      return childAnswer;
     }
   }]);
 
   return AnsweredQuestion;
-}();
+}(_Question3.default);
 
 var answerSchema = new _Schema2.default({
   name: { type: String },
@@ -346,6 +446,22 @@ module.exports = {
 "use strict";
 
 
+var Schema = __webpack_require__(1);
+
+module.exports = new Schema({
+  default: { type: String },
+  english: { type: String },
+  tamil: { type: String },
+  hindi: { type: String }
+});
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -354,7 +470,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _BaseController = __webpack_require__(13);
+var _BaseController = __webpack_require__(14);
 
 var _BaseController2 = _interopRequireDefault(_BaseController);
 
@@ -362,27 +478,27 @@ var _Mixin = __webpack_require__(2);
 
 var _Mixin2 = _interopRequireDefault(_Mixin);
 
-var _Listing = __webpack_require__(14);
+var _Listing = __webpack_require__(15);
 
 var _Listing2 = _interopRequireDefault(_Listing);
 
-var _Get = __webpack_require__(15);
+var _Get = __webpack_require__(16);
 
 var _Get2 = _interopRequireDefault(_Get);
 
-var _Delete = __webpack_require__(16);
+var _Delete = __webpack_require__(17);
 
 var _Delete2 = _interopRequireDefault(_Delete);
 
-var _Body = __webpack_require__(17);
+var _Body = __webpack_require__(18);
 
 var _Body2 = _interopRequireDefault(_Body);
 
-var _Create = __webpack_require__(19);
+var _Create = __webpack_require__(20);
 
 var _Create2 = _interopRequireDefault(_Create);
 
-var _Update = __webpack_require__(20);
+var _Update = __webpack_require__(21);
 
 var _Update2 = _interopRequireDefault(_Update);
 
@@ -434,7 +550,7 @@ var EntityController = function (_Mixin$mixin) {
 exports.default = EntityController;
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -478,29 +594,13 @@ module.exports = function (type, parent) {
 };
 
 /***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var Schema = __webpack_require__(1);
-
-module.exports = new Schema({
-  default: { type: String },
-  english: { type: String },
-  tamil: { type: String },
-  hindi: { type: String }
-});
-
-/***/ }),
 /* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var questionDefault = __webpack_require__(8);
+var questionDefault = __webpack_require__(9);
 
 /**
  * Helper to split string into tags
@@ -531,7 +631,7 @@ var tagsParser = function tagsParser(type, tags, parentContext) {
 };
 module.exports = tagsParser;
 
-var tagModules = [].concat([__webpack_require__(25), __webpack_require__(26), __webpack_require__(27), __webpack_require__(28), __webpack_require__(29), __webpack_require__(30), __webpack_require__(31), __webpack_require__(32)]);
+var tagModules = [].concat([__webpack_require__(26), __webpack_require__(27), __webpack_require__(28), __webpack_require__(29), __webpack_require__(30), __webpack_require__(31), __webpack_require__(32), __webpack_require__(33)]);
 // .reduce(
 //   (acc, m) => {
 //     return acc[m.tagPrefix] = m;
@@ -562,7 +662,7 @@ mongoose.connect(options.connectionString, options.connectionOptions, function (
 "use strict";
 
 
-var express = __webpack_require__(34);
+var express = __webpack_require__(35);
 var http = __webpack_require__(61);
 
 // Create the server and load the components.
@@ -572,19 +672,19 @@ var app = express();
 __webpack_require__(11);
 
 // 2.1 Setup cookies
-__webpack_require__(35)(app);
-
-// 2.2. Add security to all end points.
 __webpack_require__(36)(app);
 
+// 2.2. Add security to all end points.
+__webpack_require__(37)(app);
+
 // 2.3. Setup body-parser.
-__webpack_require__(38)(app);
+__webpack_require__(39)(app);
 
 // 10. Setup the routes:
 __webpack_require__(3)(app);
 
 // 99. Setup error-handling
-__webpack_require__(42)(app);
+__webpack_require__(43)(app);
 
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
@@ -650,6 +750,69 @@ function onError(error) {
 "use strict";
 
 
+var Schema = __webpack_require__(1);
+var Text = __webpack_require__(7);
+var mongoose = __webpack_require__(0);
+
+var questionSchema = new Schema({
+  type: { type: String },
+  tags: [{ type: String }],
+  text: { type: Text },
+  number: { type: String },
+  options: [{
+    position: { type: String, required: true },
+    option: { type: {}, required: true }
+  }],
+  children: [{
+    position: { type: String, required: true },
+    question: {
+      type: {},
+      get: function get(q) {
+        return new Question(q);
+      },
+      required: true
+    }
+  }],
+  flow: {
+    pre: { type: Object },
+    question: { type: Object },
+    answer: { type: Object },
+    child: { type: Object },
+    post: { type: Object },
+    exit: { type: Object }
+  }
+});
+
+Object.assign(questionSchema.methods, {
+  isParent: function isParent(number) {
+    if (!this.number) return true;
+    return number === this.number || number.startsWith(this.number + '.');
+  },
+  find: function find(number) {
+    if (!this.isParent(number)) return null;
+
+    if (this.number === number) return this;
+    var child = this.children.find(function (el) {
+      return el.question && el.question.isParent(number);
+    });
+    if (child) {
+      return child.question.find(number);
+    } else {
+      return null;
+    }
+  }
+});
+
+var Question = mongoose.model('Question', questionSchema);
+module.exports = Question;
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -687,7 +850,7 @@ var BaseController = function () {
 exports.default = BaseController;
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -748,7 +911,7 @@ var ListingConcerns = function (_Mixin) {
 exports.default = ListingConcerns;
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -820,7 +983,7 @@ var GetConcerns = function (_Mixin) {
 exports.default = GetConcerns;
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -880,7 +1043,7 @@ var DeleteConcerns = function (_Mixin) {
 exports.default = DeleteConcerns;
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -896,7 +1059,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _multipartHandler = __webpack_require__(18);
+var _multipartHandler = __webpack_require__(19);
 
 var _multipartHandler2 = _interopRequireDefault(_multipartHandler);
 
@@ -972,7 +1135,7 @@ var BodyConcerns = function (_Mixin) {
 exports.default = BodyConcerns;
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -984,7 +1147,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _busboy = __webpack_require__(57);
+var _busboy = __webpack_require__(58);
 
 var _busboy2 = _interopRequireDefault(_busboy);
 
@@ -1051,7 +1214,7 @@ var MPHandler = function (_Busboy) {
 exports.default = MPHandler;
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1131,7 +1294,7 @@ var CreateConcerns = function (_Mixin) {
 exports.default = CreateConcerns;
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1212,7 +1375,7 @@ var UpdateConcerns = function (_Mixin) {
 exports.default = UpdateConcerns;
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1224,13 +1387,17 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _fs = __webpack_require__(44);
+var _fs = __webpack_require__(45);
 
 var _fs2 = _interopRequireDefault(_fs);
 
-var _csvStringify = __webpack_require__(56);
+var _csvStringify = __webpack_require__(57);
 
 var _csvStringify2 = _interopRequireDefault(_csvStringify);
+
+var _csvParse = __webpack_require__(46);
+
+var _csvParse2 = _interopRequireDefault(_csvParse);
 
 var _Survey = __webpack_require__(5);
 
@@ -1252,7 +1419,7 @@ var SurveyResponseProcessor = function () {
     _classCallCheck(this, SurveyResponseProcessor);
 
     this.surveyId = surveyId;
-    this.survey = _Survey2.default.findOne({ _id: surveyId });
+    this.surveyPromise = _Survey2.default.findOne({ _id: surveyId });
   }
 
   _createClass(SurveyResponseProcessor, [{
@@ -1260,72 +1427,156 @@ var SurveyResponseProcessor = function () {
     value: function processAnswers() {
       var _this = this;
 
-      return new Promise(function (res, rej) {
-        var count = 0;
-        var cursor = _Answer2.default.find({
-          lastExport: null,
-          survey: _this.surveyId
-        }).cursor();
+      return this.surveyPromise.then(function (s) {
+        return s && s.respondents;
+      }).then(function (respondents) {
+        return _this.surveyRespondents = respondents;
+      }).then(function () {
+        return _this._readCSVHeader().then(function (keys) {
+          return _this.csvKeys = keys;
+        }, function () {
+          return _this.csvKeys = [];
+        });
+      }).then(function () {
+        return console.log('Got ' + _this.csvKeys.length + ' keys');
+      }).then(function () {
+        return new Promise(function (res, rej) {
+          var cursor = _Answer2.default.find({
+            survey: _this.surveyId
+          }).cursor();
 
-        var keys = _this._readCSVHeader() || [];
-        var csvWriter = _this._csvWriter();
+          _this.csvWriter = _this._createCsvWriter();
 
-        cursor.on('data', function (answer) {
-          if (answer && answer.rootQuestion) {
-            var obj = answer.rootQuestion.collect(undefined, keys);
-            csvWriter.write(keys.map(function (k) {
-              return obj[k];
-            }));
+          var result = [];
+          cursor.on('data', function (answer) {
+            if (!answer) return;
+            _this._collectAnswer(answer);
             answer.lastExport = Date.now();
-            answer.save();
-            console.log('Processed ' + answer._id);
-            ++count;
-          }
+            result.push(answer.save().then(function () {
+              return answer._id;
+            }));
+          });
+          cursor.on('error', function (err) {
+            return rej(err);
+          });
+          cursor.on('end', function () {
+            _this.csvWriter.end();
+            _this._writeCSVHeader();
+            res(Promise.all(result));
+          });
         });
+      });
+    }
+  }, {
+    key: '_writeCSVObj',
+    value: function _writeCSVObj(obj) {
+      this.csvWriter.write(this.csvKeys.map(function (k) {
+        return obj[k];
+      }));
+    }
+  }, {
+    key: '_collectAnswer',
+    value: function _collectAnswer(answer) {
+      var _this2 = this;
 
-        cursor.on('error', function (err) {
-          return rej(err);
-        });
+      if (!answer || !answer.rootQuestion) return;
 
-        cursor.on('end', function () {
-          csvWriter.end();
-          _this._writeCSVHeader(keys);
-          console.log('Processed ' + count + ' responses');
-          res(count);
+      if (!this.surveyRespondents) {
+        var obj = answer.rootQuestion.collect({ keys: this.csvKeys });
+        console.log('Starting to process answer ' + answer._id);
+        this._writeCSVObj(obj);
+      } else {
+        this.surveyRespondents.forEach(function (resp, idx) {
+          answer.rootQuestion.findRespondents({
+            keys: _this2.csvKeys,
+            respondents: _this2.surveyRespondents,
+            cb: _this2._collectRespondent.bind(_this2),
+            idx: idx
+          });
         });
+      }
+    }
+  }, {
+    key: '_collectRespondent',
+    value: function _collectRespondent(question, _ref) {
+      var _this3 = this;
+
+      var acc = _ref.acc,
+          prefix = _ref.prefix;
+
+      question.answers.forEach(function (ans, idx) {
+        var obj = question.collectAnswer({
+          ans: ans, idx: idx, acc: acc,
+          keys: _this3.csvKeys,
+          ansKey: prefix
+        });
+        _this3._writeCSVObj(obj);
       });
     }
   }, {
     key: '_readCSVHeader',
     value: function _readCSVHeader() {
-      var filePath = this.constructor.csvHeaderPath(this.surveyId);
-      try {
-        var keys = _fs2.default.readFileSync(filePath, 'utf8').trim().split(',');
-        keys.forEach(function (e) {
-          return keys['pos' + e] = true;
+      var _this4 = this;
+
+      return new Promise(function (res, rej) {
+        var filePath = _this4.constructor.csvHeaderPath(_this4.surveyId);
+        var reader = _this4._createCsvReader(filePath, rej);
+
+        var rows = [];
+        reader.on('end', function () {
+          return res(rows);
+        });
+        reader.on('error', rej);
+
+        reader.on('readable', function () {
+          var data = null;
+          while (data = reader.read()) {
+            rows.push(data);
+          }
+        });
+      }).then(function (rows) {
+        var keys = rows[0];
+        keys.forEach(function (e, i) {
+          return keys['pos' + e] = rows[1] && rows[1][i] || true;
         });
         return keys;
-      } catch (e) {
-        return null;
-      }
+      });
     }
   }, {
     key: '_writeCSVHeader',
-    value: function _writeCSVHeader(keys) {
+    value: function _writeCSVHeader() {
+      var _this5 = this;
+
+      if (!this.csvKeys || !this.csvKeys.length) return;
       var filePath = this.constructor.csvHeaderPath(this.surveyId);
-      var csvWriter = this._csvWriter(filePath);
-      csvWriter.write(keys);
-      csvWriter.end();
+      return new Promise(function (res, rej) {
+        var csvWriter = _this5._createCsvWriter(filePath, 'w', rej);
+        csvWriter.on('error', rej);
+        csvWriter.write(_this5.csvKeys);
+        csvWriter.end(null, null, res);
+      });
     }
   }, {
-    key: '_csvWriter',
-    value: function _csvWriter(path, mode) {
+    key: '_createCsvReader',
+    value: function _createCsvReader(path, errH) {
+      var fileStream = _fs2.default.createReadStream(path, { encoding: 'utf8' });
+      if (errH) fileStream.on('error', errH);
+      var csvReader = new _csvParse2.default();
+      fileStream.pipe(csvReader);
+      return csvReader;
+    }
+  }, {
+    key: '_createCsvWriter',
+    value: function _createCsvWriter(path, mode, errH) {
       if (!path) {
         path = this.constructor.csvPath(this.surveyId);
         mode = 'a';
       }
       if (!mode) mode = 'w';
+
       var fileStream = _fs2.default.createWriteStream(path, { encoding: 'utf8', flags: mode });
+      if (errH) fileStream.on('error', errH);
+
       var csvWriter = new _csvStringify2.default();
       csvWriter.pipe(fileStream);
       csvWriter.on('end', function () {
@@ -1351,7 +1602,7 @@ var SurveyResponseProcessor = function () {
 exports.default = SurveyResponseProcessor;
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1369,7 +1620,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var tagsParser = appRequire('lib/tags');
 
-var TreeParser = __webpack_require__(23);
+var TreeParser = __webpack_require__(24);
 /**
 * Tree based parser for questions provided in CSV for mapping/household survey.
 * 
@@ -1649,7 +1900,7 @@ var SurveyCSVParser = function (_TreeParser) {
           type: 'ROOT',
           options: [],
           children: ch,
-          flow: __webpack_require__(8)('NONE', null)
+          flow: __webpack_require__(9)('NONE', null)
         };
       }).then(function (q) {
         _this3.res({ root: q, warnings: _this3.warnings });
@@ -1679,7 +1930,7 @@ var SurveyCSVParser = function (_TreeParser) {
 module.exports = SurveyCSVParser;
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1693,7 +1944,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var CSVParser = __webpack_require__(24);
+var CSVParser = __webpack_require__(25);
 
 /** 
  * A stack-based parser to parse hierarchical CSVs.
@@ -1841,7 +2092,7 @@ var TreeParser = function (_CSVParser) {
 module.exports = TreeParser;
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1855,7 +2106,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var _require = __webpack_require__(60),
+var _require = __webpack_require__(46),
     Parser = _require.Parser;
 
 /**
@@ -1913,7 +2164,7 @@ var CSVParser = function (_Parser) {
 module.exports = CSVParser;
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1928,7 +2179,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1943,7 +2194,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1963,7 +2214,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1984,7 +2235,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2006,7 +2257,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2020,7 +2271,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2034,7 +2285,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2048,7 +2299,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2130,13 +2381,13 @@ exports.default = Renderer;
 ;
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ (function(module, exports) {
 
 module.exports = require("express");
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2148,7 +2399,7 @@ module.exports = function (app) {
 };
 
 /***/ }),
-/* 36 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2157,7 +2408,7 @@ module.exports = function (app) {
 var jwt = __webpack_require__(63);
 var constants = __webpack_require__(6);
 
-var httpDigest = __webpack_require__(37);
+var httpDigest = __webpack_require__(38);
 
 var jwtOpts = Object.assign({
   getToken: function getToken(req) {
@@ -2188,7 +2439,7 @@ module.exports = function (app) {
 };
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2219,7 +2470,7 @@ module.exports = function (app, path) {
 };
 
 /***/ }),
-/* 38 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2236,19 +2487,19 @@ module.exports = function (app) {
 };
 
 /***/ }),
-/* 39 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _dispatcher = __webpack_require__(40);
+var _dispatcher = __webpack_require__(41);
 
 var _dispatcher2 = _interopRequireDefault(_dispatcher);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var express = __webpack_require__(34);
+var express = __webpack_require__(35);
 
 
 /**
@@ -2282,7 +2533,7 @@ registerCmsRoutes(cmsRouter, appRequire('controllers/AnswerController'), functio
 module.exports = cmsRouter;
 
 /***/ }),
-/* 40 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2293,7 +2544,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = dispatcher;
 
-var _render = __webpack_require__(33);
+var _render = __webpack_require__(34);
 
 var _render2 = _interopRequireDefault(_render);
 
@@ -2313,19 +2564,19 @@ function dispatcher(Controller, method) {
 }
 
 /***/ }),
-/* 41 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var express = __webpack_require__(34);
+var express = __webpack_require__(35);
 var app = new express.Router();
 
 module.exports = app;
 
 /***/ }),
-/* 42 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2359,32 +2610,38 @@ module.exports = function (app) {
 };
 
 /***/ }),
-/* 43 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 global.appRequire = function (name) {
-  return __webpack_require__(46)("./" + name);
+  return __webpack_require__(48)("./" + name);
 };
 appRequire('server');
 
 /***/ }),
-/* 44 */
+/* 45 */
 /***/ (function(module, exports) {
 
 module.exports = require("fs");
 
 /***/ }),
-/* 45 */
+/* 46 */
+/***/ (function(module, exports) {
+
+module.exports = require("csv-parse");
+
+/***/ }),
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 global.appRequire = function (name) {
-  return __webpack_require__(46)("./" + name);
+  return __webpack_require__(48)("./" + name);
 };
 
 __webpack_require__(11);
@@ -2410,128 +2667,126 @@ if (typeof proc[method] !== 'function') {
   process.exit(-1);
 }
 
-var promise = proc[method]();
-if (!promise.then) {
-  mongoose.connection.close();
-} else {
-  promise.then(function () {
-    return mongoose.connection.close();
-  });
-}
+Promise.resolve(proc[method]()).then(function () {
+  return mongoose.connection.close();
+}, function () {
+  return mongoose.connection.close();
+});
+process.exitCode = 0;
 
 /***/ }),
-/* 46 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var map = {
-	"./app": 43,
-	"./app.js": 43,
+	"./app": 44,
+	"./app.js": 44,
 	"./config/Constants": 6,
 	"./config/Constants.js": 6,
-	"./controllers/AnswerController": 47,
-	"./controllers/AnswerController.js": 47,
-	"./controllers/BaseController": 13,
-	"./controllers/BaseController.js": 13,
-	"./controllers/EntitiyController": 7,
-	"./controllers/EntitiyController.js": 7,
-	"./controllers/SurveyController": 49,
-	"./controllers/SurveyController.js": 49,
-	"./controllers/concerns/Body": 17,
-	"./controllers/concerns/Body.js": 17,
-	"./controllers/concerns/Create": 19,
-	"./controllers/concerns/Create.js": 19,
-	"./controllers/concerns/Delete": 16,
-	"./controllers/concerns/Delete.js": 16,
-	"./controllers/concerns/Get": 15,
-	"./controllers/concerns/Get.js": 15,
-	"./controllers/concerns/Listing": 14,
-	"./controllers/concerns/Listing.js": 14,
-	"./controllers/concerns/Update": 20,
-	"./controllers/concerns/Update.js": 20,
+	"./controllers/AnswerController": 49,
+	"./controllers/AnswerController.js": 49,
+	"./controllers/BaseController": 14,
+	"./controllers/BaseController.js": 14,
+	"./controllers/EntitiyController": 8,
+	"./controllers/EntitiyController.js": 8,
+	"./controllers/SurveyController": 51,
+	"./controllers/SurveyController.js": 51,
+	"./controllers/concerns/Body": 18,
+	"./controllers/concerns/Body.js": 18,
+	"./controllers/concerns/Create": 20,
+	"./controllers/concerns/Create.js": 20,
+	"./controllers/concerns/Delete": 17,
+	"./controllers/concerns/Delete.js": 17,
+	"./controllers/concerns/Get": 16,
+	"./controllers/concerns/Get.js": 16,
+	"./controllers/concerns/Listing": 15,
+	"./controllers/concerns/Listing.js": 15,
+	"./controllers/concerns/Update": 21,
+	"./controllers/concerns/Update.js": 21,
 	"./data/models/Answer": 4,
 	"./data/models/Answer.js": 4,
-	"./data/models/Option": 50,
-	"./data/models/Option.js": 50,
-	"./data/models/Process": 51,
-	"./data/models/Process.js": 51,
-	"./data/models/Question": 52,
-	"./data/models/Question.js": 52,
+	"./data/models/Option": 52,
+	"./data/models/Option.js": 52,
+	"./data/models/Process": 53,
+	"./data/models/Process.js": 53,
+	"./data/models/Question": 13,
+	"./data/models/Question.js": 13,
 	"./data/models/Schema": 1,
 	"./data/models/Schema.js": 1,
 	"./data/models/Survey": 5,
 	"./data/models/Survey.js": 5,
-	"./data/models/Surveyee": 53,
-	"./data/models/Surveyee.js": 53,
-	"./data/models/Surveyor": 54,
-	"./data/models/Surveyor.js": 54,
-	"./data/models/Text": 9,
-	"./data/models/Text.js": 9,
+	"./data/models/Surveyee": 54,
+	"./data/models/Surveyee.js": 54,
+	"./data/models/Surveyor": 55,
+	"./data/models/Surveyor.js": 55,
+	"./data/models/Text": 7,
+	"./data/models/Text.js": 7,
 	"./lib/Mixin": 2,
 	"./lib/Mixin.js": 2,
-	"./lib/csv/answer-csv-exporter": 55,
-	"./lib/csv/answer-csv-exporter.js": 55,
-	"./lib/csv/csv-parser": 24,
-	"./lib/csv/csv-parser.js": 24,
-	"./lib/csv/survey-csv-parser": 22,
-	"./lib/csv/survey-csv-parser.js": 22,
-	"./lib/csv/tree-csv-parser": 23,
-	"./lib/csv/tree-csv-parser.js": 23,
+	"./lib/csv/answer-csv-exporter": 56,
+	"./lib/csv/answer-csv-exporter.js": 56,
+	"./lib/csv/csv-parser": 25,
+	"./lib/csv/csv-parser.js": 25,
+	"./lib/csv/survey-csv-parser": 23,
+	"./lib/csv/survey-csv-parser.js": 23,
+	"./lib/csv/tree-csv-parser": 24,
+	"./lib/csv/tree-csv-parser.js": 24,
 	"./lib/tags": 10,
 	"./lib/tags/": 10,
-	"./lib/tags/core/loop": 27,
-	"./lib/tags/core/loop.js": 27,
-	"./lib/tags/core/select": 28,
-	"./lib/tags/core/select.js": 28,
-	"./lib/tags/data/auth": 26,
-	"./lib/tags/data/auth.js": 26,
-	"./lib/tags/data/pre-fill": 25,
-	"./lib/tags/data/pre-fill.js": 25,
+	"./lib/tags/core/loop": 28,
+	"./lib/tags/core/loop.js": 28,
+	"./lib/tags/core/select": 29,
+	"./lib/tags/core/select.js": 29,
+	"./lib/tags/data/auth": 27,
+	"./lib/tags/data/auth.js": 27,
+	"./lib/tags/data/pre-fill": 26,
+	"./lib/tags/data/pre-fill.js": 26,
 	"./lib/tags/index": 10,
 	"./lib/tags/index.js": 10,
-	"./lib/tags/question-default": 8,
-	"./lib/tags/question-default.js": 8,
-	"./lib/tags/ui/grid": 29,
-	"./lib/tags/ui/grid.js": 29,
-	"./lib/tags/ui/images": 30,
-	"./lib/tags/ui/images.js": 30,
-	"./lib/tags/ui/number": 31,
-	"./lib/tags/ui/number.js": 31,
-	"./lib/tags/ui/together": 32,
-	"./lib/tags/ui/together.js": 32,
-	"./lib/utils/multipart-handler": 18,
-	"./lib/utils/multipart-handler.js": 18,
-	"./lib/utils/render": 33,
-	"./lib/utils/render.js": 33,
-	"./procs/process-runner": 45,
-	"./procs/process-runner.js": 45,
-	"./procs/survey-response.proc": 21,
-	"./procs/survey-response.proc.js": 21,
+	"./lib/tags/question-default": 9,
+	"./lib/tags/question-default.js": 9,
+	"./lib/tags/ui/grid": 30,
+	"./lib/tags/ui/grid.js": 30,
+	"./lib/tags/ui/images": 31,
+	"./lib/tags/ui/images.js": 31,
+	"./lib/tags/ui/number": 32,
+	"./lib/tags/ui/number.js": 32,
+	"./lib/tags/ui/together": 33,
+	"./lib/tags/ui/together.js": 33,
+	"./lib/utils/multipart-handler": 19,
+	"./lib/utils/multipart-handler.js": 19,
+	"./lib/utils/render": 34,
+	"./lib/utils/render.js": 34,
+	"./procs/process-runner": 47,
+	"./procs/process-runner.js": 47,
+	"./procs/survey-response.proc": 22,
+	"./procs/survey-response.proc.js": 22,
 	"./server": 12,
 	"./server/": 12,
-	"./server/body-parser": 38,
-	"./server/body-parser.js": 38,
-	"./server/cookies": 35,
-	"./server/cookies.js": 35,
+	"./server/body-parser": 39,
+	"./server/body-parser.js": 39,
+	"./server/cookies": 36,
+	"./server/cookies.js": 36,
 	"./server/database": 11,
 	"./server/database.js": 11,
-	"./server/digest-auth": 37,
-	"./server/digest-auth.js": 37,
-	"./server/error-handler": 42,
-	"./server/error-handler.js": 42,
+	"./server/digest-auth": 38,
+	"./server/digest-auth.js": 38,
+	"./server/error-handler": 43,
+	"./server/error-handler.js": 43,
 	"./server/index": 12,
 	"./server/index.js": 12,
 	"./server/routes": 3,
 	"./server/routes/": 3,
-	"./server/routes/app": 41,
-	"./server/routes/app.js": 41,
-	"./server/routes/cms": 39,
-	"./server/routes/cms.js": 39,
-	"./server/routes/dispatcher": 40,
-	"./server/routes/dispatcher.js": 40,
+	"./server/routes/app": 42,
+	"./server/routes/app.js": 42,
+	"./server/routes/cms": 40,
+	"./server/routes/cms.js": 40,
+	"./server/routes/dispatcher": 41,
+	"./server/routes/dispatcher.js": 41,
 	"./server/routes/index": 3,
 	"./server/routes/index.js": 3,
-	"./server/security": 36,
-	"./server/security.js": 36
+	"./server/security": 37,
+	"./server/security.js": 37
 };
 function webpackContext(req) {
 	return __webpack_require__(webpackContextResolve(req));
@@ -2547,10 +2802,10 @@ webpackContext.keys = function webpackContextKeys() {
 };
 webpackContext.resolve = webpackContextResolve;
 module.exports = webpackContext;
-webpackContext.id = 46;
+webpackContext.id = 48;
 
 /***/ }),
-/* 47 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2568,15 +2823,15 @@ var _Answer = __webpack_require__(4);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 
-var _EntitiyController = __webpack_require__(7);
+var _EntitiyController = __webpack_require__(8);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
-var _csvWriteStream = __webpack_require__(48);
+var _csvWriteStream = __webpack_require__(50);
 
 var _csvWriteStream2 = _interopRequireDefault(_csvWriteStream);
 
-var _streamToString = __webpack_require__(58);
+var _streamToString = __webpack_require__(59);
 
 var _streamToString2 = _interopRequireDefault(_streamToString);
 
@@ -2692,7 +2947,7 @@ var AnswerController = function (_EntityController) {
         csvWriter.on('end', function () {
           return res.end();
         });
-        csvWriter.write(answer.rootQuestion.collect());
+        csvWriter.write(answer.rootQuestion.collect({}));
         csvWriter.end();
       }).catch(function (err) {
         console.log(err.stack);
@@ -2711,13 +2966,13 @@ module.exports = AnswerController;
 exports.default = AnswerController;
 
 /***/ }),
-/* 48 */
+/* 50 */
 /***/ (function(module, exports) {
 
 module.exports = require("csv-write-stream");
 
 /***/ }),
-/* 49 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2727,19 +2982,19 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _fs = __webpack_require__(44);
+var _fs = __webpack_require__(45);
 
 var _fs2 = _interopRequireDefault(_fs);
 
-var _streamConcat = __webpack_require__(59);
+var _streamConcat = __webpack_require__(60);
 
 var _streamConcat2 = _interopRequireDefault(_streamConcat);
 
-var _EntitiyController = __webpack_require__(7);
+var _EntitiyController = __webpack_require__(8);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
-var _surveyResponse = __webpack_require__(21);
+var _surveyResponse = __webpack_require__(22);
 
 var _surveyResponse2 = _interopRequireDefault(_surveyResponse);
 
@@ -2755,7 +3010,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var Survey = __webpack_require__(5);
 
-var SurveyCSVParser = __webpack_require__(22);
+var SurveyCSVParser = __webpack_require__(23);
 
 /**
  * Survey document controller.
@@ -2863,7 +3118,7 @@ Object.assign(SurveyController, {
 module.exports = SurveyController;
 
 /***/ }),
-/* 50 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2871,7 +3126,7 @@ module.exports = SurveyController;
 
 var Schema = __webpack_require__(1);
 
-var Text = __webpack_require__(9);
+var Text = __webpack_require__(7);
 
 var mongoose = __webpack_require__(0);
 
@@ -2889,7 +3144,7 @@ optionSchema.index({
 module.exports = mongoose.model('Option', optionSchema);
 
 /***/ }),
-/* 51 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2906,66 +3161,7 @@ var processSchema = new Schema({
 module.exports = mongoose.model('Process', processSchema);
 
 /***/ }),
-/* 52 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var Schema = __webpack_require__(1);
-var Text = __webpack_require__(9);
-var mongoose = __webpack_require__(0);
-
-var questionSchema = new Schema({
-  type: { type: String },
-  tags: [{ type: String }],
-  text: { type: Text },
-  number: { type: String },
-  options: [{
-    position: { type: String, required: true },
-    option: { type: {}, required: true }
-  }],
-  children: [{
-    position: { type: String, required: true },
-    question: {
-      type: {},
-      get: function get(q) {
-        return new Question(q);
-      },
-      required: true
-    }
-  }],
-  flow: {
-    pre: { type: Object },
-    question: { type: Object },
-    answer: { type: Object },
-    child: { type: Object },
-    post: { type: Object },
-    exit: { type: Object }
-  }
-});
-
-Object.assign(questionSchema.methods, {
-  find: function find(number) {
-    if (this.number === number) {
-      return this;
-    };
-    var child = this.children.find(function (el) {
-      return el.question && el.question.number && number.startsWith(el.question.number);
-    });
-    if (child) {
-      return child.question.find(number);
-    } else {
-      return null;
-    }
-  }
-});
-
-var Question = mongoose.model('Question', questionSchema);
-module.exports = Question;
-
-/***/ }),
-/* 53 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2988,7 +3184,7 @@ var surveyorSchema = new _Schema2.default({
 module.exports = _mongoose2.default.model('Surveyee', surveyorSchema);
 
 /***/ }),
-/* 54 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3008,7 +3204,7 @@ var surveyorSchema = new Schema({
 module.exports = mongoose.model('Surveyor', surveyorSchema);
 
 /***/ }),
-/* 55 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3018,7 +3214,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _csvWriteStream = __webpack_require__(48);
+var _csvWriteStream = __webpack_require__(50);
 
 var _csvWriteStream2 = _interopRequireDefault(_csvWriteStream);
 
@@ -3048,34 +3244,28 @@ var AnswerCSVWriter = function (_CSVWriter) {
 exports.default = AnswerCSVWriter;
 
 /***/ }),
-/* 56 */
+/* 57 */
 /***/ (function(module, exports) {
 
 module.exports = require("csv-stringify");
 
 /***/ }),
-/* 57 */
+/* 58 */
 /***/ (function(module, exports) {
 
 module.exports = require("busboy");
 
 /***/ }),
-/* 58 */
+/* 59 */
 /***/ (function(module, exports) {
 
 module.exports = require("stream-to-string");
 
 /***/ }),
-/* 59 */
-/***/ (function(module, exports) {
-
-module.exports = require("stream-concat");
-
-/***/ }),
 /* 60 */
 /***/ (function(module, exports) {
 
-module.exports = require("csv-parse");
+module.exports = require("stream-concat");
 
 /***/ }),
 /* 61 */
@@ -3124,7 +3314,7 @@ module.exports = require("body-parser");
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(69);
-module.exports = __webpack_require__(45);
+module.exports = __webpack_require__(47);
 
 
 /***/ }),
@@ -3146,13 +3336,17 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _fs = __webpack_require__(44);
+var _fs = __webpack_require__(45);
 
 var _fs2 = _interopRequireDefault(_fs);
 
-var _csvStringify = __webpack_require__(56);
+var _csvStringify = __webpack_require__(57);
 
 var _csvStringify2 = _interopRequireDefault(_csvStringify);
+
+var _csvParse = __webpack_require__(46);
+
+var _csvParse2 = _interopRequireDefault(_csvParse);
 
 var _Survey = __webpack_require__(5);
 
@@ -3174,7 +3368,7 @@ var SurveyResponseProcessor = function () {
     _classCallCheck(this, SurveyResponseProcessor);
 
     this.surveyId = surveyId;
-    this.survey = _Survey2.default.findOne({ _id: surveyId });
+    this.surveyPromise = _Survey2.default.findOne({ _id: surveyId });
   }
 
   _createClass(SurveyResponseProcessor, [{
@@ -3182,72 +3376,156 @@ var SurveyResponseProcessor = function () {
     value: function processAnswers() {
       var _this = this;
 
-      return new Promise(function (res, rej) {
-        var count = 0;
-        var cursor = _Answer2.default.find({
-          lastExport: null,
-          survey: _this.surveyId
-        }).cursor();
+      return this.surveyPromise.then(function (s) {
+        return s && s.respondents;
+      }).then(function (respondents) {
+        return _this.surveyRespondents = respondents;
+      }).then(function () {
+        return _this._readCSVHeader().then(function (keys) {
+          return _this.csvKeys = keys;
+        }, function () {
+          return _this.csvKeys = [];
+        });
+      }).then(function () {
+        return console.log('Got ' + _this.csvKeys.length + ' keys');
+      }).then(function () {
+        return new Promise(function (res, rej) {
+          var cursor = _Answer2.default.find({
+            survey: _this.surveyId
+          }).cursor();
 
-        var keys = _this._readCSVHeader() || [];
-        var csvWriter = _this._csvWriter();
+          _this.csvWriter = _this._createCsvWriter();
 
-        cursor.on('data', function (answer) {
-          if (answer && answer.rootQuestion) {
-            var obj = answer.rootQuestion.collect(undefined, keys);
-            csvWriter.write(keys.map(function (k) {
-              return obj[k];
-            }));
+          var result = [];
+          cursor.on('data', function (answer) {
+            if (!answer) return;
+            _this._collectAnswer(answer);
             answer.lastExport = Date.now();
-            answer.save();
-            console.log('Processed ' + answer._id);
-            ++count;
-          }
+            result.push(answer.save().then(function () {
+              return answer._id;
+            }));
+          });
+          cursor.on('error', function (err) {
+            return rej(err);
+          });
+          cursor.on('end', function () {
+            _this.csvWriter.end();
+            _this._writeCSVHeader();
+            res(Promise.all(result));
+          });
         });
+      });
+    }
+  }, {
+    key: '_writeCSVObj',
+    value: function _writeCSVObj(obj) {
+      this.csvWriter.write(this.csvKeys.map(function (k) {
+        return obj[k];
+      }));
+    }
+  }, {
+    key: '_collectAnswer',
+    value: function _collectAnswer(answer) {
+      var _this2 = this;
 
-        cursor.on('error', function (err) {
-          return rej(err);
-        });
+      if (!answer || !answer.rootQuestion) return;
 
-        cursor.on('end', function () {
-          csvWriter.end();
-          _this._writeCSVHeader(keys);
-          console.log('Processed ' + count + ' responses');
-          res(count);
+      if (!this.surveyRespondents) {
+        var obj = answer.rootQuestion.collect({ keys: this.csvKeys });
+        console.log('Starting to process answer ' + answer._id);
+        this._writeCSVObj(obj);
+      } else {
+        this.surveyRespondents.forEach(function (resp, idx) {
+          answer.rootQuestion.findRespondents({
+            keys: _this2.csvKeys,
+            respondents: _this2.surveyRespondents,
+            cb: _this2._collectRespondent.bind(_this2),
+            idx: idx
+          });
         });
+      }
+    }
+  }, {
+    key: '_collectRespondent',
+    value: function _collectRespondent(question, _ref) {
+      var _this3 = this;
+
+      var acc = _ref.acc,
+          prefix = _ref.prefix;
+
+      question.answers.forEach(function (ans, idx) {
+        var obj = question.collectAnswer({
+          ans: ans, idx: idx, acc: acc,
+          keys: _this3.csvKeys,
+          ansKey: prefix
+        });
+        _this3._writeCSVObj(obj);
       });
     }
   }, {
     key: '_readCSVHeader',
     value: function _readCSVHeader() {
-      var filePath = this.constructor.csvHeaderPath(this.surveyId);
-      try {
-        var keys = _fs2.default.readFileSync(filePath, 'utf8').trim().split(',');
-        keys.forEach(function (e) {
-          return keys['pos' + e] = true;
+      var _this4 = this;
+
+      return new Promise(function (res, rej) {
+        var filePath = _this4.constructor.csvHeaderPath(_this4.surveyId);
+        var reader = _this4._createCsvReader(filePath, rej);
+
+        var rows = [];
+        reader.on('end', function () {
+          return res(rows);
+        });
+        reader.on('error', rej);
+
+        reader.on('readable', function () {
+          var data = null;
+          while (data = reader.read()) {
+            rows.push(data);
+          }
+        });
+      }).then(function (rows) {
+        var keys = rows[0];
+        keys.forEach(function (e, i) {
+          return keys['pos' + e] = rows[1] && rows[1][i] || true;
         });
         return keys;
-      } catch (e) {
-        return null;
-      }
+      });
     }
   }, {
     key: '_writeCSVHeader',
-    value: function _writeCSVHeader(keys) {
+    value: function _writeCSVHeader() {
+      var _this5 = this;
+
+      if (!this.csvKeys || !this.csvKeys.length) return;
       var filePath = this.constructor.csvHeaderPath(this.surveyId);
-      var csvWriter = this._csvWriter(filePath);
-      csvWriter.write(keys);
-      csvWriter.end();
+      return new Promise(function (res, rej) {
+        var csvWriter = _this5._createCsvWriter(filePath, 'w', rej);
+        csvWriter.on('error', rej);
+        csvWriter.write(_this5.csvKeys);
+        csvWriter.end(null, null, res);
+      });
     }
   }, {
-    key: '_csvWriter',
-    value: function _csvWriter(path, mode) {
+    key: '_createCsvReader',
+    value: function _createCsvReader(path, errH) {
+      var fileStream = _fs2.default.createReadStream(path, { encoding: 'utf8' });
+      if (errH) fileStream.on('error', errH);
+      var csvReader = new _csvParse2.default();
+      fileStream.pipe(csvReader);
+      return csvReader;
+    }
+  }, {
+    key: '_createCsvWriter',
+    value: function _createCsvWriter(path, mode, errH) {
       if (!path) {
         path = this.constructor.csvPath(this.surveyId);
         mode = 'a';
       }
       if (!mode) mode = 'w';
+
       var fileStream = _fs2.default.createWriteStream(path, { encoding: 'utf8', flags: mode });
+      if (errH) fileStream.on('error', errH);
+
       var csvWriter = new _csvStringify2.default();
       csvWriter.pipe(fileStream);
       csvWriter.on('end', function () {

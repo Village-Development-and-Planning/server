@@ -73,7 +73,7 @@ class AnswerController extends EntityController {
       csvWriter.pipe(res);
 
       csvWriter.on('end', () => res.end());
-      csvWriter.write(answer.rootQuestion.collect());
+      csvWriter.write(answer.rootQuestion.collect({}));
       csvWriter.end();
     })
     .catch((err) => {

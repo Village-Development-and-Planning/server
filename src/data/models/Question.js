@@ -30,14 +30,18 @@ const questionSchema = new Schema({
 });
 
 Object.assign(questionSchema.methods, {
+  isParent(number) {
+    if (!this.number) return true;
+    return (number === this.number)
+      || number.startsWith(`${this.number}.`);
+  },
+
   find(number) {
-    if (this.number === number) {
-      return this;
-    };
+    if (!this.isParent(number)) return null;
+
+    if (this.number === number) return this;
     let child = this.children.find(
-      (el) => el.question
-        && el.question.number
-        && number.startsWith(el.question.number)
+      (el) => el.question && el.question.isParent(number)
     );
     if (child) {
       return child.question.find(number);
