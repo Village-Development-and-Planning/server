@@ -97,6 +97,7 @@ class AnsweredQuestion extends Question {
         if (this.text && this.text.english) {
           text = text + ` ${this.text.english}`;
         }
+        console.log(`Adding column: ${oKey}\n${text}`);
         keys[`pos${oKey}`] = text || 'UNKNOWN';
       }
     });
@@ -127,7 +128,9 @@ class AnsweredQuestion extends Question {
     suffix = suffix || '';
     keys = keys || [];
 
-    prefix = `${prefix}${this.position || ''}`;
+    let pos = this.position || '';
+    pos = pos.replace(/,/g, '_');
+    prefix = `${prefix}${pos}`;
     return (this.answers ? (this.answers.reduce(
       (acc, ans, idx) => {
         let ansKey = prefix;

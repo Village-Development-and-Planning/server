@@ -19,7 +19,7 @@ class SurveyController extends EntityController {
     .catch((err) => this.renderer.renderPromise(Promise.reject(err)))
     .then((survey) => {
       const _id = survey._id;
-      const path = SurveyResponse.csvPath(_id);
+      const path = SurveyResponse.csvSortedPath(_id);
       const headerPath = SurveyResponse.csvSortedHeaderPath(_id);
       if (fs.existsSync(path) && fs.existsSync(headerPath)) {
         const csvOutput = new StreamConcat([

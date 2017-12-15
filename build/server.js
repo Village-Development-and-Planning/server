@@ -346,6 +346,7 @@ var AnsweredQuestion = function (_Question) {
           if (_this3.text && _this3.text.english) {
             text = text + (' ' + _this3.text.english);
           }
+          console.log('Adding column: ' + oKey + '\n' + text);
           keys['pos' + oKey] = text || 'UNKNOWN';
         }
       });
@@ -381,7 +382,9 @@ var AnsweredQuestion = function (_Question) {
       suffix = suffix || '';
       keys = keys || [];
 
-      prefix = '' + prefix + (this.position || '');
+      var pos = this.position || '';
+      pos = pos.replace(/,/g, '_');
+      prefix = '' + prefix + pos;
       return this.answers ? this.answers.reduce(function (acc, ans, idx) {
         var ansKey = prefix;
         var newSuffix = suffix;
@@ -1519,10 +1522,14 @@ var SurveyResponseProcessor = function () {
           });
           reader.on('end', function () {
             writer.end(null, null, function () {
-              _this2.csvKeys = sortedKeyIndices.map(function (_ref) {
+              var newKeys = [];
+              sortedKeyIndices.forEach(function (_ref, index) {
                 var key = _ref.key;
-                return key;
+
+                newKeys.push(key);
+                newKeys['pos' + key] = _this2.csvKeys['pos' + key];
               });
+              _this2.csvKeys = newKeys;
               res(_this2._writeCSVHeader(_this2.constructor.csvSortedHeaderPath(_this2.surveyId)));
             });
           });
@@ -3124,7 +3131,7 @@ var SurveyController = function (_EntityController) {
         return _this2.renderer.renderPromise(Promise.reject(err));
       }).then(function (survey) {
         var _id = survey._id;
-        var path = _surveyResponse2.default.csvPath(_id);
+        var path = _surveyResponse2.default.csvSortedPath(_id);
         var headerPath = _surveyResponse2.default.csvSortedHeaderPath(_id);
         if (_fs2.default.existsSync(path) && _fs2.default.existsSync(headerPath)) {
           var csvOutput = new _streamConcat2.default([_fs2.default.createReadStream(headerPath), _fs2.default.createReadStream(path)]);

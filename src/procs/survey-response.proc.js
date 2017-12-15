@@ -71,7 +71,12 @@ export default class SurveyResponseProcessor {
             });
           reader.on('end', () => {
             writer.end(null, null, () => {
-              this.csvKeys = sortedKeyIndices.map(({key}) => key);
+              const newKeys = [];
+              sortedKeyIndices.forEach(({key}, index) => {
+                newKeys.push(key);
+                newKeys[`pos${key}`] = this.csvKeys[`pos${key}`];
+              });
+              this.csvKeys = newKeys;
               res(
                 this._writeCSVHeader(
                   this.constructor.csvSortedHeaderPath(this.surveyId)
