@@ -2754,8 +2754,10 @@ if (typeof proc[method] !== 'function') {
 }
 
 Promise.resolve(proc[method]()).then(function () {
-  return mongoose.connection.close();
-}, function () {
+  return null;
+}, function (err) {
+  return console.log(err);
+}).then(function () {
   return mongoose.connection.close();
 });
 process.exitCode = 0;

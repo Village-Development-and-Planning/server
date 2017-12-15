@@ -24,7 +24,7 @@ if (typeof proc[method] !== 'function') {
 }
 
 Promise.resolve(proc[method]()).then(
-  () => mongoose.connection.close(),
-  () => mongoose.connection.close(),
-);
+  () => null,
+  (err) => console.log(err),
+).then(() => mongoose.connection.close());
 process.exitCode = 0;
