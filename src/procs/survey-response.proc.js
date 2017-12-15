@@ -59,7 +59,7 @@ export default class SurveyResponseProcessor {
     return this._readCSVHeader()
       .then((keys) => this.csvKeys = keys)
       .then(
-        () => new Promise((res, rej) => {          
+        () => new Promise((res, rej) => {
           const inPath = this.constructor.csvPath(this.surveyId);
           const outPath = this.constructor.csvSortedPath(this.surveyId);
           const reader = this._createCsvReader(inPath, rej);
@@ -81,7 +81,7 @@ export default class SurveyResponseProcessor {
                 )
               );
             });
-          });          
+          });
 
           reader.on('readable', () => {
             let data = null;
@@ -90,9 +90,8 @@ export default class SurveyResponseProcessor {
               writer.write(out);
             }
           });
-              
         })
-      );    
+      );
   }
 
   _writeCSVObj(obj) {
