@@ -1483,10 +1483,7 @@ var SurveyResponseProcessor = function () {
           cursor.on('data', function (answer) {
             if (!answer) return;
             _this._collectAnswer(answer);
-            answer.lastExport = Date.now();
-            result.push(answer.save().then(function () {
-              return answer._id;
-            }));
+            result.push(answer._id);
           });
           cursor.on('error', function (err) {
             return rej(err);

@@ -39,10 +39,7 @@ export default class SurveyResponseProcessor {
           (answer) => {
             if (!answer) return;
             this._collectAnswer(answer);
-            answer.lastExport = Date.now();
-            result.push(
-              answer.save().then(() => answer._id),
-            );
+            result.push(answer._id);
           }
         );
         cursor.on('error', (err) => rej(err));
