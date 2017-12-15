@@ -10,6 +10,7 @@ class BaseController {
   }
 
   dispatch(method) {
+    this.action = method;
     this[method]();
   }
 }

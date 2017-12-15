@@ -14,9 +14,11 @@ import SurveyResponse from '../procs/survey-response.proc';
 class SurveyController extends EntityController {
   download() {
     return Promise.resolve(this._getQuery())
+    .then((q) => q && this._findOne(q))
     .then((e) => e || Promise.reject(new Error('Entity not found.')))
     .catch((err) => this.renderer.renderPromise(Promise.reject(err)))
-    .then(({_id}) => {
+    .then((survey) => {
+      const _id = survey._id;
       const path = SurveyResponse.csvPath(_id);
       const headerPath = SurveyResponse.csvHeaderPath(_id);
       if (fs.existsSync(path) && fs.existsSync(headerPath)) {
@@ -25,7 +27,7 @@ class SurveyController extends EntityController {
           fs.createReadStream(path),
         ]);
         const res = this.renderer.res;
-        res.attachment(`${_id}.csv`);
+        res.attachment(`${survey.name || _id}.csv`);
         csvOutput.on('end', () => res.end());
         csvOutput.pipe(res);
       } else {
@@ -47,7 +49,13 @@ class SurveyController extends EntityController {
 
   _parseEntity(obj) {
     obj.enabled = !!obj.enabled;
-    obj.respondents = obj.respondents && obj.respondents.split(',');
+    if (typeof obj.respondents === 'string') {
+      if (obj.respondents == 'none') {
+        obj.respondents = null;
+      } else {
+        obj.respondents = obj.respondents.split(',');
+      }
+    }
 
     if (obj.csv) {
       if (obj.csv.warnings) {
@@ -56,10 +64,11 @@ class SurveyController extends EntityController {
       obj.question = obj.csv.root;
     }
 
-    return this._filterObject(
-      obj,
-      ['name', 'description', 'respondents', 'enabled', 'question'],
-    );
+    let filter = ['name', 'description', 'respondents', 'enabled', 'question'];
+    if (this.action === 'create') {
+      filter = filter.concat('_id');
+    }
+    return this._filterObject(obj, filter);
   }
 
   _parseFileField({mime, field, file, fields}) {

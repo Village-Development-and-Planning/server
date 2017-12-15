@@ -23,8 +23,6 @@ export default class SurveyResponseProcessor {
         (keys) => this.csvKeys = keys,
         () => this.csvKeys = [],
       )
-    ).then(
-      () => console.log(`Got ${this.csvKeys.length} keys`)
     ).then(() =>
       new Promise((res, rej) => {
         const cursor = Answer.find({
@@ -63,10 +61,13 @@ export default class SurveyResponseProcessor {
 
   _collectAnswer(answer) {
     if (!answer || !answer.rootQuestion) return;
-
-    if (!this.surveyRespondents) {
+    console.log(`Starting to process answer ${answer._id}`);
+    if (answer.version == 0) {
+      console.log(`Skipping because version 0`);
+      return;
+    }
+    if (!this.surveyRespondents || !this.surveyRespondents.length) {
       const obj = answer.rootQuestion.collect({keys: this.csvKeys});
-      console.log(`Starting to process answer ${answer._id}`);
       this._writeCSVObj(obj);
     } else {
       this.surveyRespondents.forEach((resp, idx) => {
@@ -83,7 +84,8 @@ export default class SurveyResponseProcessor {
   _collectRespondent(question, {acc, prefix}) {
     question.answers.forEach((ans, idx) => {
       const obj = question.collectAnswer({
-        ans, idx, acc,
+        ans, idx,
+        acc: Object.assign({}, acc),
         keys: this.csvKeys,
         ansKey: prefix,
       });
@@ -130,6 +132,7 @@ export default class SurveyResponseProcessor {
       const csvWriter = this._createCsvWriter(filePath, 'w', rej);
       csvWriter.on('error', rej);
       csvWriter.write(this.csvKeys);
+      csvWriter.write(this.csvKeys.map((k) => this.csvKeys[`pos${k}`]));
       csvWriter.end(null, null, res);
     });
   }

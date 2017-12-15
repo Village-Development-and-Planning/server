@@ -16,8 +16,16 @@ class AnswerController extends EntityController {
 
   _create(...args) {
     return super._create(...args)
-      .then(({_id, name, description, version, surveyor, survey, modifiedAt}) =>
-        ({_id, name, description, version, surveyor, survey, modifiedAt}));
+      .then(
+        (obj) => this._filterObject(
+          obj,
+          [
+            '_id', 'name', 'description', 'version',
+            'surveyor', 'survey',
+            'modifiedAt',
+          ]
+        )
+      );
   }
   _parseDataFile(json, fields) {
     if (!json) return;

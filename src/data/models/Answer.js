@@ -12,16 +12,23 @@ class AnsweredQuestion extends Question {
     if (position) this.position = position;
   }
 
-  getValue(idx) {
-    idx = idx || 0;
-    return this.answers
-      && this.answers[idx]
-      && this.answers[idx]
-        .logged_options
-        .map((opt) => {
-          return opt.position || opt.text.english;
-        })
-        .join(',');
+  accumulateValue(ans, ansKey) {
+    if (!ans.logged_options) return {};
+    if (this.type == 'ROOT' || !this.number) {
+      return {};
+    }
+    const ret = {};
+    if (this.type == 'MULTIPLE_CHOICE') {
+      ans.logged_options.reduce((acc, opt) => {
+        if (opt.position !== null) acc[`${ansKey}_opt${opt.position}`] = 1;
+        return acc;
+      }, ret);
+    } else {
+      ret[ansKey] = ans.logged_options.map(
+        (opt) => (opt.position || opt.text.english)
+      ).join(',');
+    }
+    return ret;
   }
 
 
@@ -64,7 +71,8 @@ class AnsweredQuestion extends Question {
           });
           respChild.findRespondents({
             acc: newAcc,
-            prefix, keys, respondents, idx, cb,
+            prefix: `${prefix}_`,
+            keys, respondents, idx, cb,
           });
         }
       }
@@ -72,20 +80,29 @@ class AnsweredQuestion extends Question {
   }
 
 
-  collectAnswer({ans, idx, acc, ansKey, keys, ignore}) {
+  collectAnswer({ans, idx, acc, ansKey, suffix, keys, ignore}) {
     acc = acc || {};
     ansKey = ansKey || 'Q';
+    suffix = suffix || '';
     keys = keys || [];
 
-    acc[ansKey] = this.getValue(idx);
-    if (!keys[`pos${ansKey}`]) {
-      console.log(`Pushing: ${ansKey} (from ${this.number})`);
-      keys.push(ansKey);
-      keys[`pos${ansKey}`] = true;
-    }
+    const valObj = this.accumulateValue(ans, ansKey);
+    Object.keys(valObj).forEach((key) => {
+      const oKey = key + suffix;
+      acc[oKey] = valObj[key];
+      if (!keys[`pos${oKey}`]) {
+        keys.push(oKey);
+        let text = '';
+        if (this.number) text = text + this.number;
+        if (this.text && this.text.english) {
+          text = text + ` ${this.text.english}`;
+        }
+        keys[`pos${oKey}`] = text || 'UNKNOWN';
+      }
+    });
 
     if (ans.children) {
-      ans.children.reduce(
+        ans.children.reduce(
         (acc, child) => {
           const childAnswer = AnsweredQuestion.fromChild(child);
           if (ignore && ignore.reduce(
@@ -95,7 +112,7 @@ class AnsweredQuestion extends Question {
 
           return childAnswer.collect({
             prefix: `${ansKey}_`,
-            keys, acc, ignore,
+            suffix, keys, acc, ignore,
           });
         },
         acc,
@@ -104,17 +121,20 @@ class AnsweredQuestion extends Question {
     return acc;
   }
 
-  collect({acc, prefix, keys, ignore}) {
+  collect({acc, prefix, suffix, keys, ignore}) {
     acc = acc || {};
     prefix = prefix || 'Q';
+    suffix = suffix || '';
     keys = keys || [];
 
     prefix = `${prefix}${this.position || ''}`;
     return (this.answers ? (this.answers.reduce(
       (acc, ans, idx) => {
         let ansKey = prefix;
-        if (idx) ansKey = `${ansKey}_a${idx}`;
-        return this.collectAnswer({ans, idx, acc, ansKey, keys, ignore});
+        if (this.flow && this.flow.answer.scope == 'multiple') {
+          suffix = suffix + `_ans${idx}`;
+        }
+        return this.collectAnswer({ans, idx, acc, ansKey, suffix, keys, ignore});
       },
       acc,
     )) : acc);
