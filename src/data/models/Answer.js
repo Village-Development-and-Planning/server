@@ -131,10 +131,14 @@ class AnsweredQuestion extends Question {
     return (this.answers ? (this.answers.reduce(
       (acc, ans, idx) => {
         let ansKey = prefix;
+        let newSuffix = suffix;
         if (this.flow && this.flow.answer.scope == 'multiple') {
-          suffix = suffix + `_ans${idx}`;
+          newSuffix = suffix + `_ans${idx}`;
         }
-        return this.collectAnswer({ans, idx, acc, ansKey, suffix, keys, ignore});
+        return this.collectAnswer({
+          ans, idx, acc, ansKey, keys, ignore,
+          suffix: newSuffix,
+        });
       },
       acc,
     )) : acc);

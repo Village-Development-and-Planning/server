@@ -384,10 +384,14 @@ var AnsweredQuestion = function (_Question) {
       prefix = '' + prefix + (this.position || '');
       return this.answers ? this.answers.reduce(function (acc, ans, idx) {
         var ansKey = prefix;
+        var newSuffix = suffix;
         if (_this4.flow && _this4.flow.answer.scope == 'multiple') {
-          suffix = suffix + ('_ans' + idx);
+          newSuffix = suffix + ('_ans' + idx);
         }
-        return _this4.collectAnswer({ ans: ans, idx: idx, acc: acc, ansKey: ansKey, suffix: suffix, keys: keys, ignore: ignore });
+        return _this4.collectAnswer({
+          ans: ans, idx: idx, acc: acc, ansKey: ansKey, keys: keys, ignore: ignore,
+          suffix: newSuffix
+        });
       }, acc) : acc;
     }
   }], [{
@@ -1473,7 +1477,7 @@ var SurveyResponseProcessor = function () {
             survey: _this.surveyId
           }).cursor();
 
-          _this.csvWriter = _this._createCsvWriter();
+          _this.csvWriter = _this._createCsvWriter(_this.constructor.csvPath(_this.surveyId), 'a', rej);
 
           var result = [];
           cursor.on('data', function (answer) {
@@ -1496,6 +1500,51 @@ var SurveyResponseProcessor = function () {
       });
     }
   }, {
+    key: 'sortAnswers',
+    value: function sortAnswers() {
+      var _this2 = this;
+
+      return this._readCSVHeader().then(function (keys) {
+        return _this2.csvKeys = keys;
+      }).then(function () {
+        return new Promise(function (res, rej) {
+          var inPath = _this2.constructor.csvPath(_this2.surveyId);
+          var outPath = _this2.constructor.csvSortedPath(_this2.surveyId);
+          var reader = _this2._createCsvReader(inPath, rej);
+          var writer = _this2._createCsvWriter(outPath, 'w', rej);
+
+          var sortedKeyIndices = _this2.csvKeys.map(function (key, index) {
+            return { key: key, index: index };
+          }).sort(function (a, b) {
+            if (a.key < b.key) return -1;
+            if (a.key > b.key) return 1;
+            return 0;
+          });
+          reader.on('end', function () {
+            writer.end(null, null, function () {
+              _this2.csvKeys = sortedKeyIndices.map(function (_ref) {
+                var key = _ref.key;
+                return key;
+              });
+              res(_this2._writeCSVHeader(_this2.constructor.csvSortedHeaderPath(_this2.surveyId)));
+            });
+          });
+
+          reader.on('readable', function () {
+            var data = null;
+            while (data = reader.read()) {
+              var out = sortedKeyIndices.map(function (_ref2) {
+                var key = _ref2.key,
+                    index = _ref2.index;
+                return data[index];
+              });
+              writer.write(out);
+            }
+          });
+        });
+      });
+    }
+  }, {
     key: '_writeCSVObj',
     value: function _writeCSVObj(obj) {
       this.csvWriter.write(this.csvKeys.map(function (k) {
@@ -1505,7 +1554,7 @@ var SurveyResponseProcessor = function () {
   }, {
     key: '_collectAnswer',
     value: function _collectAnswer(answer) {
-      var _this2 = this;
+      var _this3 = this;
 
       if (!answer || !answer.rootQuestion) return;
       console.log('Starting to process answer ' + answer._id);
@@ -1519,9 +1568,9 @@ var SurveyResponseProcessor = function () {
       } else {
         this.surveyRespondents.forEach(function (resp, idx) {
           answer.rootQuestion.findRespondents({
-            keys: _this2.csvKeys,
-            respondents: _this2.surveyRespondents,
-            cb: _this2._collectRespondent.bind(_this2),
+            keys: _this3.csvKeys,
+            respondents: _this3.surveyRespondents,
+            cb: _this3._collectRespondent.bind(_this3),
             idx: idx
           });
         });
@@ -1529,30 +1578,30 @@ var SurveyResponseProcessor = function () {
     }
   }, {
     key: '_collectRespondent',
-    value: function _collectRespondent(question, _ref) {
-      var _this3 = this;
+    value: function _collectRespondent(question, _ref3) {
+      var _this4 = this;
 
-      var acc = _ref.acc,
-          prefix = _ref.prefix;
+      var acc = _ref3.acc,
+          prefix = _ref3.prefix;
 
       question.answers.forEach(function (ans, idx) {
         var obj = question.collectAnswer({
           ans: ans, idx: idx,
           acc: Object.assign({}, acc),
-          keys: _this3.csvKeys,
+          keys: _this4.csvKeys,
           ansKey: prefix
         });
-        _this3._writeCSVObj(obj);
+        _this4._writeCSVObj(obj);
       });
     }
   }, {
     key: '_readCSVHeader',
     value: function _readCSVHeader() {
-      var _this4 = this;
+      var _this5 = this;
 
       return new Promise(function (res, rej) {
-        var filePath = _this4.constructor.csvHeaderPath(_this4.surveyId);
-        var reader = _this4._createCsvReader(filePath, rej);
+        var filePath = _this5.constructor.csvHeaderPath(_this5.surveyId);
+        var reader = _this5._createCsvReader(filePath, rej);
 
         var rows = [];
         reader.on('end', function () {
@@ -1576,17 +1625,17 @@ var SurveyResponseProcessor = function () {
     }
   }, {
     key: '_writeCSVHeader',
-    value: function _writeCSVHeader() {
-      var _this5 = this;
+    value: function _writeCSVHeader(path) {
+      var _this6 = this;
 
       if (!this.csvKeys || !this.csvKeys.length) return;
-      var filePath = this.constructor.csvHeaderPath(this.surveyId);
+      var filePath = path || this.constructor.csvHeaderPath(this.surveyId);
       return new Promise(function (res, rej) {
-        var csvWriter = _this5._createCsvWriter(filePath, 'w', rej);
+        var csvWriter = _this6._createCsvWriter(filePath, 'w', rej);
         csvWriter.on('error', rej);
-        csvWriter.write(_this5.csvKeys);
-        csvWriter.write(_this5.csvKeys.map(function (k) {
-          return _this5.csvKeys['pos' + k];
+        csvWriter.write(_this6.csvKeys);
+        csvWriter.write(_this6.csvKeys.map(function (k) {
+          return _this6.csvKeys['pos' + k];
         }));
         csvWriter.end(null, null, res);
       });
@@ -1596,19 +1645,14 @@ var SurveyResponseProcessor = function () {
     value: function _createCsvReader(path, errH) {
       var fileStream = _fs2.default.createReadStream(path, { encoding: 'utf8' });
       if (errH) fileStream.on('error', errH);
-      var csvReader = new _csvParse2.default();
+      var csvReader = new _csvParse2.default({ relax_column_count: true });
       fileStream.pipe(csvReader);
       return csvReader;
     }
   }, {
     key: '_createCsvWriter',
     value: function _createCsvWriter(path, mode, errH) {
-      if (!path) {
-        path = this.constructor.csvPath(this.surveyId);
-        mode = 'a';
-      }
       if (!mode) mode = 'w';
-
       var fileStream = _fs2.default.createWriteStream(path, { encoding: 'utf8', flags: mode });
       if (errH) fileStream.on('error', errH);
 
@@ -1625,9 +1669,19 @@ var SurveyResponseProcessor = function () {
       return 'data/survey-response/' + surveyId + '.csv';
     }
   }, {
+    key: 'csvSortedPath',
+    value: function csvSortedPath(surveyId) {
+      return 'data/survey-response/' + surveyId + '-sorted.csv';
+    }
+  }, {
     key: 'csvHeaderPath',
     value: function csvHeaderPath(surveyId) {
       return 'data/survey-response/' + surveyId + '-header.csv';
+    }
+  }, {
+    key: 'csvSortedHeaderPath',
+    value: function csvSortedHeaderPath(surveyId) {
+      return 'data/survey-response/' + surveyId + '-sorted-header.csv';
     }
   }]);
 
@@ -3072,7 +3126,7 @@ var SurveyController = function (_EntityController) {
       }).then(function (survey) {
         var _id = survey._id;
         var path = _surveyResponse2.default.csvPath(_id);
-        var headerPath = _surveyResponse2.default.csvHeaderPath(_id);
+        var headerPath = _surveyResponse2.default.csvSortedHeaderPath(_id);
         if (_fs2.default.existsSync(path) && _fs2.default.existsSync(headerPath)) {
           var csvOutput = new _streamConcat2.default([_fs2.default.createReadStream(headerPath), _fs2.default.createReadStream(path)]);
           var res = _this2.renderer.res;

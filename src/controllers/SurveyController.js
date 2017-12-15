@@ -20,7 +20,7 @@ class SurveyController extends EntityController {
     .then((survey) => {
       const _id = survey._id;
       const path = SurveyResponse.csvPath(_id);
-      const headerPath = SurveyResponse.csvHeaderPath(_id);
+      const headerPath = SurveyResponse.csvSortedHeaderPath(_id);
       if (fs.existsSync(path) && fs.existsSync(headerPath)) {
         const csvOutput = new StreamConcat([
           fs.createReadStream(headerPath),

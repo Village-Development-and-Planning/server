@@ -29,7 +29,9 @@ export default class SurveyResponseProcessor {
           survey: this.surveyId,
         }).cursor();
 
-        this.csvWriter = this._createCsvWriter();
+        this.csvWriter = this._createCsvWriter(
+          this.constructor.csvPath(this.surveyId), 'a', rej
+        );
 
         const result = [];
         cursor.on(
@@ -51,6 +53,46 @@ export default class SurveyResponseProcessor {
         });
       })
     );
+  }
+
+  sortAnswers() {
+    return this._readCSVHeader()
+      .then((keys) => this.csvKeys = keys)
+      .then(
+        () => new Promise((res, rej) => {          
+          const inPath = this.constructor.csvPath(this.surveyId);
+          const outPath = this.constructor.csvSortedPath(this.surveyId);
+          const reader = this._createCsvReader(inPath, rej);
+          const writer = this._createCsvWriter(outPath, 'w', rej);
+
+          const sortedKeyIndices = this.csvKeys
+            .map((key, index) => ({key: key, index}))
+            .sort((a, b) => {
+              if (a.key < b.key) return -1;
+              if (a.key > b.key) return 1;
+              return 0;
+            });
+          reader.on('end', () => {
+            writer.end(null, null, () => {
+              this.csvKeys = sortedKeyIndices.map(({key}) => key);
+              res(
+                this._writeCSVHeader(
+                  this.constructor.csvSortedHeaderPath(this.surveyId)
+                )
+              );
+            });
+          });          
+
+          reader.on('readable', () => {
+            let data = null;
+            while (data = reader.read()) {
+              const out = sortedKeyIndices.map(({key, index}) => data[index]);
+              writer.write(out);
+            }
+          });
+              
+        })
+      );    
   }
 
   _writeCSVObj(obj) {
@@ -96,8 +138,14 @@ export default class SurveyResponseProcessor {
   static csvPath(surveyId) {
     return `data/survey-response/${surveyId}.csv`;
   }
+  static csvSortedPath(surveyId) {
+    return `data/survey-response/${surveyId}-sorted.csv`;
+  }
   static csvHeaderPath(surveyId) {
     return `data/survey-response/${surveyId}-header.csv`;
+  }
+  static csvSortedHeaderPath(surveyId) {
+    return `data/survey-response/${surveyId}-sorted-header.csv`;
   }
 
   _readCSVHeader() {
@@ -125,9 +173,9 @@ export default class SurveyResponseProcessor {
     });
   }
 
-  _writeCSVHeader() {
+  _writeCSVHeader(path) {
     if (!this.csvKeys || !this.csvKeys.length) return;
-    const filePath = this.constructor.csvHeaderPath(this.surveyId);
+    const filePath = path || this.constructor.csvHeaderPath(this.surveyId);
     return new Promise((res, rej) => {
       const csvWriter = this._createCsvWriter(filePath, 'w', rej);
       csvWriter.on('error', rej);
@@ -140,18 +188,13 @@ export default class SurveyResponseProcessor {
   _createCsvReader(path, errH) {
     const fileStream = fs.createReadStream(path, {encoding: 'utf8'});
     if (errH) fileStream.on('error', errH);
-    const csvReader = new CSVParser();
+    const csvReader = new CSVParser({relax_column_count: true});
     fileStream.pipe(csvReader);
     return csvReader;
   }
 
   _createCsvWriter(path, mode, errH) {
-    if (!path) {
-      path = this.constructor.csvPath(this.surveyId);
-      mode = 'a';
-    }
     if (!mode) mode = 'w';
-
     const fileStream = fs.createWriteStream(
       path,
       {encoding: 'utf8', flags: mode},
