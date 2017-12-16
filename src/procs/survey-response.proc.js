@@ -65,9 +65,12 @@ export default class SurveyResponseProcessor {
           const sortedKeyIndices = this.csvKeys
             .map((key, index) => ({key: key, index}))
             .sort(
-              (a, b) => this._keyListComparator(
-                a.key.split('_'), b.key.split('_'),
-              )
+              (a, b) => {
+                const ret = this._keyListComparator(
+                  a.key.split('_'), b.key.split('_'),
+                );
+                return ret;
+              }
             );
           reader.on('end', () => {
             writer.end(null, null, () => {
@@ -100,17 +103,18 @@ export default class SurveyResponseProcessor {
     const ret = arr1.reduce((acc, el, index) => {
       if (acc) return acc;
 
-      const other = arr2[index];
+      let other = arr2[index];
       if (!other) return 1;
       if (el === other) return 0;
 
       const match1 = el.match(/^([a-z]*)([0-9]*)$/);
       const match2 = other.match(/^([a-z]*)([0-9]*)$/);
-
+      if (!match1) return -1;
+      if (!match2) return 1;
       if (match1[0] && !match2[0]) return -1;
       if (match2[0] && !match1[0]) return 1;
-      if (match1) el = parseInt(match1[2]);
-      if (match2) el = parseInt(match2[2]);
+      el = parseInt(match1[2]);
+      other = parseInt(match2[2]);
       return el - other;
     }, 0);
     return ret || (arr1.length - arr2.length);
@@ -124,9 +128,7 @@ export default class SurveyResponseProcessor {
 
   _collectAnswer(answer) {
     if (!answer || !answer.rootQuestion) return;
-    console.log(`Starting to process answer ${answer._id}`);
     if (answer.version == 0) {
-      console.log(`Skipping because version 0`);
       return;
     }
     if (!this.surveyRespondents || !this.surveyRespondents.length) {

@@ -85,7 +85,6 @@ class AnswerController extends EntityController {
       csvWriter.end();
     })
     .catch((err) => {
-      console.log(err.stack);
     });
   }
 }

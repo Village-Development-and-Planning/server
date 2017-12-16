@@ -346,7 +346,6 @@ var AnsweredQuestion = function (_Question) {
           if (_this3.text && _this3.text.english) {
             text = text + (' ' + _this3.text.english);
           }
-          console.log('Adding column: ' + oKey + '\n' + text);
           keys['pos' + oKey] = text || 'UNKNOWN';
         }
       });
@@ -383,7 +382,7 @@ var AnsweredQuestion = function (_Question) {
       keys = keys || [];
 
       var pos = this.position || '';
-      pos = pos.replace(/,/g, '_');
+      pos = pos.replace(/\./g, '_');
       prefix = '' + prefix + pos;
       return this.answers ? this.answers.reduce(function (acc, ans, idx) {
         var ansKey = prefix;
@@ -1516,7 +1515,8 @@ var SurveyResponseProcessor = function () {
           var sortedKeyIndices = _this2.csvKeys.map(function (key, index) {
             return { key: key, index: index };
           }).sort(function (a, b) {
-            return _this2._keyListComparator(a.key.split('_'), b.key.split('_'));
+            var ret = _this2._keyListComparator(a.key.split('_'), b.key.split('_'));
+            return ret;
           });
           reader.on('end', function () {
             writer.end(null, null, function () {
@@ -1558,11 +1558,12 @@ var SurveyResponseProcessor = function () {
 
         var match1 = el.match(/^([a-z]*)([0-9]*)$/);
         var match2 = other.match(/^([a-z]*)([0-9]*)$/);
-
+        if (!match1) return -1;
+        if (!match2) return 1;
         if (match1[0] && !match2[0]) return -1;
         if (match2[0] && !match1[0]) return 1;
-        if (match1) el = parseInt(match1[2]);
-        if (match2) el = parseInt(match2[2]);
+        el = parseInt(match1[2]);
+        other = parseInt(match2[2]);
         return el - other;
       }, 0);
       return ret || arr1.length - arr2.length;
@@ -1580,9 +1581,7 @@ var SurveyResponseProcessor = function () {
       var _this3 = this;
 
       if (!answer || !answer.rootQuestion) return;
-      console.log('Starting to process answer ' + answer._id);
       if (answer.version == 0) {
-        console.log('Skipping because version 0');
         return;
       }
       if (!this.surveyRespondents || !this.surveyRespondents.length) {
@@ -2764,25 +2763,20 @@ var arg = process.argv[2];
 var method = process.argv[3];
 
 if (!arg || !method) {
-  console.log('Usage: ' + process.argv[0] + ' <arg> <method>');
   process.exit(-1);
 }
 
 var proc = new Process(arg);
 if (!proc) {
-  console.log('Error creating process.');
   process.exit(-1);
 }
 
 if (typeof proc[method] !== 'function') {
-  console.log('Method not found: ' + method);
   process.exit(-1);
 }
 
 Promise.resolve(proc[method]()).then(function () {
   return null;
-}, function (err) {
-  return console.log(err);
 }).then(function () {
   return mongoose.connection.close();
 });
@@ -3059,9 +3053,7 @@ var AnswerController = function (_EntityController) {
         });
         csvWriter.write(answer.rootQuestion.collect({}));
         csvWriter.end();
-      }).catch(function (err) {
-        console.log(err.stack);
-      });
+      }).catch(function (err) {});
     }
   }]);
 
@@ -3556,7 +3548,8 @@ var SurveyResponseProcessor = function () {
           var sortedKeyIndices = _this2.csvKeys.map(function (key, index) {
             return { key: key, index: index };
           }).sort(function (a, b) {
-            return _this2._keyListComparator(a.key.split('_'), b.key.split('_'));
+            var ret = _this2._keyListComparator(a.key.split('_'), b.key.split('_'));
+            return ret;
           });
           reader.on('end', function () {
             writer.end(null, null, function () {
@@ -3598,11 +3591,12 @@ var SurveyResponseProcessor = function () {
 
         var match1 = el.match(/^([a-z]*)([0-9]*)$/);
         var match2 = other.match(/^([a-z]*)([0-9]*)$/);
-
+        if (!match1) return -1;
+        if (!match2) return 1;
         if (match1[0] && !match2[0]) return -1;
         if (match2[0] && !match1[0]) return 1;
-        if (match1) el = parseInt(match1[2]);
-        if (match2) el = parseInt(match2[2]);
+        el = parseInt(match1[2]);
+        other = parseInt(match2[2]);
         return el - other;
       }, 0);
       return ret || arr1.length - arr2.length;
@@ -3620,9 +3614,7 @@ var SurveyResponseProcessor = function () {
       var _this3 = this;
 
       if (!answer || !answer.rootQuestion) return;
-      console.log('Starting to process answer ' + answer._id);
       if (answer.version == 0) {
-        console.log('Skipping because version 0');
         return;
       }
       if (!this.surveyRespondents || !this.surveyRespondents.length) {
