@@ -64,11 +64,11 @@ export default class SurveyResponseProcessor {
 
           const sortedKeyIndices = this.csvKeys
             .map((key, index) => ({key: key, index}))
-            .sort((a, b) => {
-              if (a.key < b.key) return -1;
-              if (a.key > b.key) return 1;
-              return 0;
-            });
+            .sort(
+              (a, b) => this._keyListComparator(
+                a.key.split('_'), b.key.split('_'),
+              )
+            );
           reader.on('end', () => {
             writer.end(null, null, () => {
               const newKeys = [];
@@ -94,6 +94,26 @@ export default class SurveyResponseProcessor {
           });
         })
       );
+  }
+
+  _keyListComparator(arr1, arr2) {
+    const ret = arr1.reduce((acc, el, index) => {
+      if (acc) return acc;
+
+      const other = arr2[index];
+      if (!other) return 1;
+      if (el === other) return 0;
+
+      const match1 = el.match(/^([a-z]*)([0-9]*)$/);
+      const match2 = other.match(/^([a-z]*)([0-9]*)$/);
+
+      if (match1[0] && !match2[0]) return -1;
+      if (match2[0] && !match1[0]) return 1;
+      if (match1) el = parseInt(match1[2]);
+      if (match2) el = parseInt(match2[2]);
+      return el - other;
+    }, 0);
+    return ret || (arr1.length - arr2.length);
   }
 
   _writeCSVObj(obj) {

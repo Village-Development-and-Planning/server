@@ -1516,9 +1516,7 @@ var SurveyResponseProcessor = function () {
           var sortedKeyIndices = _this2.csvKeys.map(function (key, index) {
             return { key: key, index: index };
           }).sort(function (a, b) {
-            if (a.key < b.key) return -1;
-            if (a.key > b.key) return 1;
-            return 0;
+            return _this2._keyListComparator(a.key.split('_'), b.key.split('_'));
           });
           reader.on('end', function () {
             writer.end(null, null, function () {
@@ -1547,6 +1545,27 @@ var SurveyResponseProcessor = function () {
           });
         });
       });
+    }
+  }, {
+    key: '_keyListComparator',
+    value: function _keyListComparator(arr1, arr2) {
+      var ret = arr1.reduce(function (acc, el, index) {
+        if (acc) return acc;
+
+        var other = arr2[index];
+        if (!other) return 1;
+        if (el === other) return 0;
+
+        var match1 = el.match(/^([a-z]*)([0-9]*)$/);
+        var match2 = other.match(/^([a-z]*)([0-9]*)$/);
+
+        if (match1[0] && !match2[0]) return -1;
+        if (match2[0] && !match1[0]) return 1;
+        if (match1) el = parseInt(match1[2]);
+        if (match2) el = parseInt(match2[2]);
+        return el - other;
+      }, 0);
+      return ret || arr1.length - arr2.length;
     }
   }, {
     key: '_writeCSVObj',
