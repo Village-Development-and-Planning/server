@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 
 const processSchema = new Schema({
     name: {type: String, required: true},
+    cmd: {type: String, required: true},
+    args: [{type: String}],
     status: {type: String},
 });
 
