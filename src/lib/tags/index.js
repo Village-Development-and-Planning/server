@@ -42,7 +42,9 @@ const tagModules = [].concat([
 
   require('./core/loop'),
   require('./core/select'),
+  require('./core/options_count'),
 
+  require('./ui/back'),
   require('./ui/grid'),
   require('./ui/images'),
   require('./ui/number'),
