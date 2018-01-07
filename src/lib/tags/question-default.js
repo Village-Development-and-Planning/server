@@ -12,7 +12,9 @@ module.exports = (type, parent) => {
       // 'MULTIPLE_CHOICE',
       // 'GPS',
       // 'INPUT',
-      // 'INFO'
+      // 'INFO',
+      // 'MESSAGE',
+      // 'NONE',
 
       validation: null,
       // 'NUMBER',
