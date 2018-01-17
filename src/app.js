@@ -1,2 +1,1 @@
-global.appRequire = (name) => require(`${__dirname}/${name}`);
-appRequire('server');
+import {} from './boot';

@@ -1,4 +1,5 @@
-import Renderer from '../../lib/utils/render';
+import Renderer from '../lib/utils/render';
+
 /**
  * Dispatch action to given controller
  * @param {Class.<BaseController>} Controller 

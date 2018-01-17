@@ -4,8 +4,8 @@ const http = require('http');
 // Create the server and load the components.
 const app = express();
 
-// 1. Connect to DB (doesn't need the app object)
-require('./database');
+// 1 Setup Database
+import dbPromise from './database';
 
 // 2.1 Setup cookies
 require('./cookies')(app);
@@ -17,10 +17,11 @@ require('./security')(app);
 require('./body-parser')(app);
 
 // 10. Setup the routes:
-require('./routes')(app);
+require('../routes')(app);
 
 // 99. Setup error-handling
 require('./error-handler')(app);
+
 
 let port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
