@@ -1,6 +1,5 @@
-const tagsParser = appRequire('lib/tags');
-
-const TreeParser = require('./tree-csv-parser');
+import tagsParser from '../tags';
+import TreeParser from './tree-csv-parser';
 /**
 * Tree based parser for questions provided in CSV for mapping/household survey.
 * 

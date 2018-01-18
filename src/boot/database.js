@@ -1,10 +1,11 @@
 // connect to mongoose
-const constants = appRequire('config/Constants');
-const mongoose = require('mongoose');
+import constants from '../config/Constants';
+import mongoose from 'mongoose';
 
 const options = constants.db;
 mongoose.Promise = global.Promise;
-mongoose.connect(
+
+export default mongoose.connect(
   options.connectionString,
   options.connectionOptions,
   (err) => {

@@ -26,14 +26,15 @@ function registerCmsRoutes(app, Controller, extra) {
 
 const cmsRouter = new express.Router();
 registerCmsRoutes(
-  cmsRouter, appRequire('controllers/SurveyController'),
+  cmsRouter,
+  require('../controllers/SurveyController'),
   (app, ctrl) => {
     app.use('/:id/download', dispatcher(ctrl, 'download'));
   }
 );
 registerCmsRoutes(
   cmsRouter,
-  appRequire('controllers/AnswerController'),
+  require('../controllers/AnswerController'),
   (app, ctrl) => {
     app.use('/:id/download', dispatcher(ctrl, 'download'));
   }

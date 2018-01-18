@@ -1,4 +1,4 @@
-const Survey = require('../data/models/Survey');
+const Survey = require('../models/Survey');
 import fs from 'fs';
 import StreamConcat from 'stream-concat';
 import EntityController from './EntitiyController';
