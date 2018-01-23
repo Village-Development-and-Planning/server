@@ -1792,6 +1792,11 @@ var CreateConcerns = function (_Mixin) {
         }, _this2.constructor.entityName || 'entity', e);
       }).catch(function (e) {
         e.status = 400;
+        if (e.errors) {
+          e.details = Object.keys(e.errors).map(function (key) {
+            return { key: key, message: e.errors[key].message };
+          });
+        }
         return Promise.reject(e);
       }));
     }
@@ -3169,6 +3174,7 @@ module.exports = function (app) {
       res.status(err.status || 500);
       res.json({
         message: err.message,
+        details: err.details || null,
         stack: err.stack && err.stack.split('\n')
       });
     });
