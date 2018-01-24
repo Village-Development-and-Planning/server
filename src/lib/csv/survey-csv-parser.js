@@ -1,4 +1,5 @@
 import tagsParser from '../tags';
+import optTagsParser from '../tags/options';
 import TreeParser from './tree-csv-parser';
 /**
 * Tree based parser for questions provided in CSV for mapping/household survey.
@@ -59,22 +60,27 @@ class SurveyCSVParser extends TreeParser {
     const qTags = this.surveyOpts.question + '.Tags';
     const qType = this.surveyOpts.question + '.Type';
     const qNo = this.surveyOpts.question + '.No';
+    const optNo = this.surveyOpts.opt + '.No';
     const node = stack[stack.length - 1];
     let parent = null;
     if (stack.length > 1) {
       parent = stack[stack.length - 2];
     }
-    node[qParsedTag] = tagsParser(
-      node[qType], node[qTags],
-      parent && parent[qParsedTag]
-    );
-    const _tags = node[qParsedTag]._tags;
-    for (let k of Object.keys(_tags)) {
-      if (!_tags[k]) {
-        this.warnings.push(
-          {message: `Unknown tag ${k} in ${qNo} ${node[qNo]}`}
-        );
-      }
+    if (!node[qNo] && node[optNo]) {
+      node[qParsedTag] = optTagsParser(node[qTags]).then(
+        ({output, warnings}) => {
+          this.warnings = this.warnings.concat(warnings);
+          return output;
+        }
+      );
+    } else if (node[qNo]) {
+      node[qParsedTag] = tagsParser(
+        node[qType], node[qTags],
+        parent && parent[qParsedTag]
+      ).then(({output, warnings}) => {
+        this.warnings = this.warnings.concat(warnings);
+        return output;
+      });
     }
   }
 
@@ -86,8 +92,8 @@ class SurveyCSVParser extends TreeParser {
   * @memberOf SurveyCSVParser
   */
   _onNodeCompleted({node, parent}) {
-    let qNo = this.surveyOpts.question + '.No';
-    let optNo = this.surveyOpts.opt + '.No';
+    const qNo = this.surveyOpts.question + '.No';
+    const optNo = this.surveyOpts.opt + '.No';
 
     // 1. If parent is null, the survey object is the parent.
     if (parent == null) {
@@ -137,12 +143,16 @@ class SurveyCSVParser extends TreeParser {
   * @memberOf SurveyCSVParser
   */
   _createOption(node) {
-    let optText = this.surveyOpts.opt + '.Text.';
-    let optType = this.surveyOpts.opt + '.Type';
-    return Promise.resolve({
-      type: node[optType] || 'GENERIC',
-      text: this._createTextJson(node, optText),
-    });
+    const optText = this.surveyOpts.opt + '.Text.';
+    const optType = this.surveyOpts.opt + '.Type';
+    const qParsedTag = '_parsedTag';
+
+    return Promise.resolve(node[qParsedTag]).then(
+      (opt) => Object.assign({
+        type: node[optType] || 'GENERIC',
+        text: this._createTextJson(node, optText),
+      }, opt)
+    );
   }
 
 
@@ -176,19 +186,21 @@ class SurveyCSVParser extends TreeParser {
         return {options: opts, children: ch};
       });
     }).then((q) => {
+      return Promise.resolve(node[qParsedTag]).then(
+        (flow) => q.flow = flow
+      ).then(() => q);
+    }).then((q) => {
       if (node[qPreQ]) {
-        node[qParsedTag].pre.skipUnless = {
+        q.flow.pre.skipUnless = {
           question: node[qPreQ],
           option: node[qPreOpt],
         };
       }
-      // return Question.create(
       return Object.assign(q, {
         text: this._createTextJson(node, qText),
         type: node[qType] || 'GENERIC',
         tags: node[qTags],
         number: node[qNo],
-        flow: node[qParsedTag],
       });
     });
   }

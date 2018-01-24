@@ -1,39 +1,25 @@
-const questionDefault = require('./question-default');
+import questionDefault from './question-default';
+import promiseProcess from './promise-process';
 
-/**
- * Helper to split string into tags
- * 
- * @param {String} str 
- * @return {String[]}
- */
-function _createTagsList(str) {
-  return str.split(',').reduce((acc, e) => {
-    if ((e = e.trim())) {
-      acc.push(e);
-    }
-    return acc;
-  }, []);
-}
+export default (type, tags, parentContext) => {
+  const moreWarnings = [];
 
-const tagsParser = (type, tags, parentContext) => {
-  return _createTagsList(tags).reduce(
-    (acc, tag) => {
-      acc._tags[tag] = false;
-      return tagModules.reduce(
-        (acc2, m) => {
-          if (tag.startsWith(m.tagPrefix)) {
-            m.adorn(tag, acc2);
-            acc2._tags[tag] = m.tagPrefix;
-          };
-          return acc2;
-        }, acc,
+  return promiseProcess(
+    tags,
+    tagModules,
+    (o, mod, tag) => mod.adorn(tag, o, moreWarnings),
+    Promise.resolve(parentContext).then((pCtx) => {
+      return Object.assign(
+        {}, questionDefault(type, pCtx),
       );
-    }, Object.assign(
-      {}, questionDefault(type, parentContext),
-    ),
+    }),
+  ).then(
+    ({output, warnings}) => ({
+      output,
+      warnings: warnings.concat(moreWarnings),
+    })
   );
 };
-module.exports = tagsParser;
 
 const tagModules = [].concat([
 
@@ -51,8 +37,4 @@ const tagModules = [].concat([
   require('./ui/together'),
 
 ]);
-// .reduce(
-//   (acc, m) => {
-//     return acc[m.tagPrefix] = m;
-//   }, {}
-// );
+

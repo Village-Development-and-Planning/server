@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 67);
+/******/ 	return __webpack_require__(__webpack_require__.s = 70);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -260,23 +260,260 @@ module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
 
-/***/ 67:
+/***/ 7:
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(68);
-module.exports = __webpack_require__(70);
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Schema = __webpack_require__(1);
+
+var _Schema2 = _interopRequireDefault(_Schema);
+
+var _mongoose = __webpack_require__(0);
+
+var _mongoose2 = _interopRequireDefault(_mongoose);
+
+var _Question2 = __webpack_require__(12);
+
+var _Question3 = _interopRequireDefault(_Question2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+/**
+ * Provides export functionalities
+ */
+var AnsweredQuestion = function (_Question) {
+  _inherits(AnsweredQuestion, _Question);
+
+  function AnsweredQuestion(obj, position) {
+    _classCallCheck(this, AnsweredQuestion);
+
+    var _this = _possibleConstructorReturn(this, (AnsweredQuestion.__proto__ || Object.getPrototypeOf(AnsweredQuestion)).call(this, obj));
+
+    Object.assign(_this, obj);
+    if (position) _this.position = position;
+    return _this;
+  }
+
+  _createClass(AnsweredQuestion, [{
+    key: 'accumulateValue',
+    value: function accumulateValue(ans, ansKey) {
+      if (!ans.logged_options) return {};
+      if (this.type == 'ROOT' || !this.number) {
+        return {};
+      }
+      var ret = {};
+      if (this.type == 'MULTIPLE_CHOICE') {
+        ans.logged_options.reduce(function (acc, opt) {
+          if (opt.position !== null) acc[ansKey + '_opt' + opt.position] = 1;
+          return acc;
+        }, ret);
+      } else {
+        ret[ansKey] = ans.logged_options.map(function (opt) {
+          return opt.position || opt.text.english;
+        }).join(',');
+      }
+      return ret;
+    }
+  }, {
+    key: 'findRespondents',
+    value: function findRespondents(_ref) {
+      var _this2 = this;
+
+      var acc = _ref.acc,
+          prefix = _ref.prefix,
+          keys = _ref.keys,
+          respondents = _ref.respondents,
+          idx = _ref.idx,
+          cb = _ref.cb;
+
+      var number = respondents[idx];
+      if (!this.isParent(number)) return;
+      if (!this.answers) return;
+
+      acc = acc || {};
+      prefix = prefix || 'Q';
+      keys = keys || [];
+      prefix = '' + prefix + (this.position || '');
+
+      if (this.number === number) {
+        cb(this, { acc: acc, keys: keys, prefix: prefix });
+        return;
+      }
+
+      this.answers.forEach(function (ans, ansIdx) {
+        if (ans.children) {
+          var respChild = null;
+          ans.children.find(function (child, idx) {
+            child = AnsweredQuestion.fromChild(child);
+            if (child.isParent(number)) {
+              return respChild = child;
+            } else {
+              return false;
+            }
+          });
+          if (respChild) {
+            var newAcc = _this2.collectAnswer({
+              ans: ans, keys: keys,
+              idx: ansIdx,
+              ansKey: prefix,
+
+              ignore: respondents,
+              acc: Object.assign({}, acc)
+            });
+            respChild.findRespondents({
+              acc: newAcc,
+              prefix: prefix + '_',
+              keys: keys, respondents: respondents, idx: idx, cb: cb
+            });
+          }
+        }
+      });
+    }
+  }, {
+    key: 'collectAnswer',
+    value: function collectAnswer(_ref2) {
+      var _this3 = this;
+
+      var ans = _ref2.ans,
+          idx = _ref2.idx,
+          acc = _ref2.acc,
+          ansKey = _ref2.ansKey,
+          suffix = _ref2.suffix,
+          keys = _ref2.keys,
+          ignore = _ref2.ignore;
+
+      acc = acc || {};
+      ansKey = ansKey || 'Q';
+      suffix = suffix || '';
+      keys = keys || [];
+
+      var valObj = this.accumulateValue(ans, ansKey);
+      Object.keys(valObj).forEach(function (key) {
+        var oKey = key + suffix;
+        acc[oKey] = valObj[key];
+        if (!keys['pos' + oKey]) {
+          keys.push(oKey);
+          var text = '';
+          if (_this3.number) text = text + _this3.number;
+          if (_this3.text && _this3.text.english) {
+            text = text + (' ' + _this3.text.english);
+          }
+          keys['pos' + oKey] = text || 'UNKNOWN';
+        }
+      });
+
+      if (ans.children) {
+        ans.children.reduce(function (acc, child) {
+          var childAnswer = AnsweredQuestion.fromChild(child);
+          if (ignore && ignore.reduce(function (acc, ign) {
+            return acc || childAnswer.isParent(ign);
+          }, false)) return acc;
+
+          return childAnswer.collect({
+            prefix: ansKey + '_',
+            suffix: suffix, keys: keys, acc: acc, ignore: ignore
+          });
+        }, acc);
+      }
+      return acc;
+    }
+  }, {
+    key: 'collect',
+    value: function collect(_ref3) {
+      var _this4 = this;
+
+      var acc = _ref3.acc,
+          prefix = _ref3.prefix,
+          suffix = _ref3.suffix,
+          keys = _ref3.keys,
+          ignore = _ref3.ignore;
+
+      acc = acc || {};
+      prefix = prefix || 'Q';
+      suffix = suffix || '';
+      keys = keys || [];
+
+      var pos = this.position || '';
+      pos = pos.replace(/\./g, '_');
+      prefix = '' + prefix + pos;
+      return this.answers ? this.answers.reduce(function (acc, ans, idx) {
+        var ansKey = prefix;
+        var newSuffix = suffix;
+        if (_this4.flow && _this4.flow.answer.scope == 'multiple') {
+          newSuffix = suffix + ('_ans' + idx);
+        }
+        return _this4.collectAnswer({
+          ans: ans, idx: idx, acc: acc, ansKey: ansKey, keys: keys, ignore: ignore,
+          suffix: newSuffix
+        });
+      }, acc) : acc;
+    }
+  }], [{
+    key: 'fromChild',
+    value: function fromChild(child) {
+      var childAnswer = void 0;
+      if (child.question) {
+        // Version 1
+        childAnswer = new AnsweredQuestion(child.question, child.position);
+      } else {
+        childAnswer = new AnsweredQuestion(child);
+      }
+      return childAnswer;
+    }
+  }]);
+
+  return AnsweredQuestion;
+}(_Question3.default);
+
+var answerSchema = new _Schema2.default({
+  name: { type: String },
+  description: { type: String },
+  survey: { type: _Schema2.default.Types.ObjectId, ref: 'Survey', required: true },
+  surveyor: { type: _Schema2.default.Types.ObjectId, ref: 'Surveyor' },
+  version: { type: Number, default: 0 },
+  rootQuestion: {
+    type: {}, required: true,
+    get: function get(a) {
+      return new AnsweredQuestion(a);
+    }
+  },
+
+  // Post-processing concerns
+  lastExport: { type: Date }
+});
+answerSchema.index({ survey: 1, lastExport: 1 });
+
+module.exports = _mongoose2.default.model('Answer', answerSchema);
+
+/***/ }),
+
+/***/ 70:
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(71);
+module.exports = __webpack_require__(73);
 
 
 /***/ }),
 
-/***/ 68:
+/***/ 71:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = global["Proc"] = __webpack_require__(69);
+module.exports = global["Proc"] = __webpack_require__(72);
 
 /***/ }),
 
-/***/ 69:
+/***/ 72:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -579,244 +816,7 @@ exports.default = SurveyResponseProcessor;
 
 /***/ }),
 
-/***/ 7:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _Schema = __webpack_require__(1);
-
-var _Schema2 = _interopRequireDefault(_Schema);
-
-var _mongoose = __webpack_require__(0);
-
-var _mongoose2 = _interopRequireDefault(_mongoose);
-
-var _Question2 = __webpack_require__(12);
-
-var _Question3 = _interopRequireDefault(_Question2);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/**
- * Provides export functionalities
- */
-var AnsweredQuestion = function (_Question) {
-  _inherits(AnsweredQuestion, _Question);
-
-  function AnsweredQuestion(obj, position) {
-    _classCallCheck(this, AnsweredQuestion);
-
-    var _this = _possibleConstructorReturn(this, (AnsweredQuestion.__proto__ || Object.getPrototypeOf(AnsweredQuestion)).call(this, obj));
-
-    Object.assign(_this, obj);
-    if (position) _this.position = position;
-    return _this;
-  }
-
-  _createClass(AnsweredQuestion, [{
-    key: 'accumulateValue',
-    value: function accumulateValue(ans, ansKey) {
-      if (!ans.logged_options) return {};
-      if (this.type == 'ROOT' || !this.number) {
-        return {};
-      }
-      var ret = {};
-      if (this.type == 'MULTIPLE_CHOICE') {
-        ans.logged_options.reduce(function (acc, opt) {
-          if (opt.position !== null) acc[ansKey + '_opt' + opt.position] = 1;
-          return acc;
-        }, ret);
-      } else {
-        ret[ansKey] = ans.logged_options.map(function (opt) {
-          return opt.position || opt.text.english;
-        }).join(',');
-      }
-      return ret;
-    }
-  }, {
-    key: 'findRespondents',
-    value: function findRespondents(_ref) {
-      var _this2 = this;
-
-      var acc = _ref.acc,
-          prefix = _ref.prefix,
-          keys = _ref.keys,
-          respondents = _ref.respondents,
-          idx = _ref.idx,
-          cb = _ref.cb;
-
-      var number = respondents[idx];
-      if (!this.isParent(number)) return;
-      if (!this.answers) return;
-
-      acc = acc || {};
-      prefix = prefix || 'Q';
-      keys = keys || [];
-      prefix = '' + prefix + (this.position || '');
-
-      if (this.number === number) {
-        cb(this, { acc: acc, keys: keys, prefix: prefix });
-        return;
-      }
-
-      this.answers.forEach(function (ans, ansIdx) {
-        if (ans.children) {
-          var respChild = null;
-          ans.children.find(function (child, idx) {
-            child = AnsweredQuestion.fromChild(child);
-            if (child.isParent(number)) {
-              return respChild = child;
-            } else {
-              return false;
-            }
-          });
-          if (respChild) {
-            var newAcc = _this2.collectAnswer({
-              ans: ans, keys: keys,
-              idx: ansIdx,
-              ansKey: prefix,
-
-              ignore: respondents,
-              acc: Object.assign({}, acc)
-            });
-            respChild.findRespondents({
-              acc: newAcc,
-              prefix: prefix + '_',
-              keys: keys, respondents: respondents, idx: idx, cb: cb
-            });
-          }
-        }
-      });
-    }
-  }, {
-    key: 'collectAnswer',
-    value: function collectAnswer(_ref2) {
-      var _this3 = this;
-
-      var ans = _ref2.ans,
-          idx = _ref2.idx,
-          acc = _ref2.acc,
-          ansKey = _ref2.ansKey,
-          suffix = _ref2.suffix,
-          keys = _ref2.keys,
-          ignore = _ref2.ignore;
-
-      acc = acc || {};
-      ansKey = ansKey || 'Q';
-      suffix = suffix || '';
-      keys = keys || [];
-
-      var valObj = this.accumulateValue(ans, ansKey);
-      Object.keys(valObj).forEach(function (key) {
-        var oKey = key + suffix;
-        acc[oKey] = valObj[key];
-        if (!keys['pos' + oKey]) {
-          keys.push(oKey);
-          var text = '';
-          if (_this3.number) text = text + _this3.number;
-          if (_this3.text && _this3.text.english) {
-            text = text + (' ' + _this3.text.english);
-          }
-          keys['pos' + oKey] = text || 'UNKNOWN';
-        }
-      });
-
-      if (ans.children) {
-        ans.children.reduce(function (acc, child) {
-          var childAnswer = AnsweredQuestion.fromChild(child);
-          if (ignore && ignore.reduce(function (acc, ign) {
-            return acc || childAnswer.isParent(ign);
-          }, false)) return acc;
-
-          return childAnswer.collect({
-            prefix: ansKey + '_',
-            suffix: suffix, keys: keys, acc: acc, ignore: ignore
-          });
-        }, acc);
-      }
-      return acc;
-    }
-  }, {
-    key: 'collect',
-    value: function collect(_ref3) {
-      var _this4 = this;
-
-      var acc = _ref3.acc,
-          prefix = _ref3.prefix,
-          suffix = _ref3.suffix,
-          keys = _ref3.keys,
-          ignore = _ref3.ignore;
-
-      acc = acc || {};
-      prefix = prefix || 'Q';
-      suffix = suffix || '';
-      keys = keys || [];
-
-      var pos = this.position || '';
-      pos = pos.replace(/\./g, '_');
-      prefix = '' + prefix + pos;
-      return this.answers ? this.answers.reduce(function (acc, ans, idx) {
-        var ansKey = prefix;
-        var newSuffix = suffix;
-        if (_this4.flow && _this4.flow.answer.scope == 'multiple') {
-          newSuffix = suffix + ('_ans' + idx);
-        }
-        return _this4.collectAnswer({
-          ans: ans, idx: idx, acc: acc, ansKey: ansKey, keys: keys, ignore: ignore,
-          suffix: newSuffix
-        });
-      }, acc) : acc;
-    }
-  }], [{
-    key: 'fromChild',
-    value: function fromChild(child) {
-      var childAnswer = void 0;
-      if (child.question) {
-        // Version 1
-        childAnswer = new AnsweredQuestion(child.question, child.position);
-      } else {
-        childAnswer = new AnsweredQuestion(child);
-      }
-      return childAnswer;
-    }
-  }]);
-
-  return AnsweredQuestion;
-}(_Question3.default);
-
-var answerSchema = new _Schema2.default({
-  name: { type: String },
-  description: { type: String },
-  survey: { type: _Schema2.default.Types.ObjectId, ref: 'Survey', required: true },
-  surveyor: { type: _Schema2.default.Types.ObjectId, ref: 'Surveyor' },
-  version: { type: Number, default: 0 },
-  rootQuestion: {
-    type: {}, required: true,
-    get: function get(a) {
-      return new AnsweredQuestion(a);
-    }
-  },
-
-  // Post-processing concerns
-  lastExport: { type: Date }
-});
-answerSchema.index({ survey: 1, lastExport: 1 });
-
-module.exports = _mongoose2.default.model('Answer', answerSchema);
-
-/***/ }),
-
-/***/ 70:
+/***/ 73:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
