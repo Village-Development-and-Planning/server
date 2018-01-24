@@ -35,8 +35,9 @@ registerCmsRoutes(
 registerCmsRoutes(
   cmsRouter,
   require('../controllers/AnswerController'),
-  (app, ctrl) => {
-    app.use('/:id/download', dispatcher(ctrl, 'download'));
-  }
+);
+registerCmsRoutes(
+  cmsRouter,
+  require('../controllers/ArtifactController'),
 );
 module.exports = cmsRouter;

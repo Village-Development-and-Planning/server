@@ -250,7 +250,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _Question2 = __webpack_require__(11);
+var _Question2 = __webpack_require__(12);
 
 var _Question3 = _interopRequireDefault(_Question2);
 
@@ -506,91 +506,6 @@ module.exports = require("express");
 
 /***/ }),
 /* 10 */
-/***/ (function(module, exports) {
-
-module.exports = require("csv-stringify");
-
-/***/ }),
-/* 11 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var Schema = __webpack_require__(1);
-var Text = __webpack_require__(12);
-var mongoose = __webpack_require__(0);
-
-var questionSchema = new Schema({
-  type: { type: String },
-  tags: [{ type: String }],
-  text: { type: Text },
-  number: { type: String },
-  options: [{
-    position: { type: String, required: true },
-    option: { type: {}, required: true }
-  }],
-  children: [{
-    position: { type: String, required: true },
-    question: {
-      type: {},
-      get: function get(q) {
-        return new Question(q);
-      },
-      required: true
-    }
-  }],
-  flow: {
-    pre: { type: Object },
-    question: { type: Object },
-    answer: { type: Object },
-    child: { type: Object },
-    post: { type: Object },
-    exit: { type: Object }
-  }
-});
-
-Object.assign(questionSchema.methods, {
-  isParent: function isParent(number) {
-    if (!this.number) return true;
-    return number === this.number || number.startsWith(this.number + '.');
-  },
-  find: function find(number) {
-    if (!this.isParent(number)) return null;
-
-    if (this.number === number) return this;
-    var child = this.children.find(function (el) {
-      return el.question && el.question.isParent(number);
-    });
-    if (child) {
-      return child.question.find(number);
-    } else {
-      return null;
-    }
-  }
-});
-
-var Question = mongoose.model('Question', questionSchema);
-module.exports = Question;
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var Schema = __webpack_require__(1);
-
-module.exports = new Schema({
-  default: { type: String },
-  english: { type: String },
-  tamil: { type: String },
-  hindi: { type: String }
-});
-
-/***/ }),
-/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -684,6 +599,91 @@ var EntityController = function (_Mixin$mixin) {
 exports.default = EntityController;
 
 /***/ }),
+/* 11 */
+/***/ (function(module, exports) {
+
+module.exports = require("csv-stringify");
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var Schema = __webpack_require__(1);
+var Text = __webpack_require__(13);
+var mongoose = __webpack_require__(0);
+
+var questionSchema = new Schema({
+  type: { type: String },
+  tags: [{ type: String }],
+  text: { type: Text },
+  number: { type: String },
+  options: [{
+    position: { type: String, required: true },
+    option: { type: {}, required: true }
+  }],
+  children: [{
+    position: { type: String, required: true },
+    question: {
+      type: {},
+      get: function get(q) {
+        return new Question(q);
+      },
+      required: true
+    }
+  }],
+  flow: {
+    pre: { type: Object },
+    question: { type: Object },
+    answer: { type: Object },
+    child: { type: Object },
+    post: { type: Object },
+    exit: { type: Object }
+  }
+});
+
+Object.assign(questionSchema.methods, {
+  isParent: function isParent(number) {
+    if (!this.number) return true;
+    return number === this.number || number.startsWith(this.number + '.');
+  },
+  find: function find(number) {
+    if (!this.isParent(number)) return null;
+
+    if (this.number === number) return this;
+    var child = this.children.find(function (el) {
+      return el.question && el.question.isParent(number);
+    });
+    if (child) {
+      return child.question.find(number);
+    } else {
+      return null;
+    }
+  }
+});
+
+var Question = mongoose.model('Question', questionSchema);
+module.exports = Question;
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var Schema = __webpack_require__(1);
+
+module.exports = new Schema({
+  default: { type: String },
+  english: { type: String },
+  tamil: { type: String },
+  hindi: { type: String }
+});
+
+/***/ }),
 /* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -773,7 +773,7 @@ __webpack_require__(26)(app);
 __webpack_require__(28)(app);
 
 // 99. Setup error-handling
-__webpack_require__(62)(app);
+__webpack_require__(66)(app);
 
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
@@ -983,7 +983,7 @@ module.exports = require("body-parser");
 
 module.exports = function (app) {
   app.use('/cms', __webpack_require__(29));
-  app.use('/app', __webpack_require__(61));
+  app.use('/app', __webpack_require__(65));
 
   // redirect the home to /cms
   app.get('/', function (req, res) {
@@ -1032,9 +1032,8 @@ var cmsRouter = new express.Router();
 registerCmsRoutes(cmsRouter, __webpack_require__(32), function (app, ctrl) {
   app.use('/:id/download', (0, _dispatcher2.default)(ctrl, 'download'));
 });
-registerCmsRoutes(cmsRouter, __webpack_require__(58), function (app, ctrl) {
-  app.use('/:id/download', (0, _dispatcher2.default)(ctrl, 'download'));
-});
+registerCmsRoutes(cmsRouter, __webpack_require__(58));
+registerCmsRoutes(cmsRouter, __webpack_require__(61));
 module.exports = cmsRouter;
 
 /***/ }),
@@ -1169,7 +1168,7 @@ var _streamConcat = __webpack_require__(33);
 
 var _streamConcat2 = _interopRequireDefault(_streamConcat);
 
-var _EntitiyController = __webpack_require__(13);
+var _EntitiyController = __webpack_require__(10);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
@@ -1910,7 +1909,7 @@ var _fs = __webpack_require__(4);
 
 var _fs2 = _interopRequireDefault(_fs);
 
-var _csvStringify = __webpack_require__(10);
+var _csvStringify = __webpack_require__(11);
 
 var _csvStringify2 = _interopRequireDefault(_csvStringify);
 
@@ -2991,7 +2990,7 @@ var _Answer = __webpack_require__(7);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 
-var _EntitiyController = __webpack_require__(13);
+var _EntitiyController = __webpack_require__(10);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
@@ -3144,13 +3143,153 @@ module.exports = require("stream-to-string");
 "use strict";
 
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _EntitiyController = __webpack_require__(10);
+
+var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
+
+var _streamToArray = __webpack_require__(62);
+
+var _streamToArray2 = _interopRequireDefault(_streamToArray);
+
+var _fileType = __webpack_require__(63);
+
+var _fileType2 = _interopRequireDefault(_fileType);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Artifact = __webpack_require__(64);
+
+/**
+ * Artifact document controller.
+ * 
+ * @class ArtifactController
+ * @extends {BaseController}
+ */
+var ArtifactController = function (_EntityController) {
+  _inherits(ArtifactController, _EntityController);
+
+  function ArtifactController() {
+    _classCallCheck(this, ArtifactController);
+
+    return _possibleConstructorReturn(this, (ArtifactController.__proto__ || Object.getPrototypeOf(ArtifactController)).apply(this, arguments));
+  }
+
+  _createClass(ArtifactController, [{
+    key: '_find',
+    value: function _find(query) {
+      return _get(ArtifactController.prototype.__proto__ || Object.getPrototypeOf(ArtifactController.prototype), '_find', this).call(this, query).select('name description modifiedAt');
+    }
+  }, {
+    key: '_create',
+    value: function _create() {
+      var _get2,
+          _this2 = this;
+
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      return (_get2 = _get(ArtifactController.prototype.__proto__ || Object.getPrototypeOf(ArtifactController.prototype), '_create', this)).call.apply(_get2, [this].concat(args)).then(function (o) {
+        return _this2._filterObject(o, ['_id', 'name', 'description', 'modifiedAt']);
+      });
+    }
+  }, {
+    key: '_parseEntity',
+    value: function _parseEntity(obj) {
+      if (obj.data && !obj.mimeType) {
+        var fType = (0, _fileType2.default)(obj.data);
+        if (fType) obj.mimeType = fType.mime;
+      }
+
+      var filter = ['name', 'description', 'type', 'mimeType', 'data'];
+      if (this.action === 'create') {
+        filter = filter.concat('_id');
+      }
+      return this._filterObject(obj, filter);
+    }
+  }, {
+    key: '_parseFileField',
+    value: function _parseFileField(_ref) {
+      var mime = _ref.mime,
+          field = _ref.field,
+          file = _ref.file,
+          fields = _ref.fields;
+
+      if (field === 'data') {
+        return (0, _streamToArray2.default)(file).then(function (arr) {
+          return Buffer.concat(arr);
+        });
+      }
+      return null;
+    }
+  }]);
+
+  return ArtifactController;
+}(_EntitiyController2.default);
+
+Object.assign(ArtifactController, {
+  collection: Artifact,
+  entityName: 'Artifact',
+  routeName: 'artifacts'
+});
+module.exports = ArtifactController;
+
+/***/ }),
+/* 62 */
+/***/ (function(module, exports) {
+
+module.exports = require("stream-to-array");
+
+/***/ }),
+/* 63 */
+/***/ (function(module, exports) {
+
+module.exports = require("file-type");
+
+/***/ }),
+/* 64 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var Schema = __webpack_require__(1);
+var mongoose = __webpack_require__(0);
+
+var artifactSchema = new Schema({
+  name: { type: String, required: true },
+  description: { type: String },
+  type: { type: String, required: true },
+  mimeType: { type: String, required: true },
+  data: { type: Buffer, required: true }
+});
+
+module.exports = mongoose.model('Artifact', artifactSchema);
+
+/***/ }),
+/* 65 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 var express = __webpack_require__(9);
 var app = new express.Router();
 
 module.exports = app;
 
 /***/ }),
-/* 62 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

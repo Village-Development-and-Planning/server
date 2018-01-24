@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 63);
+/******/ 	return __webpack_require__(__webpack_require__.s = 67);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -115,21 +115,21 @@ module.exports = Schema;
 
 /***/ }),
 
-/***/ 10:
+/***/ 11:
 /***/ (function(module, exports) {
 
 module.exports = require("csv-stringify");
 
 /***/ }),
 
-/***/ 11:
+/***/ 12:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 var Schema = __webpack_require__(1);
-var Text = __webpack_require__(12);
+var Text = __webpack_require__(13);
 var mongoose = __webpack_require__(0);
 
 var questionSchema = new Schema({
@@ -186,7 +186,7 @@ module.exports = Question;
 
 /***/ }),
 
-/***/ 12:
+/***/ 13:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -260,23 +260,23 @@ module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
 
-/***/ 63:
+/***/ 67:
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(64);
-module.exports = __webpack_require__(66);
+__webpack_require__(68);
+module.exports = __webpack_require__(70);
 
 
 /***/ }),
 
-/***/ 64:
+/***/ 68:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = global["Proc"] = __webpack_require__(65);
+module.exports = global["Proc"] = __webpack_require__(69);
 
 /***/ }),
 
-/***/ 65:
+/***/ 69:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -292,7 +292,7 @@ var _fs = __webpack_require__(4);
 
 var _fs2 = _interopRequireDefault(_fs);
 
-var _csvStringify = __webpack_require__(10);
+var _csvStringify = __webpack_require__(11);
 
 var _csvStringify2 = _interopRequireDefault(_csvStringify);
 
@@ -579,46 +579,6 @@ exports.default = SurveyResponseProcessor;
 
 /***/ }),
 
-/***/ 66:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-__webpack_require__(8);
-
-var _mongoose = __webpack_require__(0);
-
-var _mongoose2 = _interopRequireDefault(_mongoose);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var Process = Proc.default;
-var arg = process.argv[2];
-var method = process.argv[3];
-
-if (!arg || !method) {
-  process.exit(-1);
-}
-
-var proc = new Process(arg);
-if (!proc) {
-  process.exit(-1);
-}
-
-if (typeof proc[method] !== 'function') {
-  process.exit(-1);
-}
-
-Promise.resolve(proc[method]()).then(function () {
-  return null;
-}).then(function () {
-  return _mongoose2.default.connection.close();
-});
-process.exitCode = 0;
-
-/***/ }),
-
 /***/ 7:
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -635,7 +595,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _Question2 = __webpack_require__(11);
+var _Question2 = __webpack_require__(12);
 
 var _Question3 = _interopRequireDefault(_Question2);
 
@@ -853,6 +813,46 @@ var answerSchema = new _Schema2.default({
 answerSchema.index({ survey: 1, lastExport: 1 });
 
 module.exports = _mongoose2.default.model('Answer', answerSchema);
+
+/***/ }),
+
+/***/ 70:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+__webpack_require__(8);
+
+var _mongoose = __webpack_require__(0);
+
+var _mongoose2 = _interopRequireDefault(_mongoose);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Process = Proc.default;
+var arg = process.argv[2];
+var method = process.argv[3];
+
+if (!arg || !method) {
+  process.exit(-1);
+}
+
+var proc = new Process(arg);
+if (!proc) {
+  process.exit(-1);
+}
+
+if (typeof proc[method] !== 'function') {
+  process.exit(-1);
+}
+
+Promise.resolve(proc[method]()).then(function () {
+  return null;
+}).then(function () {
+  return _mongoose2.default.connection.close();
+});
+process.exitCode = 0;
 
 /***/ }),
 
