@@ -9,7 +9,7 @@ export default (tags) => {
     tags,
     optModules,
     (o, mod, tag) => mod.adorn(tag, o, moreWarnings),
-    Promise.resolve(optionsDefault),
+    Promise.resolve(Object.assign({}, optionsDefault)),
   ).then(
     ({output, warnings}) => ({
       output,

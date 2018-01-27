@@ -2882,7 +2882,7 @@ exports.default = function (tags) {
 
   return (0, _promiseProcess2.default)(tags, optModules, function (o, mod, tag) {
     return mod.adorn(tag, o, moreWarnings);
-  }, Promise.resolve(optionsDefault)).then(function (_ref) {
+  }, Promise.resolve(Object.assign({}, optionsDefault))).then(function (_ref) {
     var output = _ref.output,
         warnings = _ref.warnings;
     return {
@@ -3375,7 +3375,7 @@ var ArtifactController = function (_EntityController) {
   _createClass(ArtifactController, [{
     key: '_find',
     value: function _find(query) {
-      return _get(ArtifactController.prototype.__proto__ || Object.getPrototypeOf(ArtifactController.prototype), '_find', this).call(this, query).select('name description modifiedAt');
+      return _get(ArtifactController.prototype.__proto__ || Object.getPrototypeOf(ArtifactController.prototype), '_find', this).call(this, query).select('name description type mimeType modifiedAt');
     }
   }, {
     key: '_create',
@@ -3388,7 +3388,7 @@ var ArtifactController = function (_EntityController) {
       }
 
       return (_get2 = _get(ArtifactController.prototype.__proto__ || Object.getPrototypeOf(ArtifactController.prototype), '_create', this)).call.apply(_get2, [this].concat(args)).then(function (o) {
-        return _this2._filterObject(o, ['_id', 'name', 'description', 'modifiedAt']);
+        return _this2._filterObject(o, ['_id', 'name', 'description', 'modifiedAt', 'type', 'mimeType']);
       });
     }
   }, {

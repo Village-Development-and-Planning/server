@@ -13,13 +13,16 @@ import fileType from 'file-type';
 class ArtifactController extends EntityController {
   _find(query) {
     return super._find(query)
-      .select('name description modifiedAt');
+      .select('name description type mimeType modifiedAt');
   }
 
   _create(...args) {
     return super._create(...args)
     .then(
-      (o) => this._filterObject(o, ['_id', 'name', 'description', 'modifiedAt'])
+      (o) => this._filterObject(
+        o, 
+        ['_id', 'name', 'description', 'modifiedAt', 'type', 'mimeType'],
+      )
     );
   }
 
