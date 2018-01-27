@@ -3,13 +3,30 @@ const Digest = require('passport-http').DigestStrategy;
 const jwt = require('jsonwebtoken');
 const Constants = require('../config/Constants');
 
+import User from '../models/User';
+
 passport.use(new Digest(
   {qop: 'auth'},
   (username, cb) => {
-    if (username == 'ptracking') {
-      return cb(null, {name: 'ptracking', role: 'admin'}, 'vaazhvuT');
+    if (username === Constants.admin.username) {
+      return cb(
+        null,
+        {
+          username: Constants.admin.username,
+          name: 'Dev Admin',
+          roles: ['root']},
+        Constants.admin.passphrase
+      );
     } else {
-      cb(null, false);
+      User.findOne({username})
+      .then((user) => {
+        if (!user) cb(null, false);
+        cb(null, {
+          username: user.username,
+          name: user.name,
+          roles: user.roles,
+        }, user.passphrase);
+      }).catch((err) => cb(err));
     }
   }
 ));
@@ -25,6 +42,13 @@ module.exports = (app, path) => {
       } else {
         res.json(req.user);
       }
+    }
+  );
+  app.get(
+    `${path}/out`,
+    (req, res) => {
+      res.clearCookie('ptracking_jwt');
+      res.json({});
     }
   );
 };

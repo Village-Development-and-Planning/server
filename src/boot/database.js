@@ -8,9 +8,4 @@ mongoose.Promise = global.Promise;
 export default mongoose.connect(
   options.connectionString,
   options.connectionOptions,
-  (err) => {
-    if (err) {
-    }
-  }
 );
-

@@ -8,6 +8,7 @@ const artifactSchema = new Schema({
   mimeType: {type: String, required: true},
   data: {type: Buffer, required: true},
 });
-
+artifactSchema.index({name: 1, type: 1});
+artifactSchema.index({type: 1, mimeType: 1});
 
 module.exports = mongoose.model('Artifact', artifactSchema);

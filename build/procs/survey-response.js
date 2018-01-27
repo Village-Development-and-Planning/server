@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 70);
+/******/ 	return __webpack_require__(__webpack_require__.s = 71);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -220,6 +220,10 @@ module.exports = {
   jwt: {
     secret: 'a general string',
     requestProperty: 'auth'
+  },
+  admin: {
+    username: 'ptracking',
+    passphrase: 'vaazhvuT'
   }
 };
 
@@ -255,6 +259,8 @@ var surveySchema = new Schema({
   question: { type: {}, required: true },
   respondents: { type: [] }
 });
+surveySchema.index({ name: 1 });
+surveySchema.index({ enabled: 1, name: 1 });
 
 module.exports = mongoose.model('Survey', surveySchema);
 
@@ -497,23 +503,23 @@ module.exports = _mongoose2.default.model('Answer', answerSchema);
 
 /***/ }),
 
-/***/ 70:
-/***/ (function(module, exports, __webpack_require__) {
-
-__webpack_require__(71);
-module.exports = __webpack_require__(73);
-
-
-/***/ }),
-
 /***/ 71:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = global["Proc"] = __webpack_require__(72);
+__webpack_require__(72);
+module.exports = __webpack_require__(74);
+
 
 /***/ }),
 
 /***/ 72:
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = global["Proc"] = __webpack_require__(73);
+
+/***/ }),
+
+/***/ 73:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -816,7 +822,7 @@ exports.default = SurveyResponseProcessor;
 
 /***/ }),
 
-/***/ 73:
+/***/ 74:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -880,9 +886,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var options = _Constants2.default.db;
 _mongoose2.default.Promise = global.Promise;
 
-exports.default = _mongoose2.default.connect(options.connectionString, options.connectionOptions, function (err) {
-  if (err) {}
-});
+exports.default = _mongoose2.default.connect(options.connectionString, options.connectionOptions);
 
 /***/ })
 

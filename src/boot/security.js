@@ -21,11 +21,8 @@ const jwtOpts = Object.assign({
 
 module.exports = function(app) {
   app.use(
-    (req, res, next) => {
-      next();
-    },
     jwt(jwtOpts).unless({
-      path: ['/auth'],
+      path: ['/auth', '/auth/out'],
     }),
     (err, req, res, next) => {
       if (err.name === 'UnauthorizedError') {
