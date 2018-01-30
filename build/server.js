@@ -851,7 +851,7 @@ __webpack_require__(29)(app);
 __webpack_require__(31)(app);
 
 // 99. Setup error-handling
-__webpack_require__(70)(app);
+__webpack_require__(71)(app);
 
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
@@ -3451,13 +3451,30 @@ module.exports = require("file-type");
 "use strict";
 
 
+var _path = __webpack_require__(70);
+
+var _path2 = _interopRequireDefault(_path);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var express = __webpack_require__(9);
 var app = new express.Router();
+
+
+app.get('/auth', function (req, res, next) {
+  res.sendFile(_path2.default.resolve('data/auth.json'));
+});
 
 module.exports = app;
 
 /***/ }),
 /* 70 */
+/***/ (function(module, exports) {
+
+module.exports = require("path");
+
+/***/ }),
+/* 71 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
