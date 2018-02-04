@@ -1,7 +1,7 @@
 module.exports = {
   tagPrefix: 'NUMBER',
   adorn(tag, obj) {
-    const suffix = tag.slice(7); // NUMBER_
+    const suffix = tag.slice(6); // NUMBER_
     let match = null;
 
     obj.question.validationType = 'number';

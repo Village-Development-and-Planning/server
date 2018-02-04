@@ -695,7 +695,7 @@ module.exports = new Schema({
 
 
 module.exports = function (type, parent) {
-  return {
+  var ret = {
     _tags: {},
     pre: {
       fill: [
@@ -731,6 +731,12 @@ module.exports = function (type, parent) {
       strategy: 'parent' // OR 'loop'
     }
   };
+
+  if (parent && parent.child.strategy == 'select') {
+    ret.exit.incrementBubble = true;
+  }
+
+  return ret;
 };
 
 /***/ }),
@@ -2840,7 +2846,7 @@ module.exports = {
 module.exports = {
   tagPrefix: 'NUMBER',
   adorn: function adorn(tag, obj) {
-    var suffix = tag.slice(7); // NUMBER_
+    var suffix = tag.slice(6); // NUMBER_
     var match = null;
 
     obj.question.validationType = 'number';
