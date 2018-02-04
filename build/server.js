@@ -2840,7 +2840,18 @@ module.exports = {
 module.exports = {
   tagPrefix: 'NUMBER',
   adorn: function adorn(tag, obj) {
+    var suffix = tag.slice(7); // NUMBER_
+    var match = null;
+
+    obj.question.validationType = 'number';
     obj.question.validation = '[0-9]+';
+
+    if (match = suffix.match(/_LIMIT_([0-9]*)/)) {
+      obj.question.validationLimit = parseInt(match[1]);
+    }
+    if (match = suffix.match(/_DLIMIT_([0-9]*)/)) {
+      obj.question.validationDigitsLimit = parseInt(match[1]);
+    }
   }
 };
 
