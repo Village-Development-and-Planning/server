@@ -1,4 +1,4 @@
-import Answer from '../data/models/Answer';
+import Answer from '../models/Answer';
 import EntityController from './EntitiyController';
 import CSVWriter from 'csv-write-stream';
 import streamToString from 'stream-to-string';

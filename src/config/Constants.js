@@ -10,4 +10,8 @@ module.exports = {
     secret: 'a general string',
     requestProperty: 'auth',
   },
+  admin: {
+    username: 'ptracking',
+    passphrase: 'vaazhvuT',
+  },
 };

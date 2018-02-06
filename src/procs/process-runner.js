@@ -1,7 +1,5 @@
-global.appRequire = (name) => require(`${__dirname}/../${name}`);
-
-require('../server/database');
-const mongoose = require('mongoose');
+import {} from '../boot/database';
+import mongoose from 'mongoose';
 
 const Process = Proc.default;
 const arg = process.argv[2];

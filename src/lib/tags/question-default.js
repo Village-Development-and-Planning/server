@@ -1,5 +1,5 @@
 module.exports = (type, parent) => {
-  return {
+  const ret = {
     _tags: {},
     pre: {
       fill: [
@@ -12,7 +12,9 @@ module.exports = (type, parent) => {
       // 'MULTIPLE_CHOICE',
       // 'GPS',
       // 'INPUT',
-      // 'INFO'
+      // 'INFO',
+      // 'MESSAGE',
+      // 'NONE',
 
       validation: null,
       // 'NUMBER',
@@ -42,4 +44,10 @@ module.exports = (type, parent) => {
       strategy: 'parent', // OR 'loop'
     },
   };
+
+  if (parent && parent.child.strategy == 'select') {
+    ret.exit.incrementBubble = true;
+  }
+
+  return ret;
 };

@@ -24,6 +24,11 @@ export default class CreateConcerns extends Mixin {
       }))
       .catch((e) => {
         e.status = 400;
+        if (e.errors) {
+          e.details = Object.keys(e.errors).map(
+            (key) => ({key, message: e.errors[key].message})
+          );
+        }
         return Promise.reject(e);
       })
     );

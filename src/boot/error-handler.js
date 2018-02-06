@@ -16,6 +16,7 @@ module.exports = function(app) {
       res.status(err.status || 500);
       res.json({
         message: err.message,
+        details: err.details || null,
         stack: err.stack && err.stack.split('\n'),
       });
     });

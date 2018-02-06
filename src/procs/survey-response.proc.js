@@ -2,8 +2,8 @@ import fs from 'fs';
 import CSVWriter from 'csv-stringify';
 import CSVParser from 'csv-parse';
 
-import Survey from '../data/models/Survey';
-import Answer from '../data/models/Answer';
+import Survey from '../models/Survey';
+import Answer from '../models/Answer';
 
 /**
  * Batch post-processor for Survey responses
