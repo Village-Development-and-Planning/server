@@ -314,8 +314,8 @@ var mongoose = __webpack_require__(0);
 
 var processSchema = new Schema({
     name: { type: String, required: true },
-    path: { type: String },
-    args: { type: {} },
+    cmd: { type: String, required: true },
+    args: [{ type: String }],
     status: { type: String }
 });
 

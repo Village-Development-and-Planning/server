@@ -4,11 +4,11 @@ const buildPath = path.join(__dirname, 'build');
 
 const procTemplate = './src/procs/process-runner.js';
 const procs = [
-  'survey-response',
+  'web/collect-responses',
 ].reduce(
   (acc, p) => {
     acc[`procs/${p}`] = [
-      `expose-loader?Proc!./src/procs/${p}.proc.js`,
+      `expose-loader?Proc!./src/procs/${p}.js`,
       procTemplate,
     ];
     return acc;

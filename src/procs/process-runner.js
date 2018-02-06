@@ -2,23 +2,18 @@ import {} from '../boot/database';
 import mongoose from 'mongoose';
 
 const Process = Proc.default;
-const arg = process.argv[2];
-const method = process.argv[3];
+const procId = process.argv[2];
 
-if (!arg || !method) {
+if (!procId) {
   process.exit(-1);
 }
 
-const proc = new Process(arg);
-if (!proc) {
+const proc = new Process(procId);
+if (!proc || !proc.promise) {
   process.exit(-1);
 }
 
-if (typeof proc[method] !== 'function') {
-  process.exit(-1);
-}
-
-Promise.resolve(proc[method]()).then(
+proc.promise.then(
   () => null,
 ).then(() => mongoose.connection.close());
 process.exitCode = 0;
