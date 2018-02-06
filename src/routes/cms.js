@@ -40,4 +40,8 @@ registerCmsRoutes(
   cmsRouter,
   require('../controllers/ArtifactController'),
 );
+registerCmsRoutes(
+  cmsRouter,
+  require('../controllers/ProcessController'),
+);
 module.exports = cmsRouter;

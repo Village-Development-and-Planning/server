@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 72);
+/******/ 	return __webpack_require__(__webpack_require__.s = 79);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -141,7 +141,30 @@ module.exports = {
 
 /***/ }),
 
-/***/ 4:
+/***/ 5:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var Schema = __webpack_require__(1);
+var mongoose = __webpack_require__(0);
+
+var processSchema = new Schema({
+    name: { type: String, required: true },
+    path: { type: String },
+    args: { type: {} },
+    status: { type: String },
+    exitCode: { type: Number },
+    stdout: { type: String },
+    stderr: { type: String }
+});
+
+module.exports = mongoose.model('Process', processSchema);
+
+/***/ }),
+
+/***/ 6:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -169,23 +192,118 @@ exports.default = _mongoose2.default.connect(options.connectionString, options.c
 
 /***/ }),
 
-/***/ 72:
+/***/ 79:
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(73);
-module.exports = __webpack_require__(78);
+__webpack_require__(80);
+module.exports = __webpack_require__(82);
 
 
 /***/ }),
 
-/***/ 73:
+/***/ 8:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = global["Proc"] = __webpack_require__(74);
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ChildTemplate = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Process = __webpack_require__(5);
+
+var _Process2 = _interopRequireDefault(_Process);
+
+var _child_process = __webpack_require__(9);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var ChildProcess = function () {
+  function ChildProcess(opts) {
+    _classCallCheck(this, ChildProcess);
+
+    Object.assign(this, opts);
+  }
+
+  _createClass(ChildProcess, [{
+    key: 'execute',
+    value: function execute(args) {
+      var _this = this;
+
+      this.procName = this.procName || this.constructor.procName || this.constructor.name || 'Unknown';
+      this.procPath = this.procPath || this.constructor.procPath;
+      if (!this.procPath) {
+        throw new Error('No process path configured for class: ' + this.constructor.name);
+      }
+
+      var createP = _Process2.default.create({
+        name: this.procName,
+        status: 'RUNNING',
+        path: this.procPath,
+        args: args
+      });
+
+      var promise = new Promise(function (res, rej) {
+        createP.then(function (proc) {
+          var p = (0, _child_process.spawn)(process.execPath, ['build/procs/' + _this.procPath + '.js', proc._id]);
+          var stdout = [],
+              stderr = [];
+
+          p.on('close', function (code) {
+            proc.exitCode = code;
+            proc.status = 'COMPLETED';
+            proc.stdout = stdout.join('\n');
+            proc.stderr = stderr.join('\n');
+            console.log(proc.stdout);
+            proc.save();
+          });
+          p.stdout.on('data', function (data) {
+            return stdout = stdout.concat(data);
+          });
+          p.stderr.on('data', function (data) {
+            return stderr = stderr.concat(data);
+          });
+        }).catch(rej);
+      });
+      return { createP: createP, promise: promise };
+    }
+  }]);
+
+  return ChildProcess;
+}();
+
+exports.default = ChildProcess;
+
+var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procId) {
+  var _this2 = this;
+
+  _classCallCheck(this, ChildTemplate);
+
+  this.promise = _Process2.default.findOne({ _id: procId }).then(function (proc) {
+    if (!proc) {
+      throw new Error('Unknown process id: ' + procId);
+    }
+    _this2.proc = proc;
+    _this2.execute(proc);
+  });
+};
 
 /***/ }),
 
-/***/ 74:
+/***/ 80:
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = global["Proc"] = __webpack_require__(81);
+
+/***/ }),
+
+/***/ 81:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -197,7 +315,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _childProcess = __webpack_require__(75);
+var _childProcess = __webpack_require__(8);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -228,115 +346,13 @@ exports.default = CollectResponses;
 
 /***/ }),
 
-/***/ 75:
+/***/ 82:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.ChildTemplate = undefined;
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _Process = __webpack_require__(76);
-
-var _Process2 = _interopRequireDefault(_Process);
-
-var _child_process = __webpack_require__(77);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var ChildProcess = function () {
-  function ChildProcess(opts) {
-    _classCallCheck(this, ChildProcess);
-
-    Object.assign(this, opts);
-  }
-
-  _createClass(ChildProcess, [{
-    key: 'execute',
-    value: function execute(args) {
-      var _this = this;
-
-      this.procName = this.procName || this.constructor.procName || this.constructor.name || 'Unknown';
-      this.procPath = this.procPath || this.constructor.procPath;
-      if (!this.procPath) {
-        throw new Error('No process path configured for class: ' + this.constructor.name);
-      }
-
-      return new Promise(function (res, rej) {
-        _Process2.default.create({
-          name: _this.procName,
-          status: 'RUNNING',
-          path: _this.procPath,
-          args: args
-        }).then(function (proc) {
-          (0, _child_process.spawn)('build/' + _this.procPath, [proc._id]).on('close', res);
-        }).catch(rej);
-      });
-    }
-  }]);
-
-  return ChildProcess;
-}();
-
-exports.default = ChildProcess;
-
-var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procId) {
-  var _this2 = this;
-
-  _classCallCheck(this, ChildTemplate);
-
-  this.promise = _Process2.default.findOne({ _id: procId }).then(function (proc) {
-    if (!proc) {
-      throw new Error('Unknown process id: ' + procId);
-    }
-    _this2.proc = proc;
-    _this2.execute(proc);
-  });
-};
-
-/***/ }),
-
-/***/ 76:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var Schema = __webpack_require__(1);
-var mongoose = __webpack_require__(0);
-
-var processSchema = new Schema({
-    name: { type: String, required: true },
-    cmd: { type: String, required: true },
-    args: [{ type: String }],
-    status: { type: String }
-});
-
-module.exports = mongoose.model('Process', processSchema);
-
-/***/ }),
-
-/***/ 77:
-/***/ (function(module, exports) {
-
-module.exports = require("child_process");
-
-/***/ }),
-
-/***/ 78:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-__webpack_require__(4);
+__webpack_require__(6);
 
 var _mongoose = __webpack_require__(0);
 
@@ -362,6 +378,13 @@ proc.promise.then(function () {
   return _mongoose2.default.connection.close();
 });
 process.exitCode = 0;
+
+/***/ }),
+
+/***/ 9:
+/***/ (function(module, exports) {
+
+module.exports = require("child_process");
 
 /***/ })
 

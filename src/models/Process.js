@@ -3,9 +3,12 @@ const mongoose = require('mongoose');
 
 const processSchema = new Schema({
     name: {type: String, required: true},
-    cmd: {type: String, required: true},
-    args: [{type: String}],
+    path: {type: String},
+    args: {type: {}},
     status: {type: String},
+    exitCode: {type: Number},
+    stdout: {type: String},
+    stderr: {type: String},
 });
 
 module.exports = mongoose.model('Process', processSchema);

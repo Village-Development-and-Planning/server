@@ -17,6 +17,7 @@ export default class BodyConcerns extends Mixin {
   }
 
   _filterObject(obj, keys) {
+    if (typeof keys === 'string') keys = keys.split(' ');
     return keys.reduce((acc, key) => {
       if (obj[key] !== undefined) acc[key] = obj[key];
       return acc;

@@ -2,6 +2,8 @@ import Answer from '../models/Answer';
 import EntityController from './EntitiyController';
 import CSVWriter from 'csv-write-stream';
 import streamToString from 'stream-to-string';
+
+import md5 from 'md5';
 /**
  * Question document controller
  * 
@@ -9,19 +11,21 @@ import streamToString from 'stream-to-string';
  * @extends {BaseController}
  */
 class AnswerController extends EntityController {
-  _find(query) {
-    return super._find(query)
-      .select('name description surveyor survey modifiedAt');
-  }
 
   _create(...args) {
     return super._create(...args)
+      .catch((err) => {
+        if (err.name === 'MongoError' && err.code === 11000) {
+          return super._find({checksum: args.checksum});
+        }
+        return Promise.reject(err);
+      })
       .then(
         (obj) => this._filterObject(
           obj,
           [
             '_id', 'name', 'description', 'version',
-            'surveyor', 'survey',
+            'surveyor', 'survey', 'checksum',
             'modifiedAt',
           ]
         )
@@ -45,6 +49,10 @@ class AnswerController extends EntityController {
   _parseFileField({mime, field, file, fields}) {
     if (field === 'dataFile') {
       return streamToString(file)
+        .then((str) => {
+          fields.checksum = md5(str);
+          return str;
+        })
         .then((jsonStr) => JSON.parse(jsonStr))
         .then(
           (json) =>
@@ -62,7 +70,7 @@ class AnswerController extends EntityController {
 
   _parseEntity(obj) {
     return this._filterObject(obj,
-      ['name', 'description', 'rootQuestion', 'surveyor', 'survey', 'version']
+      ['name', 'description', 'rootQuestion', 'surveyor', 'survey', 'version', 'checksum']
     );
   }
 
@@ -91,6 +99,9 @@ class AnswerController extends EntityController {
 Object.assign(AnswerController, {
   collection: Answer,
   routeName: 'answers',
+  
+  _findFields: 'name description surveyor survey checksum modifiedAt',
 });
+
 module.exports = AnswerController;
 export default AnswerController;

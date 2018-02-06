@@ -19,18 +19,35 @@ export default class ChildProcess {
     }
 
 
-    return new Promise((res, rej) => {
-      ProcessM.create({
-        name: this.procName,
-        status: 'RUNNING',
-        path: this.procPath,
-        args,
-      }).then((proc) => {
-        spawn(`build/${this.procPath}`, [proc._id])
-          .on('close', res);
-      }).catch(rej);
+    const createP = ProcessM.create({
+      name: this.procName,
+      status: 'RUNNING',
+      path: this.procPath,
+      args,
     });
 
+    const promise = new Promise((res, rej) => {
+      createP.then(
+        (proc) => {
+          const p = spawn(
+            process.execPath,
+            [`build/procs/${this.procPath}.js`, proc._id]
+          );
+          let stdout = [], stderr = [];
+
+          p.on('close', (code) => {
+            proc.exitCode = code;
+            proc.status = 'COMPLETED';
+            proc.stdout = stdout.join('\n');
+            proc.stderr = stderr.join('\n');
+            console.log(proc.stdout);
+            proc.save();
+          });
+          p.stdout.on('data', (data) => stdout = stdout.concat(data));
+          p.stderr.on('data', (data) => stderr = stderr.concat(data));
+      }).catch(rej);      
+    });
+    return {createP, promise};
   }
 }
 

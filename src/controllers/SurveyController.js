@@ -53,7 +53,7 @@ class SurveyController extends EntityController {
       if (obj.respondents == 'none') {
         obj.respondents = null;
       } else {
-        obj.respondents = obj.respondents.split(',');
+        obj.respondents = obj.respondents && obj.respondents.split(',');
       }
     }
 

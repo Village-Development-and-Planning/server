@@ -11,10 +11,6 @@ import fileType from 'file-type';
  * @extends {BaseController}
  */
 class ArtifactController extends EntityController {
-  _find(query) {
-    return super._find(query)
-      .select('name description type mimeType modifiedAt');
-  }
 
   _create(...args) {
     return super._create(...args)
@@ -51,5 +47,7 @@ Object.assign(ArtifactController, {
   collection: Artifact,
   entityName: 'Artifact',
   routeName: 'artifacts',
+
+  _findFields: 'name description type mimeType modifiedAt',
 });
 module.exports = ArtifactController;

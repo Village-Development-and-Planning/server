@@ -19,6 +19,10 @@ class EntityController
     Listing, Get, Delete,
     Body, Create, Update,
   ) {
+    constructor(...args) {
+      super(...args);
+      this._findFields = this._findFields || this.constructor._findFields;
+    }
     _parseBody() {
       return super._parseBody().then((obj) => {
         if (Array.isArray(obj)) {
@@ -30,5 +34,7 @@ class EntityController
       });
     }
 };
+
+EntityController._findFields = 'name description modifiedAt';
 
 export default EntityController;

@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 14);
+/******/ 	return __webpack_require__(__webpack_require__.s = 17);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -216,44 +216,11 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _Constants = __webpack_require__(3);
-
-var _Constants2 = _interopRequireDefault(_Constants);
-
-var _mongoose = __webpack_require__(0);
-
-var _mongoose2 = _interopRequireDefault(_mongoose);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-// connect to mongoose
-var options = _Constants2.default.db;
-_mongoose2.default.Promise = global.Promise;
-
-exports.default = _mongoose2.default.connect(options.connectionString, options.connectionOptions);
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports) {
-
-module.exports = require("express");
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _BaseController = __webpack_require__(34);
+var _BaseController = __webpack_require__(37);
 
 var _BaseController2 = _interopRequireDefault(_BaseController);
 
@@ -261,27 +228,27 @@ var _Mixin = __webpack_require__(2);
 
 var _Mixin2 = _interopRequireDefault(_Mixin);
 
-var _Listing = __webpack_require__(35);
+var _Listing = __webpack_require__(38);
 
 var _Listing2 = _interopRequireDefault(_Listing);
 
-var _Get = __webpack_require__(36);
+var _Get = __webpack_require__(39);
 
 var _Get2 = _interopRequireDefault(_Get);
 
-var _Delete = __webpack_require__(37);
+var _Delete = __webpack_require__(40);
 
 var _Delete2 = _interopRequireDefault(_Delete);
 
-var _Body = __webpack_require__(38);
+var _Body = __webpack_require__(41);
 
 var _Body2 = _interopRequireDefault(_Body);
 
-var _Create = __webpack_require__(41);
+var _Create = __webpack_require__(44);
 
 var _Create2 = _interopRequireDefault(_Create);
 
-var _Update = __webpack_require__(42);
+var _Update = __webpack_require__(45);
 
 var _Update2 = _interopRequireDefault(_Update);
 
@@ -302,9 +269,18 @@ var EntityController = function (_Mixin$mixin) {
   _inherits(EntityController, _Mixin$mixin);
 
   function EntityController() {
+    var _ref;
+
     _classCallCheck(this, EntityController);
 
-    return _possibleConstructorReturn(this, (EntityController.__proto__ || Object.getPrototypeOf(EntityController)).apply(this, arguments));
+    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    var _this = _possibleConstructorReturn(this, (_ref = EntityController.__proto__ || Object.getPrototypeOf(EntityController)).call.apply(_ref, [this].concat(args)));
+
+    _this._findFields = _this._findFields || _this.constructor._findFields;
+    return _this;
   }
 
   _createClass(EntityController, [{
@@ -330,22 +306,179 @@ var EntityController = function (_Mixin$mixin) {
 
 ;
 
+EntityController._findFields = 'name description modifiedAt';
+
 exports.default = EntityController;
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var Schema = __webpack_require__(1);
+var mongoose = __webpack_require__(0);
+
+var processSchema = new Schema({
+    name: { type: String, required: true },
+    path: { type: String },
+    args: { type: {} },
+    status: { type: String },
+    exitCode: { type: Number },
+    stdout: { type: String },
+    stderr: { type: String }
+});
+
+module.exports = mongoose.model('Process', processSchema);
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _Constants = __webpack_require__(3);
+
+var _Constants2 = _interopRequireDefault(_Constants);
+
+var _mongoose = __webpack_require__(0);
+
+var _mongoose2 = _interopRequireDefault(_mongoose);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// connect to mongoose
+var options = _Constants2.default.db;
+_mongoose2.default.Promise = global.Promise;
+
+exports.default = _mongoose2.default.connect(options.connectionString, options.connectionOptions);
 
 /***/ }),
 /* 7 */
 /***/ (function(module, exports) {
 
-module.exports = require("fs");
+module.exports = require("express");
 
 /***/ }),
 /* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ChildTemplate = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Process = __webpack_require__(5);
+
+var _Process2 = _interopRequireDefault(_Process);
+
+var _child_process = __webpack_require__(9);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var ChildProcess = function () {
+  function ChildProcess(opts) {
+    _classCallCheck(this, ChildProcess);
+
+    Object.assign(this, opts);
+  }
+
+  _createClass(ChildProcess, [{
+    key: 'execute',
+    value: function execute(args) {
+      var _this = this;
+
+      this.procName = this.procName || this.constructor.procName || this.constructor.name || 'Unknown';
+      this.procPath = this.procPath || this.constructor.procPath;
+      if (!this.procPath) {
+        throw new Error('No process path configured for class: ' + this.constructor.name);
+      }
+
+      var createP = _Process2.default.create({
+        name: this.procName,
+        status: 'RUNNING',
+        path: this.procPath,
+        args: args
+      });
+
+      var promise = new Promise(function (res, rej) {
+        createP.then(function (proc) {
+          var p = (0, _child_process.spawn)(process.execPath, ['build/procs/' + _this.procPath + '.js', proc._id]);
+          var stdout = [],
+              stderr = [];
+
+          p.on('close', function (code) {
+            proc.exitCode = code;
+            proc.status = 'COMPLETED';
+            proc.stdout = stdout.join('\n');
+            proc.stderr = stderr.join('\n');
+            console.log(proc.stdout);
+            proc.save();
+          });
+          p.stdout.on('data', function (data) {
+            return stdout = stdout.concat(data);
+          });
+          p.stderr.on('data', function (data) {
+            return stderr = stderr.concat(data);
+          });
+        }).catch(rej);
+      });
+      return { createP: createP, promise: promise };
+    }
+  }]);
+
+  return ChildProcess;
+}();
+
+exports.default = ChildProcess;
+
+var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procId) {
+  var _this2 = this;
+
+  _classCallCheck(this, ChildTemplate);
+
+  this.promise = _Process2.default.findOne({ _id: procId }).then(function (proc) {
+    if (!proc) {
+      throw new Error('Unknown process id: ' + procId);
+    }
+    _this2.proc = proc;
+    _this2.execute(proc);
+  });
+};
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports) {
+
+module.exports = require("child_process");
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports) {
+
+module.exports = require("fs");
+
+/***/ }),
+/* 11 */
 /***/ (function(module, exports) {
 
 module.exports = require("csv-parse");
 
 /***/ }),
-/* 9 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -367,13 +500,11 @@ surveySchema.index({ enabled: 1, name: 1 });
 module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
-/* 10 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _Schema = __webpack_require__(1);
 
@@ -383,204 +514,11 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _Question2 = __webpack_require__(45);
+var _AnsweredQuestion = __webpack_require__(48);
 
-var _Question3 = _interopRequireDefault(_Question2);
+var _AnsweredQuestion2 = _interopRequireDefault(_AnsweredQuestion);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/**
- * Provides export functionalities
- */
-var AnsweredQuestion = function (_Question) {
-  _inherits(AnsweredQuestion, _Question);
-
-  function AnsweredQuestion(obj, position) {
-    _classCallCheck(this, AnsweredQuestion);
-
-    var _this = _possibleConstructorReturn(this, (AnsweredQuestion.__proto__ || Object.getPrototypeOf(AnsweredQuestion)).call(this, obj));
-
-    Object.assign(_this, obj);
-    if (position) _this.position = position;
-    return _this;
-  }
-
-  _createClass(AnsweredQuestion, [{
-    key: 'accumulateValue',
-    value: function accumulateValue(ans, ansKey) {
-      if (!ans.logged_options) return {};
-      if (this.type == 'ROOT' || !this.number) {
-        return {};
-      }
-      var ret = {};
-      if (this.type == 'MULTIPLE_CHOICE') {
-        ans.logged_options.reduce(function (acc, opt) {
-          if (opt.position !== null) acc[ansKey + '_opt' + opt.position] = 1;
-          return acc;
-        }, ret);
-      } else {
-        ret[ansKey] = ans.logged_options.map(function (opt) {
-          return opt.position || opt.text.english;
-        }).join(',');
-      }
-      return ret;
-    }
-  }, {
-    key: 'findRespondents',
-    value: function findRespondents(_ref) {
-      var _this2 = this;
-
-      var acc = _ref.acc,
-          prefix = _ref.prefix,
-          keys = _ref.keys,
-          respondents = _ref.respondents,
-          idx = _ref.idx,
-          cb = _ref.cb;
-
-      var number = respondents[idx];
-      if (!this.isParent(number)) return;
-      if (!this.answers) return;
-
-      acc = acc || {};
-      prefix = prefix || 'Q';
-      keys = keys || [];
-      prefix = '' + prefix + (this.position || '');
-
-      if (this.number === number) {
-        cb(this, { acc: acc, keys: keys, prefix: prefix });
-        return;
-      }
-
-      this.answers.forEach(function (ans, ansIdx) {
-        if (ans.children) {
-          var respChild = null;
-          ans.children.find(function (child, idx) {
-            child = AnsweredQuestion.fromChild(child);
-            if (child.isParent(number)) {
-              return respChild = child;
-            } else {
-              return false;
-            }
-          });
-          if (respChild) {
-            var newAcc = _this2.collectAnswer({
-              ans: ans, keys: keys,
-              idx: ansIdx,
-              ansKey: prefix,
-
-              ignore: respondents,
-              acc: Object.assign({}, acc)
-            });
-            respChild.findRespondents({
-              acc: newAcc,
-              prefix: prefix + '_',
-              keys: keys, respondents: respondents, idx: idx, cb: cb
-            });
-          }
-        }
-      });
-    }
-  }, {
-    key: 'collectAnswer',
-    value: function collectAnswer(_ref2) {
-      var _this3 = this;
-
-      var ans = _ref2.ans,
-          idx = _ref2.idx,
-          acc = _ref2.acc,
-          ansKey = _ref2.ansKey,
-          suffix = _ref2.suffix,
-          keys = _ref2.keys,
-          ignore = _ref2.ignore;
-
-      acc = acc || {};
-      ansKey = ansKey || 'Q';
-      suffix = suffix || '';
-      keys = keys || [];
-
-      var valObj = this.accumulateValue(ans, ansKey);
-      Object.keys(valObj).forEach(function (key) {
-        var oKey = key + suffix;
-        acc[oKey] = valObj[key];
-        if (!keys['pos' + oKey]) {
-          keys.push(oKey);
-          var text = '';
-          if (_this3.number) text = text + _this3.number;
-          if (_this3.text && _this3.text.english) {
-            text = text + (' ' + _this3.text.english);
-          }
-          keys['pos' + oKey] = text || 'UNKNOWN';
-        }
-      });
-
-      if (ans.children) {
-        ans.children.reduce(function (acc, child) {
-          var childAnswer = AnsweredQuestion.fromChild(child);
-          if (ignore && ignore.reduce(function (acc, ign) {
-            return acc || childAnswer.isParent(ign);
-          }, false)) return acc;
-
-          return childAnswer.collect({
-            prefix: ansKey + '_',
-            suffix: suffix, keys: keys, acc: acc, ignore: ignore
-          });
-        }, acc);
-      }
-      return acc;
-    }
-  }, {
-    key: 'collect',
-    value: function collect(_ref3) {
-      var _this4 = this;
-
-      var acc = _ref3.acc,
-          prefix = _ref3.prefix,
-          suffix = _ref3.suffix,
-          keys = _ref3.keys,
-          ignore = _ref3.ignore;
-
-      acc = acc || {};
-      prefix = prefix || 'Q';
-      suffix = suffix || '';
-      keys = keys || [];
-
-      var pos = this.position || '';
-      pos = pos.replace(/\./g, '_');
-      prefix = '' + prefix + pos;
-      return this.answers ? this.answers.reduce(function (acc, ans, idx) {
-        var ansKey = prefix;
-        var newSuffix = suffix;
-        if (_this4.flow && _this4.flow.answer.scope == 'multiple') {
-          newSuffix = suffix + ('_ans' + idx);
-        }
-        return _this4.collectAnswer({
-          ans: ans, idx: idx, acc: acc, ansKey: ansKey, keys: keys, ignore: ignore,
-          suffix: newSuffix
-        });
-      }, acc) : acc;
-    }
-  }], [{
-    key: 'fromChild',
-    value: function fromChild(child) {
-      var childAnswer = void 0;
-      if (child.question) {
-        // Version 1
-        childAnswer = new AnsweredQuestion(child.question, child.position);
-      } else {
-        childAnswer = new AnsweredQuestion(child);
-      }
-      return childAnswer;
-    }
-  }]);
-
-  return AnsweredQuestion;
-}(_Question3.default);
 
 var answerSchema = new _Schema2.default({
   name: { type: String },
@@ -591,9 +529,10 @@ var answerSchema = new _Schema2.default({
   rootQuestion: {
     type: {}, required: true,
     get: function get(a) {
-      return new AnsweredQuestion(a);
+      return new _AnsweredQuestion2.default(a);
     }
   },
+  checksum: { type: String, required: true, unique: true },
 
   // Post-processing concerns
   lastExport: { type: Date }
@@ -603,7 +542,7 @@ answerSchema.index({ survey: 1, lastExport: 1 });
 module.exports = _mongoose2.default.model('Answer', answerSchema);
 
 /***/ }),
-/* 11 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -655,7 +594,7 @@ module.exports = function (type, parent) {
 };
 
 /***/ }),
-/* 12 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -707,7 +646,7 @@ exports.default = function (array, tagModules, operator, initialPromise) {
 };
 
 /***/ }),
-/* 13 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -729,29 +668,29 @@ artifactSchema.index({ type: 1, mimeType: 1 });
 module.exports = mongoose.model('Artifact', artifactSchema);
 
 /***/ }),
-/* 14 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-__webpack_require__(15);
+__webpack_require__(18);
 
 /***/ }),
-/* 15 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _database = __webpack_require__(4);
+var _database = __webpack_require__(6);
 
 var _database2 = _interopRequireDefault(_database);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var express = __webpack_require__(5);
-var http = __webpack_require__(16);
+var express = __webpack_require__(7);
+var http = __webpack_require__(19);
 
 // Create the server and load the components.
 var app = express();
@@ -760,19 +699,19 @@ var app = express();
 
 
 // 2.1 Setup cookies
-__webpack_require__(17)(app);
+__webpack_require__(20)(app);
 
 // 2.2. Add security to all end points.
-__webpack_require__(19)(app);
+__webpack_require__(22)(app);
 
 // 2.3. Setup body-parser.
-__webpack_require__(26)(app);
+__webpack_require__(29)(app);
 
 // 10. Setup the routes:
-__webpack_require__(28)(app);
+__webpack_require__(31)(app);
 
 // 99. Setup error-handling
-__webpack_require__(71)(app);
+__webpack_require__(78)(app);
 
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
@@ -832,40 +771,40 @@ function onError(error) {
 }
 
 /***/ }),
-/* 16 */
+/* 19 */
 /***/ (function(module, exports) {
 
 module.exports = require("http");
 
 /***/ }),
-/* 17 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var cookieParser = __webpack_require__(18);
+var cookieParser = __webpack_require__(21);
 module.exports = function (app) {
   return app.use(cookieParser());
 };
 
 /***/ }),
-/* 18 */
+/* 21 */
 /***/ (function(module, exports) {
 
 module.exports = require("cookie-parser");
 
 /***/ }),
-/* 19 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var jwt = __webpack_require__(20);
+var jwt = __webpack_require__(23);
 var constants = __webpack_require__(3);
 
-var httpDigest = __webpack_require__(21);
+var httpDigest = __webpack_require__(24);
 
 var jwtOpts = Object.assign({
   getToken: function getToken(req) {
@@ -894,27 +833,27 @@ module.exports = function (app) {
 };
 
 /***/ }),
-/* 20 */
+/* 23 */
 /***/ (function(module, exports) {
 
 module.exports = require("express-jwt");
 
 /***/ }),
-/* 21 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _User = __webpack_require__(22);
+var _User = __webpack_require__(25);
 
 var _User2 = _interopRequireDefault(_User);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var passport = __webpack_require__(23);
-var Digest = __webpack_require__(24).DigestStrategy;
-var jwt = __webpack_require__(25);
+var passport = __webpack_require__(26);
+var Digest = __webpack_require__(27).DigestStrategy;
+var jwt = __webpack_require__(28);
 var Constants = __webpack_require__(3);
 
 passport.use(new Digest({ qop: 'auth' }, function (username, cb) {
@@ -953,7 +892,7 @@ module.exports = function (app, path) {
 };
 
 /***/ }),
-/* 22 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -975,31 +914,31 @@ userSchema.index({ name: 1 });
 module.exports = mongoose.model('User', userSchema);
 
 /***/ }),
-/* 23 */
+/* 26 */
 /***/ (function(module, exports) {
 
 module.exports = require("passport");
 
 /***/ }),
-/* 24 */
+/* 27 */
 /***/ (function(module, exports) {
 
 module.exports = require("passport-http");
 
 /***/ }),
-/* 25 */
+/* 28 */
 /***/ (function(module, exports) {
 
 module.exports = require("jsonwebtoken");
 
 /***/ }),
-/* 26 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var bodyParser = __webpack_require__(27);
+var bodyParser = __webpack_require__(30);
 
 module.exports = function (app) {
   // parse application/x-www-form-urlencoded 
@@ -1010,21 +949,21 @@ module.exports = function (app) {
 };
 
 /***/ }),
-/* 27 */
+/* 30 */
 /***/ (function(module, exports) {
 
 module.exports = require("body-parser");
 
 /***/ }),
-/* 28 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 module.exports = function (app) {
-  app.use('/cms', __webpack_require__(29));
-  app.use('/app', __webpack_require__(69));
+  app.use('/cms', __webpack_require__(32));
+  app.use('/app', __webpack_require__(76));
 
   // redirect the home to /cms
   app.get('/', function (req, res) {
@@ -1033,19 +972,19 @@ module.exports = function (app) {
 };
 
 /***/ }),
-/* 29 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _dispatcher = __webpack_require__(30);
+var _dispatcher = __webpack_require__(33);
 
 var _dispatcher2 = _interopRequireDefault(_dispatcher);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var express = __webpack_require__(5);
+var express = __webpack_require__(7);
 
 
 /**
@@ -1070,15 +1009,16 @@ function registerCmsRoutes(app, Controller, extra) {
 }
 
 var cmsRouter = new express.Router();
-registerCmsRoutes(cmsRouter, __webpack_require__(32), function (app, ctrl) {
+registerCmsRoutes(cmsRouter, __webpack_require__(35), function (app, ctrl) {
   app.use('/:id/download', (0, _dispatcher2.default)(ctrl, 'download'));
 });
-registerCmsRoutes(cmsRouter, __webpack_require__(63));
-registerCmsRoutes(cmsRouter, __webpack_require__(66));
+registerCmsRoutes(cmsRouter, __webpack_require__(67));
+registerCmsRoutes(cmsRouter, __webpack_require__(71));
+registerCmsRoutes(cmsRouter, __webpack_require__(74));
 module.exports = cmsRouter;
 
 /***/ }),
-/* 30 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1089,7 +1029,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = dispatcher;
 
-var _render = __webpack_require__(31);
+var _render = __webpack_require__(34);
 
 var _render2 = _interopRequireDefault(_render);
 
@@ -1109,7 +1049,7 @@ function dispatcher(Controller, method) {
 }
 
 /***/ }),
-/* 31 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1191,7 +1131,7 @@ exports.default = Renderer;
 ;
 
 /***/ }),
-/* 32 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1201,19 +1141,19 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _fs = __webpack_require__(7);
+var _fs = __webpack_require__(10);
 
 var _fs2 = _interopRequireDefault(_fs);
 
-var _streamConcat = __webpack_require__(33);
+var _streamConcat = __webpack_require__(36);
 
 var _streamConcat2 = _interopRequireDefault(_streamConcat);
 
-var _EntitiyController = __webpack_require__(6);
+var _EntitiyController = __webpack_require__(4);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
-var _surveyResponse = __webpack_require__(43);
+var _surveyResponse = __webpack_require__(46);
 
 var _surveyResponse2 = _interopRequireDefault(_surveyResponse);
 
@@ -1227,9 +1167,9 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Survey = __webpack_require__(9);
+var Survey = __webpack_require__(12);
 
-var SurveyCSVParser = __webpack_require__(47);
+var SurveyCSVParser = __webpack_require__(51);
 
 /**
  * Survey document controller.
@@ -1287,7 +1227,7 @@ var SurveyController = function (_EntityController) {
         if (obj.respondents == 'none') {
           obj.respondents = null;
         } else {
-          obj.respondents = obj.respondents.split(',');
+          obj.respondents = obj.respondents && obj.respondents.split(',');
         }
       }
 
@@ -1348,13 +1288,13 @@ Object.assign(SurveyController, {
 module.exports = SurveyController;
 
 /***/ }),
-/* 33 */
+/* 36 */
 /***/ (function(module, exports) {
 
 module.exports = require("stream-concat");
 
 /***/ }),
-/* 34 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1398,7 +1338,7 @@ var BaseController = function () {
 exports.default = BaseController;
 
 /***/ }),
-/* 35 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1438,7 +1378,7 @@ var ListingConcerns = function (_Mixin) {
     key: '_find',
     value: function _find(query) {
       if (this.constructor.collection) {
-        return this.constructor.collection.find(query);
+        return this.constructor.collection.find(query).select(this._findFields);
       }
     }
   }, {
@@ -1459,7 +1399,7 @@ var ListingConcerns = function (_Mixin) {
 exports.default = ListingConcerns;
 
 /***/ }),
-/* 36 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1531,7 +1471,7 @@ var GetConcerns = function (_Mixin) {
 exports.default = GetConcerns;
 
 /***/ }),
-/* 37 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1591,7 +1531,7 @@ var DeleteConcerns = function (_Mixin) {
 exports.default = DeleteConcerns;
 
 /***/ }),
-/* 38 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1607,7 +1547,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _multipartHandler = __webpack_require__(39);
+var _multipartHandler = __webpack_require__(42);
 
 var _multipartHandler2 = _interopRequireDefault(_multipartHandler);
 
@@ -1644,6 +1584,7 @@ var BodyConcerns = function (_Mixin) {
   }, {
     key: '_filterObject',
     value: function _filterObject(obj, keys) {
+      if (typeof keys === 'string') keys = keys.split(' ');
       return keys.reduce(function (acc, key) {
         if (obj[key] !== undefined) acc[key] = obj[key];
         return acc;
@@ -1683,7 +1624,7 @@ var BodyConcerns = function (_Mixin) {
 exports.default = BodyConcerns;
 
 /***/ }),
-/* 39 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1695,7 +1636,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _busboy = __webpack_require__(40);
+var _busboy = __webpack_require__(43);
 
 var _busboy2 = _interopRequireDefault(_busboy);
 
@@ -1762,13 +1703,13 @@ var MPHandler = function (_Busboy) {
 exports.default = MPHandler;
 
 /***/ }),
-/* 40 */
+/* 43 */
 /***/ (function(module, exports) {
 
 module.exports = require("busboy");
 
 /***/ }),
-/* 41 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1853,7 +1794,7 @@ var CreateConcerns = function (_Mixin) {
 exports.default = CreateConcerns;
 
 /***/ }),
-/* 42 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1934,7 +1875,7 @@ var UpdateConcerns = function (_Mixin) {
 exports.default = UpdateConcerns;
 
 /***/ }),
-/* 43 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1946,23 +1887,23 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _fs = __webpack_require__(7);
+var _fs = __webpack_require__(10);
 
 var _fs2 = _interopRequireDefault(_fs);
 
-var _csvStringify = __webpack_require__(44);
+var _csvStringify = __webpack_require__(47);
 
 var _csvStringify2 = _interopRequireDefault(_csvStringify);
 
-var _csvParse = __webpack_require__(8);
+var _csvParse = __webpack_require__(11);
 
 var _csvParse2 = _interopRequireDefault(_csvParse);
 
-var _Survey = __webpack_require__(9);
+var _Survey = __webpack_require__(12);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
-var _Answer = __webpack_require__(10);
+var _Answer = __webpack_require__(13);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 
@@ -2236,20 +2177,234 @@ var SurveyResponseProcessor = function () {
 exports.default = SurveyResponseProcessor;
 
 /***/ }),
-/* 44 */
+/* 47 */
 /***/ (function(module, exports) {
 
 module.exports = require("csv-stringify");
 
 /***/ }),
-/* 45 */
+/* 48 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Question2 = __webpack_require__(49);
+
+var _Question3 = _interopRequireDefault(_Question2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+/**
+ * Provides export functionalities
+ */
+var AnsweredQuestion = function (_Question) {
+  _inherits(AnsweredQuestion, _Question);
+
+  function AnsweredQuestion(obj, position) {
+    _classCallCheck(this, AnsweredQuestion);
+
+    var _this = _possibleConstructorReturn(this, (AnsweredQuestion.__proto__ || Object.getPrototypeOf(AnsweredQuestion)).call(this, obj));
+
+    Object.assign(_this, obj);
+    if (position) _this.position = position;
+    return _this;
+  }
+
+  _createClass(AnsweredQuestion, [{
+    key: 'accumulateValue',
+    value: function accumulateValue(ans, ansKey) {
+      if (!ans.logged_options) return {};
+      if (this.type == 'ROOT' || !this.number) {
+        return {};
+      }
+      var ret = {};
+      if (this.type == 'MULTIPLE_CHOICE') {
+        ans.logged_options.reduce(function (acc, opt) {
+          if (opt.position !== null) acc[ansKey + '_opt' + opt.position] = 1;
+          return acc;
+        }, ret);
+      } else {
+        ret[ansKey] = ans.logged_options.map(function (opt) {
+          return opt.position || opt.text.english;
+        }).join(',');
+      }
+      return ret;
+    }
+  }, {
+    key: 'findRespondents',
+    value: function findRespondents(_ref) {
+      var _this2 = this;
+
+      var acc = _ref.acc,
+          prefix = _ref.prefix,
+          keys = _ref.keys,
+          respondents = _ref.respondents,
+          idx = _ref.idx,
+          cb = _ref.cb;
+
+      var number = respondents[idx];
+      if (!this.isParent(number)) return;
+      if (!this.answers) return;
+
+      acc = acc || {};
+      prefix = prefix || 'Q';
+      keys = keys || [];
+      prefix = '' + prefix + (this.position || '');
+
+      if (this.number === number) {
+        cb(this, { acc: acc, keys: keys, prefix: prefix });
+        return;
+      }
+
+      this.answers.forEach(function (ans, ansIdx) {
+        if (ans.children) {
+          var respChild = null;
+          ans.children.find(function (child, idx) {
+            child = AnsweredQuestion.fromChild(child);
+            if (child.isParent(number)) {
+              return respChild = child;
+            } else {
+              return false;
+            }
+          });
+          if (respChild) {
+            var newAcc = _this2.collectAnswer({
+              ans: ans, keys: keys,
+              idx: ansIdx,
+              ansKey: prefix,
+
+              ignore: respondents,
+              acc: Object.assign({}, acc)
+            });
+            respChild.findRespondents({
+              acc: newAcc,
+              prefix: prefix + '_',
+              keys: keys, respondents: respondents, idx: idx, cb: cb
+            });
+          }
+        }
+      });
+    }
+  }, {
+    key: 'collectAnswer',
+    value: function collectAnswer(_ref2) {
+      var _this3 = this;
+
+      var ans = _ref2.ans,
+          idx = _ref2.idx,
+          acc = _ref2.acc,
+          ansKey = _ref2.ansKey,
+          suffix = _ref2.suffix,
+          keys = _ref2.keys,
+          ignore = _ref2.ignore;
+
+      acc = acc || {};
+      ansKey = ansKey || 'Q';
+      suffix = suffix || '';
+      keys = keys || [];
+
+      var valObj = this.accumulateValue(ans, ansKey);
+      Object.keys(valObj).forEach(function (key) {
+        var oKey = key + suffix;
+        acc[oKey] = valObj[key];
+        if (!keys['pos' + oKey]) {
+          keys.push(oKey);
+          var text = '';
+          if (_this3.number) text = text + _this3.number;
+          if (_this3.text && _this3.text.english) {
+            text = text + (' ' + _this3.text.english);
+          }
+          keys['pos' + oKey] = text || 'UNKNOWN';
+        }
+      });
+
+      if (ans.children) {
+        ans.children.reduce(function (acc, child) {
+          var childAnswer = AnsweredQuestion.fromChild(child);
+          if (ignore && ignore.reduce(function (acc, ign) {
+            return acc || childAnswer.isParent(ign);
+          }, false)) return acc;
+
+          return childAnswer.collect({
+            prefix: ansKey + '_',
+            suffix: suffix, keys: keys, acc: acc, ignore: ignore
+          });
+        }, acc);
+      }
+      return acc;
+    }
+  }, {
+    key: 'collect',
+    value: function collect(_ref3) {
+      var _this4 = this;
+
+      var acc = _ref3.acc,
+          prefix = _ref3.prefix,
+          suffix = _ref3.suffix,
+          keys = _ref3.keys,
+          ignore = _ref3.ignore;
+
+      acc = acc || {};
+      prefix = prefix || 'Q';
+      suffix = suffix || '';
+      keys = keys || [];
+
+      var pos = this.position || '';
+      pos = pos.replace(/\./g, '_');
+      prefix = '' + prefix + pos;
+      return this.answers ? this.answers.reduce(function (acc, ans, idx) {
+        var ansKey = prefix;
+        var newSuffix = suffix;
+        if (_this4.flow && _this4.flow.answer.scope == 'multiple') {
+          newSuffix = suffix + ('_ans' + idx);
+        }
+        return _this4.collectAnswer({
+          ans: ans, idx: idx, acc: acc, ansKey: ansKey, keys: keys, ignore: ignore,
+          suffix: newSuffix
+        });
+      }, acc) : acc;
+    }
+  }], [{
+    key: 'fromChild',
+    value: function fromChild(child) {
+      var childAnswer = void 0;
+      if (child.question) {
+        // Version 1
+        childAnswer = new AnsweredQuestion(child.question, child.position);
+      } else {
+        childAnswer = new AnsweredQuestion(child);
+      }
+      return childAnswer;
+    }
+  }]);
+
+  return AnsweredQuestion;
+}(_Question3.default);
+
+exports.default = AnsweredQuestion;
+
+/***/ }),
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 var Schema = __webpack_require__(1);
-var Text = __webpack_require__(46);
+var Text = __webpack_require__(50);
 var mongoose = __webpack_require__(0);
 
 var questionSchema = new Schema({
@@ -2305,7 +2460,7 @@ var Question = mongoose.model('Question', questionSchema);
 module.exports = Question;
 
 /***/ }),
-/* 46 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2321,7 +2476,7 @@ module.exports = new Schema({
 });
 
 /***/ }),
-/* 47 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2331,15 +2486,15 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _tags = __webpack_require__(48);
+var _tags = __webpack_require__(52);
 
 var _tags2 = _interopRequireDefault(_tags);
 
-var _options = __webpack_require__(59);
+var _options = __webpack_require__(63);
 
 var _options2 = _interopRequireDefault(_options);
 
-var _treeCsvParser = __webpack_require__(61);
+var _treeCsvParser = __webpack_require__(65);
 
 var _treeCsvParser2 = _interopRequireDefault(_treeCsvParser);
 
@@ -2631,7 +2786,7 @@ var SurveyCSVParser = function (_TreeParser) {
           type: 'ROOT',
           options: [],
           children: ch,
-          flow: __webpack_require__(11)('NONE', null)
+          flow: __webpack_require__(14)('NONE', null)
         };
       }).then(function (q) {
         _this5.res({ root: q, warnings: _this5.warnings });
@@ -2661,7 +2816,7 @@ var SurveyCSVParser = function (_TreeParser) {
 module.exports = SurveyCSVParser;
 
 /***/ }),
-/* 48 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2671,11 +2826,11 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _questionDefault = __webpack_require__(11);
+var _questionDefault = __webpack_require__(14);
 
 var _questionDefault2 = _interopRequireDefault(_questionDefault);
 
-var _promiseProcess = __webpack_require__(12);
+var _promiseProcess = __webpack_require__(15);
 
 var _promiseProcess2 = _interopRequireDefault(_promiseProcess);
 
@@ -2698,10 +2853,10 @@ exports.default = function (type, tags, parentContext) {
   });
 };
 
-var tagModules = [].concat([__webpack_require__(49), __webpack_require__(50), __webpack_require__(51), __webpack_require__(52), __webpack_require__(53), __webpack_require__(54), __webpack_require__(55), __webpack_require__(56), __webpack_require__(57), __webpack_require__(58)]);
+var tagModules = [].concat([__webpack_require__(53), __webpack_require__(54), __webpack_require__(55), __webpack_require__(56), __webpack_require__(57), __webpack_require__(58), __webpack_require__(59), __webpack_require__(60), __webpack_require__(61), __webpack_require__(62)]);
 
 /***/ }),
-/* 49 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2716,7 +2871,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 50 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2731,7 +2886,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 51 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2751,7 +2906,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 52 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2772,7 +2927,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 53 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2787,7 +2942,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 54 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2801,7 +2956,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 55 */
+/* 59 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2823,7 +2978,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 56 */
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2837,7 +2992,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 57 */
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2862,7 +3017,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 58 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2876,7 +3031,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 59 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2886,7 +3041,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _promiseProcess = __webpack_require__(12);
+var _promiseProcess = __webpack_require__(15);
 
 var _promiseProcess2 = _interopRequireDefault(_promiseProcess);
 
@@ -2909,16 +3064,16 @@ exports.default = function (tags) {
   });
 };
 
-var optModules = [].concat([__webpack_require__(60)]);
+var optModules = [].concat([__webpack_require__(64)]);
 
 /***/ }),
-/* 60 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _Artifact = __webpack_require__(13);
+var _Artifact = __webpack_require__(16);
 
 var _Artifact2 = _interopRequireDefault(_Artifact);
 
@@ -2943,7 +3098,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 61 */
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2957,7 +3112,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var CSVParser = __webpack_require__(62);
+var CSVParser = __webpack_require__(66);
 
 /** 
  * A stack-based parser to parse hierarchical CSVs.
@@ -3105,7 +3260,7 @@ var TreeParser = function (_CSVParser) {
 module.exports = TreeParser;
 
 /***/ }),
-/* 62 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3119,7 +3274,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var _require = __webpack_require__(8),
+var _require = __webpack_require__(11),
     Parser = _require.Parser;
 
 /**
@@ -3177,7 +3332,7 @@ var CSVParser = function (_Parser) {
 module.exports = CSVParser;
 
 /***/ }),
-/* 63 */
+/* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3191,21 +3346,25 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _Answer = __webpack_require__(10);
+var _Answer = __webpack_require__(13);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 
-var _EntitiyController = __webpack_require__(6);
+var _EntitiyController = __webpack_require__(4);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
-var _csvWriteStream = __webpack_require__(64);
+var _csvWriteStream = __webpack_require__(68);
 
 var _csvWriteStream2 = _interopRequireDefault(_csvWriteStream);
 
-var _streamToString = __webpack_require__(65);
+var _streamToString = __webpack_require__(69);
 
 var _streamToString2 = _interopRequireDefault(_streamToString);
+
+var _md = __webpack_require__(70);
+
+var _md2 = _interopRequireDefault(_md);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3231,11 +3390,6 @@ var AnswerController = function (_EntityController) {
   }
 
   _createClass(AnswerController, [{
-    key: '_find',
-    value: function _find(query) {
-      return _get(AnswerController.prototype.__proto__ || Object.getPrototypeOf(AnswerController.prototype), '_find', this).call(this, query).select('name description surveyor survey modifiedAt');
-    }
-  }, {
     key: '_create',
     value: function _create() {
       var _get2,
@@ -3245,8 +3399,13 @@ var AnswerController = function (_EntityController) {
         args[_key] = arguments[_key];
       }
 
-      return (_get2 = _get(AnswerController.prototype.__proto__ || Object.getPrototypeOf(AnswerController.prototype), '_create', this)).call.apply(_get2, [this].concat(args)).then(function (obj) {
-        return _this2._filterObject(obj, ['_id', 'name', 'description', 'version', 'surveyor', 'survey', 'modifiedAt']);
+      return (_get2 = _get(AnswerController.prototype.__proto__ || Object.getPrototypeOf(AnswerController.prototype), '_create', this)).call.apply(_get2, [this].concat(args)).catch(function (err) {
+        if (err.name === 'MongoError' && err.code === 11000) {
+          return _get(AnswerController.prototype.__proto__ || Object.getPrototypeOf(AnswerController.prototype), '_find', _this2).call(_this2, { checksum: args.checksum });
+        }
+        return Promise.reject(err);
+      }).then(function (obj) {
+        return _this2._filterObject(obj, ['_id', 'name', 'description', 'version', 'surveyor', 'survey', 'checksum', 'modifiedAt']);
       });
     }
   }, {
@@ -3276,7 +3435,10 @@ var AnswerController = function (_EntityController) {
           fields = _ref.fields;
 
       if (field === 'dataFile') {
-        return (0, _streamToString2.default)(file).then(function (jsonStr) {
+        return (0, _streamToString2.default)(file).then(function (str) {
+          fields.checksum = (0, _md2.default)(str);
+          return str;
+        }).then(function (jsonStr) {
           return JSON.parse(jsonStr);
         }).then(function (json) {
           return _this3._parseDataFile ? _this3._parseDataFile(json, fields) : Promise.reject({
@@ -3291,7 +3453,7 @@ var AnswerController = function (_EntityController) {
   }, {
     key: '_parseEntity',
     value: function _parseEntity(obj) {
-      return this._filterObject(obj, ['name', 'description', 'rootQuestion', 'surveyor', 'survey', 'version']);
+      return this._filterObject(obj, ['name', 'description', 'rootQuestion', 'surveyor', 'survey', 'version', 'checksum']);
     }
   }, {
     key: 'download',
@@ -3324,25 +3486,34 @@ var AnswerController = function (_EntityController) {
 
 Object.assign(AnswerController, {
   collection: _Answer2.default,
-  routeName: 'answers'
+  routeName: 'answers',
+
+  _findFields: 'name description surveyor survey checksum modifiedAt'
 });
+
 module.exports = AnswerController;
 exports.default = AnswerController;
 
 /***/ }),
-/* 64 */
+/* 68 */
 /***/ (function(module, exports) {
 
 module.exports = require("csv-write-stream");
 
 /***/ }),
-/* 65 */
+/* 69 */
 /***/ (function(module, exports) {
 
 module.exports = require("stream-to-string");
 
 /***/ }),
-/* 66 */
+/* 70 */
+/***/ (function(module, exports) {
+
+module.exports = require("md5");
+
+/***/ }),
+/* 71 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3352,15 +3523,15 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _EntitiyController = __webpack_require__(6);
+var _EntitiyController = __webpack_require__(4);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
-var _streamToArray = __webpack_require__(67);
+var _streamToArray = __webpack_require__(72);
 
 var _streamToArray2 = _interopRequireDefault(_streamToArray);
 
-var _fileType = __webpack_require__(68);
+var _fileType = __webpack_require__(73);
 
 var _fileType2 = _interopRequireDefault(_fileType);
 
@@ -3372,7 +3543,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Artifact = __webpack_require__(13);
+var Artifact = __webpack_require__(16);
 
 /**
  * Artifact document controller.
@@ -3390,11 +3561,6 @@ var ArtifactController = function (_EntityController) {
   }
 
   _createClass(ArtifactController, [{
-    key: '_find',
-    value: function _find(query) {
-      return _get(ArtifactController.prototype.__proto__ || Object.getPrototypeOf(ArtifactController.prototype), '_find', this).call(this, query).select('name description type mimeType modifiedAt');
-    }
-  }, {
     key: '_create',
     value: function _create() {
       var _get2,
@@ -3445,36 +3611,135 @@ var ArtifactController = function (_EntityController) {
 Object.assign(ArtifactController, {
   collection: Artifact,
   entityName: 'Artifact',
-  routeName: 'artifacts'
+  routeName: 'artifacts',
+
+  _findFields: 'name description type mimeType modifiedAt'
 });
 module.exports = ArtifactController;
 
 /***/ }),
-/* 67 */
+/* 72 */
 /***/ (function(module, exports) {
 
 module.exports = require("stream-to-array");
 
 /***/ }),
-/* 68 */
+/* 73 */
 /***/ (function(module, exports) {
 
 module.exports = require("file-type");
 
 /***/ }),
-/* 69 */
+/* 74 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _path = __webpack_require__(70);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _EntitiyController = __webpack_require__(4);
+
+var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
+
+var _procs = __webpack_require__(75);
+
+var _procs2 = _interopRequireDefault(_procs);
+
+var _Process = __webpack_require__(5);
+
+var _Process2 = _interopRequireDefault(_Process);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+/**
+ * Process controller.
+ * 
+ * @class ProcessController
+ * @extends {EntityController}
+ */
+var ProcessController = function (_EntityController) {
+  _inherits(ProcessController, _EntityController);
+
+  function ProcessController() {
+    _classCallCheck(this, ProcessController);
+
+    return _possibleConstructorReturn(this, (ProcessController.__proto__ || Object.getPrototypeOf(ProcessController)).apply(this, arguments));
+  }
+
+  _createClass(ProcessController, [{
+    key: '_parseEntity',
+    value: function _parseEntity(obj) {
+      if (!_procs2.default[obj.name]) {
+        return null;
+      }
+
+      return this._filterObject(obj, 'name args');
+    }
+  }, {
+    key: '_create',
+    value: function _create(query) {
+      return _procs2.default[query.name].execute(query.args).createP;
+    }
+  }]);
+
+  return ProcessController;
+}(_EntitiyController2.default);
+
+Object.assign(ProcessController, {
+  collection: _Process2.default,
+  entityName: 'Process',
+  routeName: 'processes',
+
+  _findFields: 'name path status modifiedAt'
+});
+module.exports = ProcessController;
+
+/***/ }),
+/* 75 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.CollectResponses = undefined;
+
+var _childProcess = __webpack_require__(8);
+
+var _childProcess2 = _interopRequireDefault(_childProcess);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var CollectResponses = exports.CollectResponses = new _childProcess2.default({
+  procName: 'CollectResponses',
+  procPath: 'web/collect-responses'
+});
+
+exports.default = { CollectResponses: CollectResponses };
+
+/***/ }),
+/* 76 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _path = __webpack_require__(77);
 
 var _path2 = _interopRequireDefault(_path);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var express = __webpack_require__(5);
+var express = __webpack_require__(7);
 var app = new express.Router();
 
 
@@ -3485,13 +3750,13 @@ app.get('/auth', function (req, res, next) {
 module.exports = app;
 
 /***/ }),
-/* 70 */
+/* 77 */
 /***/ (function(module, exports) {
 
 module.exports = require("path");
 
 /***/ }),
-/* 71 */
+/* 78 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
