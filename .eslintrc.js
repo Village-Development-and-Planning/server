@@ -16,7 +16,7 @@ module.exports = {
         "require": {
           "FunctionDeclaration": true,
           "MethodDefinition": false,
-          "ClassDeclaration": true,
+          "ClassDeclaration": false,
           "ArrowFunctionExpression": false
         }
       }

@@ -7,7 +7,7 @@ import SurveyResponse from '../procs/survey-response.proc';
 
 /**
  * Survey document controller.
- * 
+ *
  * @class SurveyController
  * @extends {BaseController}
  */

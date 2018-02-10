@@ -7,9 +7,12 @@ const userSchema = new Schema({
 
   passphrase: {type: String},
   roles: [{type: String}],
+
+  payload: {type: {}},
 });
 userSchema.index({username: 1});
 userSchema.index({name: 1});
+userSchema.index({roles: 1});
 
 module.exports = mongoose.model('User', userSchema);
 

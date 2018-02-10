@@ -2,9 +2,9 @@ const express = require('express');
 import dispatcher from './dispatcher';
 
 /**
- * 
+ *
  * @param {Express.App} app
- * @param {Class.<BaseController>} Controller 
+ * @param {Class.<BaseController>} Controller
  * @param {Function} extra
  */
 function registerCmsRoutes(app, Controller, extra) {
@@ -20,7 +20,7 @@ function registerCmsRoutes(app, Controller, extra) {
   extra && extra(router, Controller);
   app.use(`/${Controller.routeName}`, router);
   (console.log(
-    `Registered @ /${Controller.routeName} for ${Controller.name}`
+    `[CMS] Registered @ /${Controller.routeName} for ${Controller.name}`
   ));
 }
 
@@ -43,5 +43,13 @@ registerCmsRoutes(
 registerCmsRoutes(
   cmsRouter,
   require('../controllers/ProcessController'),
+);
+registerCmsRoutes(
+  cmsRouter,
+  require('../controllers/LocationController'),
+);
+registerCmsRoutes(
+  cmsRouter,
+  require('../controllers/SurveyorController'),
 );
 module.exports = cmsRouter;

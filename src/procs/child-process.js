@@ -8,8 +8,8 @@ export default class ChildProcess {
   }
 
   execute(args) {
-    this.procName = this.procName 
-      || this.constructor.procName 
+    this.procName = this.procName
+      || this.constructor.procName
       || this.constructor.name
       || 'Unknown';
     this.procPath = this.procPath
@@ -33,7 +33,8 @@ export default class ChildProcess {
             process.execPath,
             [`build/procs/${this.procPath}.js`, proc._id]
           );
-          let stdout = [], stderr = [];
+          let stdout = [];
+          let stderr = [];
 
           p.on('close', (code) => {
             proc.exitCode = code;
@@ -45,7 +46,7 @@ export default class ChildProcess {
           });
           p.stdout.on('data', (data) => stdout = stdout.concat(data));
           p.stderr.on('data', (data) => stderr = stderr.concat(data));
-      }).catch(rej);      
+      }).catch(rej);
     });
     return {createP, promise};
   }
@@ -59,7 +60,12 @@ export class ChildTemplate {
         throw new Error(`Unknown process id: ${procId}`);
       }
       this.proc = proc;
-      this.execute(proc);
+      return this.execute(proc);
+    }).then((output) => {
+      console.log(output);
+    }).catch((err) => {
+      console.log('Error: ');
+      console.log(err);
     });
   }
 }

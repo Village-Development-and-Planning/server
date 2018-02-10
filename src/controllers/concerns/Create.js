@@ -5,7 +5,9 @@ import Mixin from '../../lib/Mixin';
  */
 export default class CreateConcerns extends Mixin {
   _create(query) {
-    return this.constructor.collection.create(query);
+    return this.constructor.collection
+    .create(query)
+    .then((obj) => this._filterObject(obj, this._createFields));
   }
 
   _createQuery() {

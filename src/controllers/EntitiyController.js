@@ -10,7 +10,7 @@ import Update from './concerns/Update';
 
 /**
 * Controller class for documents exposed via CMS APIs.
-* 
+*
 * @class EntityController
 */
 class EntityController
@@ -21,8 +21,13 @@ class EntityController
   ) {
     constructor(...args) {
       super(...args);
-      this._findFields = this._findFields || this.constructor._findFields;
+
+      '_findFields _createFields'
+      .split(' ').forEach((key) => {
+        this[key] = this[key] || this.constructor[key];
+      });
     }
+
     _parseBody() {
       return super._parseBody().then((obj) => {
         if (Array.isArray(obj)) {
@@ -35,6 +40,9 @@ class EntityController
     }
 };
 
-EntityController._findFields = 'name description modifiedAt';
+Object.assign(EntityController, {
+  _findFields: '_id name description modifiedAt',
+  _createFields: '_id name description modifiedAt',
+});
 
 export default EntityController;

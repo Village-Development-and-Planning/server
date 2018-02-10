@@ -3,15 +3,15 @@ import optTagsParser from '../tags/options';
 import TreeParser from './tree-csv-parser';
 /**
 * Tree based parser for questions provided in CSV for mapping/household survey.
-* 
+*
 * @class SurveyCSVParser
 * @extends {TreeParser}
 */
 class SurveyCSVParser extends TreeParser {
   /**
   * Creates an instance of SurveyCSVParser.
-  * @param {any} opts 
-  * 
+  * @param {any} opts
+  *
   * @memberOf SurveyCSVParser
   */
   constructor(opts) {
@@ -50,9 +50,9 @@ class SurveyCSVParser extends TreeParser {
 
   /**
    * Process tags from the stack and create template object.
-   * 
-   * @param {any} stack 
-   * 
+   *
+   * @param {any} stack
+   *
    * @memberOf SurveyCSVParser
    */
   _onNodePushed(stack) {
@@ -85,10 +85,10 @@ class SurveyCSVParser extends TreeParser {
   }
 
   /**
-  * 
-  * 
-  * @param {CSVRowObject} node, parent 
-  * 
+  *
+  *
+  * @param {CSVRowObject} node, parent
+  *
   * @memberOf SurveyCSVParser
   */
   _onNodeCompleted({node, parent}) {
@@ -124,9 +124,9 @@ class SurveyCSVParser extends TreeParser {
 
   /**
   * Helper to create promises array on question/survey.
-  * 
-  * @param {CSVRowObject} parent 
-  * 
+  *
+  * @param {CSVRowObject} parent
+  *
   * @memberOf SurveyCSVParser
   */
   _createPromises(parent) {
@@ -136,10 +136,10 @@ class SurveyCSVParser extends TreeParser {
 
   /**
   * Private helper to create Option doc
-  * 
-  * @param {any} node 
+  *
+  * @param {any} node
   * @return {Promise.<Option>}
-  * 
+  *
   * @memberOf SurveyCSVParser
   */
   _createOption(node) {
@@ -158,10 +158,10 @@ class SurveyCSVParser extends TreeParser {
 
   /**
   * Private helper to create Question doc.
-  * 
-  * @param {CSVRowObject} node 
+  *
+  * @param {CSVRowObject} node
   * @return {Promise} Question doc.
-  * 
+  *
   * @memberOf SurveyCSVParser
   */
   _createQuestion(node) {
@@ -208,20 +208,20 @@ class SurveyCSVParser extends TreeParser {
 
   /**
   * Private helper
-  * 
-  * @param {String} str 
+  *
+  * @param {String} str
   * @return {[String]} tags
-  * 
+  *
   * @memberOf SurveyCSVParser
   */
 
   /**
   * Private helper to create Text sub-doc
-  * 
-  * @param {CSVRowObject} node 
-  * @param {String} prefix 
+  *
+  * @param {CSVRowObject} node
+  * @param {String} prefix
   * @return {Text} Text sub-doc
-  * 
+  *
   * @memberOf SurveyCSVParser
   */
   _createTextJson(node, prefix) {
@@ -237,9 +237,9 @@ class SurveyCSVParser extends TreeParser {
 
   /**
   * Private 'finish' callback
-  * 
+  *
   * @private
-  * 
+  *
   * @memberOf SurveyCSVParser
   */
   _onFinish() {
@@ -263,9 +263,9 @@ class SurveyCSVParser extends TreeParser {
 
   /**
   * Private 'error' callback
-  * 
-  * @param {any} err 
-  * 
+  *
+  * @param {any} err
+  *
   * @memberOf SurveyCSVParser
   */
   _onError(err) {

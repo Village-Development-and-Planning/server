@@ -14,6 +14,7 @@ if (!proc || !proc.promise) {
 }
 
 proc.promise.then(
-  () => null,
-).then(() => mongoose.connection.close());
+  () => mongoose.connection.close(),
+  () => mongoose.connection.close(),
+);
 process.exitCode = 0;

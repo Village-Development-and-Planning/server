@@ -6,12 +6,11 @@ import streamToString from 'stream-to-string';
 import md5 from 'md5';
 /**
  * Question document controller
- * 
+ *
  * @class QuestionController
  * @extends {BaseController}
  */
 class AnswerController extends EntityController {
-
   _create(...args) {
     return super._create(...args)
       .catch((err) => {
@@ -69,8 +68,9 @@ class AnswerController extends EntityController {
   }
 
   _parseEntity(obj) {
-    return this._filterObject(obj,
-      ['name', 'description', 'rootQuestion', 'surveyor', 'survey', 'version', 'checksum']
+    return this._filterObject(
+      obj,
+      'name description rootQuestion surveyor survey version checksum',
     );
   }
 
@@ -99,7 +99,7 @@ class AnswerController extends EntityController {
 Object.assign(AnswerController, {
   collection: Answer,
   routeName: 'answers',
-  
+
   _findFields: 'name description surveyor survey checksum modifiedAt',
 });
 

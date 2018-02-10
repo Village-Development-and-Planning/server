@@ -2,7 +2,7 @@ const {Parser} = require('csv-parse');
 
 /**
  * Abstraction for csv-parse with our default options.
- * 
+ *
  * @class CSVParser
  * @extends {Parser}
  */
@@ -10,7 +10,7 @@ class CSVParser extends Parser {
   /**
    * Creates an instance of CSVParser.
    * @param {any} opts (passed to csv-parse)
-   * 
+   *
    * @memberOf CSVParser
    */
   constructor(opts) {
@@ -23,9 +23,9 @@ class CSVParser extends Parser {
 
 
   /**
-   * 'readable' event listener 
-   * 
-   * 
+   * 'readable' event listener
+   *
+   *
    * @memberOf CSVParser
    * @private
    */

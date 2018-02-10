@@ -6,22 +6,11 @@ import fileType from 'file-type';
 
 /**
  * Artifact document controller.
- * 
+ *
  * @class ArtifactController
  * @extends {BaseController}
  */
 class ArtifactController extends EntityController {
-
-  _create(...args) {
-    return super._create(...args)
-    .then(
-      (o) => this._filterObject(
-        o, 
-        ['_id', 'name', 'description', 'modifiedAt', 'type', 'mimeType'],
-      )
-    );
-  }
-
   _parseEntity(obj) {
     if (obj.data && !obj.mimeType) {
       const fType = fileType(obj.data);
@@ -48,6 +37,7 @@ Object.assign(ArtifactController, {
   entityName: 'Artifact',
   routeName: 'artifacts',
 
-  _findFields: 'name description type mimeType modifiedAt',
+  _findFields: '_id name description type mimeType modifiedAt',
+  _createFields: '_id name description type mimeType modifiedAt',
 });
 module.exports = ArtifactController;
