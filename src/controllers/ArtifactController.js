@@ -30,6 +30,23 @@ class ArtifactController extends EntityController {
     }
     return null;
   }
+
+  _findOne(query) {
+    return super._findOne(query).then((a) => {
+      if (a) {
+        const b = this._findFields.split(' ').reduce(
+          (acc, key) => {
+            acc[key] = a[key];
+            return acc;
+          },
+          {},
+        );
+        b.dataBase64 = a.data.toString('base64');
+        delete b.data;
+        return b;
+      }
+    });
+  }
 }
 
 Object.assign(ArtifactController, {

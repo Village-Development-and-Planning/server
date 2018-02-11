@@ -3687,6 +3687,8 @@ module.exports = require("md5");
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
 var _EntitiyController = __webpack_require__(3);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
@@ -3752,6 +3754,23 @@ var ArtifactController = function (_EntityController) {
         });
       }
       return null;
+    }
+  }, {
+    key: '_findOne',
+    value: function _findOne(query) {
+      var _this2 = this;
+
+      return _get(ArtifactController.prototype.__proto__ || Object.getPrototypeOf(ArtifactController.prototype), '_findOne', this).call(this, query).then(function (a) {
+        if (a) {
+          var b = _this2._findFields.split(' ').reduce(function (acc, key) {
+            acc[key] = a[key];
+            return acc;
+          }, {});
+          b.dataBase64 = a.data.toString('base64');
+          delete b.data;
+          return b;
+        }
+      });
     }
   }]);
 
