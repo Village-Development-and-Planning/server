@@ -1211,7 +1211,9 @@ var SurveyorController = function (_EntityController) {
 
       if (field === 'surveyor-csv') {
         fields._done = true;
-        var parser = new _surveyorCsvParser2.default();
+        var parser = new _surveyorCsvParser2.default({
+          deleteExisting: fields['delete-existing']
+        });
         file.pipe(parser);
         return parser.promise;
       }
@@ -3971,7 +3973,9 @@ var LocationController = function (_EntityController) {
 
       if (field === 'csv') {
         fields._done = true;
-        var parser = new _locationCsvParser2.default();
+        var parser = new _locationCsvParser2.default({
+          deleteExisting: fields['delete-existing']
+        });
         file.pipe(parser);
         return parser.promise;
       }
@@ -4042,15 +4046,14 @@ var _class = function (_CSVParser) {
   function _class(opts) {
     _classCallCheck(this, _class);
 
-    opts = Object.assign({
+    var _this = _possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).call(this, Object.assign({
       columns: function columns(r) {
         return _this._parseColumn(r);
       },
       delimiter: ','
-    }, opts);
+    }, opts && opts.csv)));
 
-    var _this = _possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).call(this, opts));
-
+    _this.opts = opts || {};
     _this.on('csvRecord', _this._parseLocation.bind(_this));
     _this.on('finish', _this._createLocations.bind(_this));
     _this.on('error', _this._onError.bind(_this));
@@ -4059,6 +4062,7 @@ var _class = function (_CSVParser) {
       _this._res = res;
       _this._rej = rej;
     });
+    _this.initialPromise = Promise.resolve({});
     return _this;
   }
 
@@ -4080,6 +4084,9 @@ var _class = function (_CSVParser) {
           _this2.locations.push({});
         }
       });
+      if (this.opts.deleteExisting) {
+        this.initialPromise = _Location2.default.deleteMany({ type: { $in: this.types } });
+      }
       return arr;
     }
   }, {
@@ -4149,13 +4156,17 @@ var _class = function (_CSVParser) {
   }, {
     key: '_createLocations',
     value: function _createLocations() {
-      this._res(Promise.all(this.locations.reduce(function (acc, locs, idx) {
-        return acc.concat(Object.keys(locs).map(function (k) {
-          return locs[k];
-        }).map(function (loc) {
-          return _Location2.default.create(loc);
-        }));
-      }, [])));
+      var _this4 = this;
+
+      this._res(this.initialPromise.then(function () {
+        return Promise.all(_this4.locations.reduce(function (acc, locs, idx) {
+          return acc.concat(Object.keys(locs).map(function (k) {
+            return locs[k];
+          }).map(function (loc) {
+            return _Location2.default.create(loc);
+          }));
+        }, []));
+      }));
     }
   }]);
 
@@ -4215,14 +4226,14 @@ var _class = function (_CSVParser) {
   function _class(opts) {
     _classCallCheck(this, _class);
 
-    opts = Object.assign({
+    var _this = _possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).call(this, Object.assign({
       columns: function columns(r) {
         return _this._parseColumn(r);
       },
       delimiter: ','
-    }, opts);
+    }, opts && opts.csv)));
 
-    var _this = _possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).call(this, opts));
+    _this.opts = opts || {};
 
     _this.on('csvRecord', _this._parseSurveyor.bind(_this));
     _this.on('finish', _this._onFinish.bind(_this));
@@ -4233,6 +4244,7 @@ var _class = function (_CSVParser) {
       _this._rej = rej;
     });
     _this.promises = [];
+    _this.initialPromise = Promise.resolve({});
     return _this;
   }
 
@@ -4244,33 +4256,35 @@ var _class = function (_CSVParser) {
   }, {
     key: '_parseColumn',
     value: function _parseColumn(arr) {
-      this.user = 'SURVEYOR';
       this.location = ['DISTRICT', 'BLOCK', 'PANCHAYAT'];
+      if (this.opts.deleteExisting) {
+        this.initialPromise = _User2.default.deleteMany({ roles: 'SURVEYOR' });
+      }
       return arr;
     }
   }, {
     key: '_parseSurveyor',
     value: function _parseSurveyor(row) {
-      var _this2 = this;
-
       var panchayatUid = this.location.reduce(function (acc, loc) {
         return acc + '/' + row[loc + '_CODE'];
       }, '').slice(1);
-      this.promises.push(_Location2.default.findOne({ type: 'PANCHAYAT', uid: panchayatUid }).then(function (loc) {
-        return loc || Promise.reject({
-          message: 'Panchayat ' + panchayatUid + ' not found.'
-        });
-      }).then(function (loc) {
-        var userPayload = Object.assign(loc.payload || {}, row, {
-          'HABITATION_NAME': loc.children.map(function (c) {
-            return c.name;
-          })
-        });
-        return _User2.default.create({
-          username: row[_this2.user + '_CODE'],
-          name: row.SURVEYOR_NAME,
-          roles: ['SURVEYOR'],
-          payload: userPayload
+      this.promises.push(this.initialPromise.then(function () {
+        return _Location2.default.findOne({ type: 'PANCHAYAT', uid: panchayatUid }).then(function (loc) {
+          return loc || Promise.reject({
+            message: 'Panchayat ' + panchayatUid + ' not found.'
+          });
+        }).then(function (loc) {
+          var userPayload = Object.assign(loc.payload || {}, row, {
+            'HABITATION_NAME': loc.children.map(function (c) {
+              return c.name;
+            })
+          });
+          return _User2.default.create({
+            username: row['SURVEYOR_CODE'],
+            name: row.SURVEYOR_NAME,
+            roles: ['SURVEYOR'],
+            payload: userPayload
+          });
         });
       }));
     }

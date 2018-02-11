@@ -25,7 +25,9 @@ export default class SurveyorController extends EntityController {
   _parseFileField({mime, field, file, fields}) {
     if (field === 'surveyor-csv') {
       fields._done = true;
-      const parser = new SurveyorParser();
+      const parser = new SurveyorParser({
+        deleteExisting: fields['delete-existing'],
+      });
       file.pipe(parser);
       return parser.promise;
     }

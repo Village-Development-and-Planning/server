@@ -15,11 +15,11 @@ export default class extends CSVParser {
    * @memberOf CSVParser
    */
   constructor(opts) {
-    opts = Object.assign({
+    super(Object.assign({
       columns: (r) => this._parseColumn(r),
       delimiter: ',',
-    }, opts);
-    super(opts);
+    }, opts && opts.csv));
+    this.opts = opts || {};
     this.on('csvRecord', this._parseLocation.bind(this));
     this.on('finish', this._createLocations.bind(this));
     this.on('error', this._onError.bind(this));
@@ -28,6 +28,7 @@ export default class extends CSVParser {
       this._res = res;
       this._rej = rej;
     });
+    this.initialPromise = Promise.resolve({});
   }
 
   _onError(err) {
@@ -43,6 +44,9 @@ export default class extends CSVParser {
         this.locations.push({});
       }
     });
+    if (this.opts.deleteExisting) {
+      this.initialPromise = Location.deleteMany({type: {$in: this.types}});
+    }
     return arr;
   }
 
@@ -107,19 +111,21 @@ export default class extends CSVParser {
 
   _createLocations() {
     this._res(
-      Promise.all(
-        this.locations.reduce(
-          (acc, locs, idx) => {
-            return acc.concat(
-              Object.keys(locs)
-              .map((k) => locs[k])
-              .map(
-                (loc) => Location
-                .create(loc)
-              )
-            );
-          },
-          [],
+      this.initialPromise.then(
+        () => Promise.all(
+          this.locations.reduce(
+            (acc, locs, idx) => {
+              return acc.concat(
+                Object.keys(locs)
+                .map((k) => locs[k])
+                .map(
+                  (loc) => Location
+                  .create(loc)
+                )
+              );
+            },
+            [],
+          )
         )
       )
     );

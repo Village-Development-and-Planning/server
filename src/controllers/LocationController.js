@@ -26,7 +26,9 @@ export default class LocationController extends EntityController {
   _parseFileField({mime, field, file, fields}) {
     if (field === 'csv') {
       fields._done = true;
-      const parser = new LocationParser();
+      const parser = new LocationParser({
+        deleteExisting: fields['delete-existing'],
+      });
       file.pipe(parser);
       return parser.promise;
     }

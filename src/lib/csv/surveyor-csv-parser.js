@@ -16,11 +16,12 @@ export default class extends CSVParser {
    * @memberOf CSVParser
    */
   constructor(opts) {
-    opts = Object.assign({
+    super(Object.assign({
       columns: (r) => this._parseColumn(r),
       delimiter: ',',
-    }, opts);
-    super(opts);
+    }, opts && opts.csv));
+    this.opts = opts || {};
+
     this.on('csvRecord', this._parseSurveyor.bind(this));
     this.on('finish', this._onFinish.bind(this));
     this.on('error', this._onError.bind(this));
@@ -30,6 +31,7 @@ export default class extends CSVParser {
       this._rej = rej;
     });
     this.promises = [];
+    this.initialPromise = Promise.resolve({});
   }
 
   _onError(err) {
@@ -37,8 +39,10 @@ export default class extends CSVParser {
   }
 
   _parseColumn(arr) {
-    this.user = 'SURVEYOR';
     this.location = ['DISTRICT', 'BLOCK', 'PANCHAYAT'];
+    if (this.opts.deleteExisting) {
+      this.initialPromise = User.deleteMany({roles: 'SURVEYOR'});
+    }
     return arr;
   }
 
@@ -48,22 +52,24 @@ export default class extends CSVParser {
       '',
     ).slice(1);
     this.promises.push(
-      Location.findOne({type: 'PANCHAYAT', uid: panchayatUid})
-      .then(
-        (loc) => loc || Promise.reject({
-          message: 'Panchayat ' + panchayatUid + ' not found.',
+      this.initialPromise.then(() =>
+        Location.findOne({type: 'PANCHAYAT', uid: panchayatUid})
+        .then(
+          (loc) => loc || Promise.reject({
+            message: 'Panchayat ' + panchayatUid + ' not found.',
+          })
+        ).then((loc) => {
+          const userPayload = Object.assign(loc.payload || {}, row, {
+            'HABITATION_NAME': loc.children.map((c) => c.name),
+          });
+          return User.create({
+            username: row['SURVEYOR_CODE'],
+            name: row.SURVEYOR_NAME,
+            roles: ['SURVEYOR'],
+            payload: userPayload,
+          });
         })
-      ).then((loc) => {
-        const userPayload = Object.assign(loc.payload || {}, row, {
-          'HABITATION_NAME': loc.children.map((c) => c.name),
-        });
-        return User.create({
-          username: row[this.user + '_CODE'],
-          name: row.SURVEYOR_NAME,
-          roles: ['SURVEYOR'],
-          payload: userPayload,
-        });
-      })
+      ),
     );
   }
 
