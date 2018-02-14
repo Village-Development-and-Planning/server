@@ -14,7 +14,7 @@ class AnswerController extends EntityController {
   _create(...args) {
     return super._create(...args)
       .catch((err) => {
-        console.log('Mongoerror: ' + err.code);
+        console.log('Mongoerror: ' + err.code, err.name);
         if (err.name === 'MongoError' && err.code === 11000) {
           return super._find({checksum: args.checksum});
         }
@@ -54,7 +54,7 @@ class AnswerController extends EntityController {
           const hashFunction = crypto.createHash(
             'sha256'
           );
-          fields.checksum = hashFunction.update(str).digest('base64');
+          fields.checksum = hashFunction.update(str).digest('hex');
           return str;
         })
         .then((jsonStr) => JSON.parse(jsonStr))
