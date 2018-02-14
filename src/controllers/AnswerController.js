@@ -3,7 +3,7 @@ import EntityController from './EntitiyController';
 import CSVWriter from 'csv-write-stream';
 import streamToString from 'stream-to-string';
 
-import md5 from 'md5';
+import {murmurHash128x64 as checksumFunction} from 'murmurhash-native';
 /**
  * Question document controller
  *
@@ -46,10 +46,10 @@ class AnswerController extends EntityController {
   }
 
   _parseFileField({mime, field, file, fields}) {
-    if (field === 'dataFile') {
+    if (field === 'dataFile' || field === 'data-file') {
       return streamToString(file)
         .then((str) => {
-          fields.checksum = md5(str);
+          fields.checksum = checksumFunction(str);
           return str;
         })
         .then((jsonStr) => JSON.parse(jsonStr))

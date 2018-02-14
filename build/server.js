@@ -1324,9 +1324,7 @@ var _streamToString = __webpack_require__(71);
 
 var _streamToString2 = _interopRequireDefault(_streamToString);
 
-var _md = __webpack_require__(72);
-
-var _md2 = _interopRequireDefault(_md);
+var _murmurhashNative = __webpack_require__(72);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1396,9 +1394,9 @@ var AnswerController = function (_EntityController) {
           file = _ref.file,
           fields = _ref.fields;
 
-      if (field === 'dataFile') {
+      if (field === 'dataFile' || field === 'data-file') {
         return (0, _streamToString2.default)(file).then(function (str) {
-          fields.checksum = (0, _md2.default)(str);
+          fields.checksum = (0, _murmurhashNative.murmurHash128x64)(str);
           return str;
         }).then(function (jsonStr) {
           return JSON.parse(jsonStr);
@@ -3678,7 +3676,7 @@ module.exports = require("stream-to-string");
 /* 72 */
 /***/ (function(module, exports) {
 
-module.exports = require("md5");
+module.exports = require("murmurhash-native");
 
 /***/ }),
 /* 73 */
