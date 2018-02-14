@@ -2,8 +2,8 @@ import Answer from '../models/Answer';
 import EntityController from './EntitiyController';
 import CSVWriter from 'csv-write-stream';
 import streamToString from 'stream-to-string';
+import crypto from 'crypto';
 
-import {murmurHash128x64 as checksumFunction} from 'murmurhash-native';
 /**
  * Question document controller
  *
@@ -49,7 +49,10 @@ class AnswerController extends EntityController {
     if (field === 'dataFile' || field === 'data-file') {
       return streamToString(file)
         .then((str) => {
-          fields.checksum = checksumFunction(str);
+          const hashFunction = crypto.createHash(
+            'sha256'
+          );
+          fields.checksum = hashFunction.update(str).digest('base64');
           return str;
         })
         .then((jsonStr) => JSON.parse(jsonStr))

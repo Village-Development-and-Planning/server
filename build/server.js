@@ -1324,7 +1324,9 @@ var _streamToString = __webpack_require__(71);
 
 var _streamToString2 = _interopRequireDefault(_streamToString);
 
-var _murmurhashNative = __webpack_require__(72);
+var _crypto = __webpack_require__(72);
+
+var _crypto2 = _interopRequireDefault(_crypto);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1396,7 +1398,8 @@ var AnswerController = function (_EntityController) {
 
       if (field === 'dataFile' || field === 'data-file') {
         return (0, _streamToString2.default)(file).then(function (str) {
-          fields.checksum = (0, _murmurhashNative.murmurHash128x64)(str);
+          var hashFunction = _crypto2.default.createHash('sha256');
+          fields.checksum = hashFunction.update(str).digest('base64');
           return str;
         }).then(function (jsonStr) {
           return JSON.parse(jsonStr);
@@ -3676,7 +3679,7 @@ module.exports = require("stream-to-string");
 /* 72 */
 /***/ (function(module, exports) {
 
-module.exports = require("murmurhash-native");
+module.exports = require("crypto");
 
 /***/ }),
 /* 73 */
