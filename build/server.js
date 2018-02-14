@@ -1362,6 +1362,7 @@ var AnswerController = function (_EntityController) {
       }
 
       return (_get2 = _get(AnswerController.prototype.__proto__ || Object.getPrototypeOf(AnswerController.prototype), '_create', this)).call.apply(_get2, [this].concat(args)).catch(function (err) {
+        console.log('Mongoerror: ' + err.code);
         if (err.name === 'MongoError' && err.code === 11000) {
           return _get(AnswerController.prototype.__proto__ || Object.getPrototypeOf(AnswerController.prototype), '_find', _this2).call(_this2, { checksum: args.checksum });
         }
@@ -1384,6 +1385,7 @@ var AnswerController = function (_EntityController) {
         fields.rootQuestion = json.question;
         fields.survey = json._id;
       }
+      console.log('Parsed data file.  Checksum=' + fields.checksum);
       return;
     }
   }, {
@@ -1396,7 +1398,7 @@ var AnswerController = function (_EntityController) {
           file = _ref.file,
           fields = _ref.fields;
 
-      if (field === 'dataFile' || field === 'data-file') {
+      if (field === 'data-file') {
         return (0, _streamToString2.default)(file).then(function (str) {
           var hashFunction = _crypto2.default.createHash('sha256');
           fields.checksum = hashFunction.update(str).digest('base64');

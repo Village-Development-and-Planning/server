@@ -14,6 +14,7 @@ class AnswerController extends EntityController {
   _create(...args) {
     return super._create(...args)
       .catch((err) => {
+        console.log('Mongoerror: ' + err.code);
         if (err.name === 'MongoError' && err.code === 11000) {
           return super._find({checksum: args.checksum});
         }
@@ -42,11 +43,12 @@ class AnswerController extends EntityController {
       fields.rootQuestion = json.question;
       fields.survey = json._id;
     }
+    console.log('Parsed data file.  Checksum=' + fields.checksum);
     return;
   }
 
   _parseFileField({mime, field, file, fields}) {
-    if (field === 'dataFile' || field === 'data-file') {
+    if (field === 'data-file') {
       return streamToString(file)
         .then((str) => {
           const hashFunction = crypto.createHash(
