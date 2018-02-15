@@ -42,13 +42,12 @@ export default class CollectResponses extends ChildTemplate {
   }
 
   finishAnswer(answer, remarks) {
-    answer.lastExport = new Date();
+    remarks._id = answer._id;
     this.answersLog.push(
-      answer.save()
-      .then(() => remarks)
-      .then((remarks) => {
-        console.log(`Finishing answer: ${answer._id}`);
-        remarks._id = answer._id;
+      Answer.findOneAndUpdate({_id: answer._id}, {lastExport: new Date()})
+      .then(() => console.log(`Marked answer ${answer._id} as processed.`))
+      .catch((err) => {
+        console.log(`Error saving answer: ${err}`);
         return remarks;
       })
     );

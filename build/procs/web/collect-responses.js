@@ -593,7 +593,7 @@ process.exitCode = 0;
 
 /***/ }),
 
-/***/ 5:
+/***/ 3:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -611,6 +611,8 @@ var processSchema = new Schema({
     stdout: { type: String },
     stderr: { type: String }
 });
+processSchema.index({ status: 1, name: 1 });
+processSchema.index({ name: 1 });
 
 module.exports = mongoose.model('Process', processSchema);
 
@@ -808,12 +810,11 @@ var CollectResponses = function (_ChildTemplate) {
   }, {
     key: 'finishAnswer',
     value: function finishAnswer(answer, remarks) {
-      answer.lastExport = new Date();
-      this.answersLog.push(answer.save().then(function () {
-        return remarks;
-      }).then(function (remarks) {
-        console.log('Finishing answer: ' + answer._id);
-        remarks._id = answer._id;
+      remarks._id = answer._id;
+      this.answersLog.push(_Answer2.default.findOneAndUpdate({ _id: answer._id }, { lastExport: new Date() }).then(function () {
+        return console.log('Marked answer ' + answer._id + ' as processed.');
+      }).catch(function (err) {
+        console.log('Error saving answer: ' + err);
         return remarks;
       }));
     }
@@ -971,7 +972,7 @@ exports.ChildTemplate = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Process = __webpack_require__(5);
+var _Process = __webpack_require__(3);
 
 var _Process2 = _interopRequireDefault(_Process);
 

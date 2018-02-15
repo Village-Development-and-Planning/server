@@ -1,6 +1,7 @@
 const Survey = require('../models/Survey');
 import Answer from '../models/Answer';
 import Statistic from '../models/Statistic';
+import Process from '../models/Process';
 
 import fs from 'fs';
 import EntityController from './EntitiyController';
@@ -80,11 +81,11 @@ class SurveyController extends EntityController {
   }
 
   _findOne(query) {
-    return super._findOne(query).then(
-      (survey) => Answer.find({survey: survey})
+    return super._findOne(query)
+    .then((survey) => survey.toObject())
+    .then((survey) => Answer.find({survey: survey._id})
       .select('checksum lastExport')
       .then((answers) => {
-        survey = survey.toObject();
         survey.answerStats = {
           total: answers.length,
           processed: answers.reduce((acc, el, idx) => {
@@ -92,6 +93,11 @@ class SurveyController extends EntityController {
             return acc;
           }, 0),
         };
+        return survey;
+      })
+    ).then((survey) => Process.find({status: 'RUNNING', args: survey._id})
+      .then((procs) => {
+        survey.processes = procs;
         return survey;
       })
     );

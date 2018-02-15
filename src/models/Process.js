@@ -10,5 +10,8 @@ const processSchema = new Schema({
     stdout: {type: String},
     stderr: {type: String},
 });
+processSchema.index({status: 1, name: 1});
+processSchema.index({name: 1});
+
 
 module.exports = mongoose.model('Process', processSchema);

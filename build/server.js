@@ -143,6 +143,30 @@ module.exports = {
 "use strict";
 
 
+var Schema = __webpack_require__(1);
+var mongoose = __webpack_require__(0);
+
+var processSchema = new Schema({
+    name: { type: String, required: true },
+    path: { type: String },
+    args: { type: {} },
+    status: { type: String },
+    exitCode: { type: Number },
+    stdout: { type: String },
+    stderr: { type: String }
+});
+processSchema.index({ status: 1, name: 1 });
+processSchema.index({ name: 1 });
+
+module.exports = mongoose.model('Process', processSchema);
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -206,7 +230,7 @@ exports.default = Mixin;
 ;
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -224,7 +248,7 @@ var _BaseController = __webpack_require__(45);
 
 var _BaseController2 = _interopRequireDefault(_BaseController);
 
-var _Mixin = __webpack_require__(3);
+var _Mixin = __webpack_require__(4);
 
 var _Mixin2 = _interopRequireDefault(_Mixin);
 
@@ -316,28 +340,6 @@ Object.assign(EntityController, {
 exports.default = EntityController;
 
 /***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var Schema = __webpack_require__(1);
-var mongoose = __webpack_require__(0);
-
-var processSchema = new Schema({
-    name: { type: String, required: true },
-    path: { type: String },
-    args: { type: {} },
-    status: { type: String },
-    exitCode: { type: Number },
-    stdout: { type: String },
-    stderr: { type: String }
-});
-
-module.exports = mongoose.model('Process', processSchema);
-
-/***/ }),
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -426,7 +428,7 @@ exports.ChildTemplate = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Process = __webpack_require__(5);
+var _Process = __webpack_require__(3);
 
 var _Process2 = _interopRequireDefault(_Process);
 
@@ -1122,11 +1124,15 @@ var _Statistic = __webpack_require__(7);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
+var _Process = __webpack_require__(3);
+
+var _Process2 = _interopRequireDefault(_Process);
+
 var _fs = __webpack_require__(17);
 
 var _fs2 = _interopRequireDefault(_fs);
 
-var _EntitiyController = __webpack_require__(4);
+var _EntitiyController = __webpack_require__(5);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
@@ -1229,8 +1235,9 @@ var SurveyController = function (_EntityController) {
     key: '_findOne',
     value: function _findOne(query) {
       return _get(SurveyController.prototype.__proto__ || Object.getPrototypeOf(SurveyController.prototype), '_findOne', this).call(this, query).then(function (survey) {
-        return _Answer2.default.find({ survey: survey }).select('checksum lastExport').then(function (answers) {
-          survey = survey.toObject();
+        return survey.toObject();
+      }).then(function (survey) {
+        return _Answer2.default.find({ survey: survey._id }).select('checksum lastExport').then(function (answers) {
           survey.answerStats = {
             total: answers.length,
             processed: answers.reduce(function (acc, el, idx) {
@@ -1238,6 +1245,11 @@ var SurveyController = function (_EntityController) {
               return acc;
             }, 0)
           };
+          return survey;
+        });
+      }).then(function (survey) {
+        return _Process2.default.find({ status: 'RUNNING', args: survey._id }).then(function (procs) {
+          survey.processes = procs;
           return survey;
         });
       });
@@ -1455,7 +1467,7 @@ var _Answer = __webpack_require__(11);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 
-var _EntitiyController = __webpack_require__(4);
+var _EntitiyController = __webpack_require__(5);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
@@ -1622,7 +1634,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _EntitiyController = __webpack_require__(4);
+var _EntitiyController = __webpack_require__(5);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
@@ -2189,7 +2201,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Mixin2 = __webpack_require__(3);
+var _Mixin2 = __webpack_require__(4);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
@@ -2250,7 +2262,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Mixin2 = __webpack_require__(3);
+var _Mixin2 = __webpack_require__(4);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
@@ -2322,7 +2334,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Mixin2 = __webpack_require__(3);
+var _Mixin2 = __webpack_require__(4);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
@@ -2382,7 +2394,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Mixin2 = __webpack_require__(3);
+var _Mixin2 = __webpack_require__(4);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
@@ -2560,7 +2572,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Mixin2 = __webpack_require__(3);
+var _Mixin2 = __webpack_require__(4);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
@@ -2649,7 +2661,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Mixin2 = __webpack_require__(3);
+var _Mixin2 = __webpack_require__(4);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
@@ -3532,7 +3544,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _EntitiyController = __webpack_require__(4);
+var _EntitiyController = __webpack_require__(5);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
@@ -3645,7 +3657,7 @@ module.exports = require("file-type");
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _EntitiyController = __webpack_require__(4);
+var _EntitiyController = __webpack_require__(5);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
@@ -3653,7 +3665,7 @@ var _procs = __webpack_require__(75);
 
 var _procs2 = _interopRequireDefault(_procs);
 
-var _Process = __webpack_require__(5);
+var _Process = __webpack_require__(3);
 
 var _Process2 = _interopRequireDefault(_Process);
 
@@ -3756,7 +3768,7 @@ var _Location = __webpack_require__(19);
 
 var _Location2 = _interopRequireDefault(_Location);
 
-var _EntitiyController = __webpack_require__(4);
+var _EntitiyController = __webpack_require__(5);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
