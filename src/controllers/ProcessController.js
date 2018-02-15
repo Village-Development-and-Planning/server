@@ -4,12 +4,11 @@ import Process from '../models/Process';
 
 /**
  * Process controller.
- * 
+ *
  * @class ProcessController
  * @extends {EntityController}
  */
 class ProcessController extends EntityController {
-
   _parseEntity(obj) {
     if (!procs[obj.name]) {
       return null;
@@ -22,7 +21,7 @@ class ProcessController extends EntityController {
   }
 
   _create(query) {
-    return procs[query.name].execute(query.args).createP
+    return procs[query.name].execute(query.args).createP;
   }
 }
 

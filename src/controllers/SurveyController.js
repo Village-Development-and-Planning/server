@@ -1,4 +1,7 @@
 const Survey = require('../models/Survey');
+import Answer from '../models/Answer';
+import Statistic from '../models/Statistic';
+
 import fs from 'fs';
 import StreamConcat from 'stream-concat';
 import EntityController from './EntitiyController';
@@ -12,6 +15,31 @@ import SurveyResponse from '../procs/survey-response.proc';
  * @extends {BaseController}
  */
 class SurveyController extends EntityController {
+  answers() {
+    let _id = this.req.params.id;
+    this.renderer.renderPromise(
+      Statistic.findOne({survey: _id, answer: null})
+      .then((header) => (header && header.data) || {keys: [], keyDescriptions: []})
+      .then(({keys, keyDescriptions}) => {
+        return Statistic.find({survey: _id})
+        .then((stats) => stats.reduce(
+          (acc, stat) => {
+            if (stat.answer) {
+              let data = stat.data;
+              if (data) {
+                acc.push(
+                  keys.map((k) => data[k])
+                );
+              }
+            }
+            return acc;
+          },
+          [keys, keyDescriptions],
+        ));
+      })
+    );
+  }
+
   download() {
     return Promise.resolve(this._getQuery())
     .then((q) => q && this._findOne(q))
@@ -44,6 +72,24 @@ class SurveyController extends EntityController {
   _find(query) {
     return super._find(query)
       .select('name description enabled modifiedAt');
+  }
+
+  _findOne(query) {
+    return super._findOne(query).then(
+      (survey) => Answer.find({survey: survey})
+      .select('checksum lastExport')
+      .then((answers) => {
+        survey = survey.toObject();
+        survey.answerStats = {
+          total: answers.length,
+          processed: answers.reduce((acc, el, idx) => {
+            if (el.lastExport) acc++;
+            return acc;
+          }, 0),
+        };
+        return survey;
+      })
+    );
   }
 
 

@@ -30,6 +30,7 @@ registerCmsRoutes(
   require('../controllers/SurveyController'),
   (app, ctrl) => {
     app.use('/:id/download', dispatcher(ctrl, 'download'));
+    app.use('/:id/answers', dispatcher(ctrl, 'answers'));
   }
 );
 registerCmsRoutes(

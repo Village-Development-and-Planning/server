@@ -2,11 +2,14 @@ const Schema = require('./Schema');
 const Text = require('./Text');
 const mongoose = require('mongoose');
 
+let Question;
+
 const questionSchema = new Schema({
   type: {type: String},
   tags: [{type: String}],
   text: {type: Text},
   number: {type: String},
+  position: {type: String},
   options: [{
     position: {type: String, required: true},
     option: {type: {}, required: true},
@@ -49,9 +52,25 @@ Object.assign(questionSchema.methods, {
       return null;
     }
   },
+
+  findChildByPosition(pos) {
+    const ret = this.children.find(
+      (el) => (el.position == pos)
+    );
+    if (ret) {
+      return new Question(ret.question, ret.position);
+    }
+    return null;
+  },
 });
 
-const Question = mongoose.model('Question', questionSchema);
-module.exports = Question;
+const QuestionM = mongoose.model('Question', questionSchema);
+module.exports = Question = class Question extends QuestionM {
+  constructor(obj, position) {
+    super(obj);
+    Object.assign(this, obj);
+    if (position) this.position = position;
+  }
+};
 
 

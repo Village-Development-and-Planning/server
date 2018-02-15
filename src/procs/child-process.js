@@ -15,7 +15,9 @@ export default class ChildProcess {
     this.procPath = this.procPath
       || this.constructor.procPath;
     if (!this.procPath) {
-      throw new Error(`No process path configured for class: ${this.constructor.name}`);
+      throw new Error(
+        `No process path configured for class: ${this.constructor.name}`
+      );
     }
 
 
@@ -62,6 +64,7 @@ export class ChildTemplate {
       this.proc = proc;
       return this.execute(proc);
     }).then((output) => {
+      console.log('Output: ');
       console.log(output);
     }).catch((err) => {
       console.log('Error: ');
