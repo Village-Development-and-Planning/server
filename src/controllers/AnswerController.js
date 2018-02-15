@@ -1,7 +1,10 @@
 import Answer from '../models/Answer';
 import EntityController from './EntitiyController';
 import CSVWriter from 'csv-write-stream';
+
 import streamToString from 'stream-to-string';
+import streamToArray from 'stream-to-array';
+
 import crypto from 'crypto';
 
 /**
@@ -11,24 +14,17 @@ import crypto from 'crypto';
  * @extends {BaseController}
  */
 class AnswerController extends EntityController {
-  _create(...args) {
-    return super._create(...args)
-      .catch((err) => {
-        if (err.name === 'MongoError' && err.code === 11000) {
-          return super._find({checksum: args.checksum});
-        }
-        return Promise.reject(err);
-      })
-      .then(
-        (obj) => this._filterObject(
-          obj,
-          [
-            '_id', 'name', 'description', 'version',
-            'surveyor', 'survey', 'checksum',
-            'modifiedAt',
-          ]
-        )
-      );
+  _create(query) {
+    return super._findOne({checksum: query.checksum})
+    .then((ans) => {
+      if (ans) {
+        ans = ans.toObject();
+        ans.existing = true;
+        return this._filterObject(ans, this._createFields);
+      } else {
+        return super._create(query);
+      }
+    });
   }
   _parseDataFile(json, fields) {
     if (!json) return;
@@ -45,18 +41,20 @@ class AnswerController extends EntityController {
     return;
   }
 
-  _parseFileField({mime, field, file, fields}) {
+  _parseFileField({mime, field, file, fields, encoding}) {
     if (field === 'data-file' || field === 'dataFile') {
-      return streamToString(file)
-        .then((str) => {
-          const hashFunction = crypto.createHash(
-            'sha256'
-          );
-          fields.checksum = hashFunction.update(str).digest('hex');
-          return str;
+      return streamToArray(file)
+        .then((arr) => Buffer.concat(arr))
+        .then((buff) => {
+          fields.checksum = crypto.createHash('sha256')
+          .update(buff)
+          .digest('hex');
+          return buff.toString();
         })
         .then((jsonStr) => JSON.parse(jsonStr))
-        .then(
+        .then((json) => {
+          return json;
+        }).then(
           (json) =>
             this._parseDataFile ?
               this._parseDataFile(json, fields) :
@@ -104,6 +102,8 @@ Object.assign(AnswerController, {
   routeName: 'answers',
 
   _findFields: 'name description surveyor survey checksum modifiedAt',
+  _createFields:
+    '_id name description survey surveyor checksum modifiedAt existing',
 });
 
 module.exports = AnswerController;

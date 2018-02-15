@@ -19,8 +19,9 @@ class SurveyController extends EntityController {
     let _id = this.req.params.id;
     this.renderer.renderPromise(
       Statistic.findOne({survey: _id, answer: null})
-      .then((header) => (header && header.data) || {keys: [], keyDescriptions: []})
-      .then(({keys, keyDescriptions}) => {
+      .then(
+        (header) => (header && header.data) || {keys: [], keyDescriptions: []}
+      ).then(({keys, keyDescriptions}) => {
         return Statistic.find({survey: _id})
         .then((stats) => stats.reduce(
           (acc, stat) => {

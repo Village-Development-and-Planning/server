@@ -4,9 +4,9 @@ import Mixin from '../../lib/Mixin';
  * Handles creating an object via POST
  */
 export default class UpdateConcerns extends Mixin {
-  _findOneAndUpdate(getQuery, query) {
+  _findOneAndUpdate(getQuery, query, opts={}) {
     return this.constructor.collection
-      .findOneAndUpdate(getQuery, query, {new: true});
+      .findOneAndUpdate(getQuery, query, Object.assign({new: true}, opts));
   }
 
   _updateQuery() {
