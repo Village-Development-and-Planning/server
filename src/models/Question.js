@@ -62,6 +62,12 @@ Object.assign(questionSchema.methods, {
     }
     return null;
   },
+
+  findOptionByPosition(pos) {
+    return this.options.find(
+      (el) => (el.position == pos)
+    );
+  },
 });
 
 const QuestionM = mongoose.model('Question', questionSchema);

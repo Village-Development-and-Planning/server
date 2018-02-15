@@ -5,6 +5,7 @@ const buildPath = path.join(__dirname, 'build');
 const procTemplate = './src/procs/process-runner.js';
 const procs = [
   'web/collect-responses',
+  'web/export-responses',
 ].reduce(
   (acc, p) => {
     acc[`procs/${p}`] = [

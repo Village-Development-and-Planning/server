@@ -3,10 +3,8 @@ import Answer from '../models/Answer';
 import Statistic from '../models/Statistic';
 
 import fs from 'fs';
-import StreamConcat from 'stream-concat';
 import EntityController from './EntitiyController';
 let SurveyCSVParser = require('../lib/csv/survey-csv-parser');
-import SurveyResponse from '../procs/survey-response.proc';
 
 /**
  * Survey document controller.
@@ -15,6 +13,16 @@ import SurveyResponse from '../procs/survey-response.proc';
  * @extends {BaseController}
  */
 class SurveyController extends EntityController {
+  reset() {
+    let _id = this.req.params.id;
+    this.renderer.renderPromise(
+      Statistic.deleteMany({survey: _id})
+      .then(
+        () => Answer.update({survey: _id}, {lastExport: null}, {multi: true})
+      )
+    );
+  }
+
   answers() {
     let _id = this.req.params.id;
     this.renderer.renderPromise(
@@ -48,15 +56,11 @@ class SurveyController extends EntityController {
     .catch((err) => this.renderer.renderPromise(Promise.reject(err)))
     .then((survey) => {
       const _id = survey._id;
-      const path = SurveyResponse.csvSortedPath(_id);
-      const headerPath = SurveyResponse.csvSortedHeaderPath(_id);
-      if (fs.existsSync(path) && fs.existsSync(headerPath)) {
-        const csvOutput = new StreamConcat([
-          fs.createReadStream(headerPath),
-          fs.createReadStream(path),
-        ]);
+      const path = `data/export-responses/${_id}.csv`;
+      if (fs.existsSync(path)) {
         const res = this.renderer.res;
         res.attachment(`${survey.name || _id}.csv`);
+        const csvOutput = fs.createReadStream(path);
         csvOutput.on('end', () => res.end());
         csvOutput.pipe(res);
       } else {

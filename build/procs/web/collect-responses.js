@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 83);
+/******/ 	return __webpack_require__(__webpack_require__.s = 81);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -115,7 +115,57 @@ module.exports = Schema;
 
 /***/ }),
 
+/***/ 10:
+/***/ (function(module, exports) {
+
+module.exports = require("child_process");
+
+/***/ }),
+
 /***/ 11:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _Schema = __webpack_require__(1);
+
+var _Schema2 = _interopRequireDefault(_Schema);
+
+var _mongoose = __webpack_require__(0);
+
+var _mongoose2 = _interopRequireDefault(_mongoose);
+
+var _AnsweredQuestion = __webpack_require__(14);
+
+var _AnsweredQuestion2 = _interopRequireDefault(_AnsweredQuestion);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var answerSchema = new _Schema2.default({
+  name: { type: String },
+  description: { type: String },
+  survey: { type: _Schema2.default.Types.ObjectId, ref: 'Survey', required: true },
+  surveyor: { type: _Schema2.default.Types.ObjectId, ref: 'Surveyor' },
+  version: { type: Number, default: 0 },
+  rootQuestion: {
+    type: {}, required: true,
+    get: function get(a) {
+      return new _AnsweredQuestion2.default(a);
+    }
+  },
+  checksum: { type: String, required: true, unique: true },
+
+  // Post-processing concerns
+  lastExport: { type: Date }
+});
+answerSchema.index({ survey: 1, lastExport: 1 });
+
+module.exports = _mongoose2.default.model('Answer', answerSchema);
+
+/***/ }),
+
+/***/ 14:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -129,7 +179,7 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Question2 = __webpack_require__(12);
+var _Question2 = __webpack_require__(15);
 
 var _Question3 = _interopRequireDefault(_Question2);
 
@@ -155,7 +205,7 @@ var AnsweredQuestion = function (_Question) {
 
   _createClass(AnsweredQuestion, [{
     key: '_accumulateValue',
-    value: function _accumulateValue(ans, ansKey) {
+    value: function _accumulateValue(ans, ansKey, refQ) {
       if (!ans.logged_options) return {};
       if (this.type == 'ROOT' || !this.number) {
         return {};
@@ -163,7 +213,9 @@ var AnsweredQuestion = function (_Question) {
       var ret = {};
       if (this.type == 'MULTIPLE_CHOICE') {
         ans.logged_options.reduce(function (acc, opt) {
-          if (opt.position !== null) acc[ansKey + '_opt' + opt.position] = 1;
+          if (opt.position !== null) {
+            acc[ansKey + '_opt' + opt.position] = 1;
+          }
           return acc;
         }, ret);
       } else if (this.type == 'GPS') {
@@ -183,6 +235,10 @@ var AnsweredQuestion = function (_Question) {
         });
         ret[ansKey + '_lat'] = lat;
         ret[ansKey + '_long'] = long;
+      } else if (['INFO', 'INPUT'].indexOf(this.type) !== -1) {
+        ret[ansKey] = ans.logged_options.map(function (opt) {
+          return opt.value || opt.text.english;
+        }).join(',');
       } else {
         ret[ansKey] = ans.logged_options.map(function (opt) {
           return opt.position || opt.value || opt.text.english;
@@ -269,16 +325,19 @@ var AnsweredQuestion = function (_Question) {
       keys = keys || [];
       refQ = refQ || this;
 
-      var valObj = this._accumulateValue(ans, ansKey);
+      var valObj = this._accumulateValue(ans, ansKey, refQ);
       Object.keys(valObj).forEach(function (key) {
         var oKey = key + suffix;
         acc[oKey] = valObj[key];
         if (!keys['pos' + oKey]) {
           keys.push(oKey);
-          var text = '';
-          if (refQ.number) text = text + refQ.number;
-          if (refQ.text && refQ.text.english) {
-            text = text + (' ' + refQ.text.english);
+          var text = valObj['pos' + key];
+          if (!text) {
+            text = '';
+            if (refQ.number) text = text + refQ.number;
+            if (refQ.text && refQ.text.english) {
+              text = text + (' ' + refQ.text.english);
+            }
           }
           keys['pos' + oKey] = text || 'UNKNOWN';
         }
@@ -355,7 +414,7 @@ exports.default = AnsweredQuestion;
 
 /***/ }),
 
-/***/ 12:
+/***/ 15:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -368,7 +427,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var Schema = __webpack_require__(1);
-var Text = __webpack_require__(13);
+var Text = __webpack_require__(16);
 var mongoose = __webpack_require__(0);
 
 var Question = void 0;
@@ -429,6 +488,11 @@ Object.assign(questionSchema.methods, {
       return new Question(ret.question, ret.position);
     }
     return null;
+  },
+  findOptionByPosition: function findOptionByPosition(pos) {
+    return this.options.find(function (el) {
+      return el.position == pos;
+    });
   }
 });
 
@@ -451,7 +515,7 @@ module.exports = Question = function (_QuestionM) {
 
 /***/ }),
 
-/***/ 13:
+/***/ 16:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -468,7 +532,119 @@ module.exports = new Schema({
 
 /***/ }),
 
-/***/ 14:
+/***/ 2:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = {
+  db: {
+    connectionOptions: {
+      poolSize: 5,
+      useMongoClient: true
+    },
+    connectionString: 'mongodb://localhost/test'
+  },
+  jwt: {
+    secret: 'a general string',
+    requestProperty: 'auth'
+  },
+  admin: {
+    username: 'ptracking',
+    passphrase: 'vaazhvuT'
+  }
+};
+
+/***/ }),
+
+/***/ 20:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+__webpack_require__(6);
+
+var _mongoose = __webpack_require__(0);
+
+var _mongoose2 = _interopRequireDefault(_mongoose);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Process = Proc.default;
+var procId = process.argv[2];
+
+if (!procId) {
+  process.exit(-1);
+}
+
+var proc = new Process(procId);
+if (!proc || !proc.promise) {
+  process.exit(-1);
+}
+
+proc.promise.then(function () {
+  return _mongoose2.default.connection.close();
+}, function () {
+  return _mongoose2.default.connection.close();
+});
+process.exitCode = 0;
+
+/***/ }),
+
+/***/ 5:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var Schema = __webpack_require__(1);
+var mongoose = __webpack_require__(0);
+
+var processSchema = new Schema({
+    name: { type: String, required: true },
+    path: { type: String },
+    args: { type: {} },
+    status: { type: String },
+    exitCode: { type: Number },
+    stdout: { type: String },
+    stderr: { type: String }
+});
+
+module.exports = mongoose.model('Process', processSchema);
+
+/***/ }),
+
+/***/ 6:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _Constants = __webpack_require__(2);
+
+var _Constants2 = _interopRequireDefault(_Constants);
+
+var _mongoose = __webpack_require__(0);
+
+var _mongoose2 = _interopRequireDefault(_mongoose);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// connect to mongoose
+var options = _Constants2.default.db;
+_mongoose2.default.Promise = global.Promise;
+
+exports.default = _mongoose2.default.connect(options.connectionString, options.connectionOptions);
+
+/***/ }),
+
+/***/ 7:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -495,184 +671,7 @@ module.exports = _mongoose2.default.model('Statistic', schema);
 
 /***/ }),
 
-/***/ 16:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.ChildTemplate = undefined;
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _Process = __webpack_require__(7);
-
-var _Process2 = _interopRequireDefault(_Process);
-
-var _child_process = __webpack_require__(17);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var ChildProcess = function () {
-  function ChildProcess(opts) {
-    _classCallCheck(this, ChildProcess);
-
-    Object.assign(this, opts);
-  }
-
-  _createClass(ChildProcess, [{
-    key: 'execute',
-    value: function execute(args) {
-      var _this = this;
-
-      this.procName = this.procName || this.constructor.procName || this.constructor.name || 'Unknown';
-      this.procPath = this.procPath || this.constructor.procPath;
-      if (!this.procPath) {
-        throw new Error('No process path configured for class: ' + this.constructor.name);
-      }
-
-      var createP = _Process2.default.create({
-        name: this.procName,
-        status: 'RUNNING',
-        path: this.procPath,
-        args: args
-      });
-
-      var promise = new Promise(function (res, rej) {
-        createP.then(function (proc) {
-          var p = (0, _child_process.spawn)(process.execPath, ['build/procs/' + _this.procPath + '.js', proc._id]);
-          var stdout = [];
-          var stderr = [];
-
-          p.on('close', function (code) {
-            proc.exitCode = code;
-            proc.status = 'COMPLETED';
-            proc.stdout = stdout.join('\n');
-            proc.stderr = stderr.join('\n');
-            console.log(proc.stdout);
-            proc.save();
-          });
-          p.stdout.on('data', function (data) {
-            return stdout = stdout.concat(data);
-          });
-          p.stderr.on('data', function (data) {
-            return stderr = stderr.concat(data);
-          });
-        }).catch(rej);
-      });
-      return { createP: createP, promise: promise };
-    }
-  }]);
-
-  return ChildProcess;
-}();
-
-exports.default = ChildProcess;
-
-var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procId) {
-  var _this2 = this;
-
-  _classCallCheck(this, ChildTemplate);
-
-  this.promise = _Process2.default.findOne({ _id: procId }).then(function (proc) {
-    if (!proc) {
-      throw new Error('Unknown process id: ' + procId);
-    }
-    _this2.proc = proc;
-    return _this2.execute(proc);
-  }).then(function (output) {
-    console.log('Output: ');
-    console.log(output);
-  }).catch(function (err) {
-    console.log('Error: ');
-    console.log(err);
-  });
-};
-
-/***/ }),
-
-/***/ 17:
-/***/ (function(module, exports) {
-
-module.exports = require("child_process");
-
-/***/ }),
-
-/***/ 4:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-module.exports = {
-  db: {
-    connectionOptions: {
-      poolSize: 5,
-      useMongoClient: true
-    },
-    connectionString: 'mongodb://localhost/test'
-  },
-  jwt: {
-    secret: 'a general string',
-    requestProperty: 'auth'
-  },
-  admin: {
-    username: 'ptracking',
-    passphrase: 'vaazhvuT'
-  }
-};
-
-/***/ }),
-
-/***/ 5:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _Schema = __webpack_require__(1);
-
-var _Schema2 = _interopRequireDefault(_Schema);
-
-var _mongoose = __webpack_require__(0);
-
-var _mongoose2 = _interopRequireDefault(_mongoose);
-
-var _AnsweredQuestion = __webpack_require__(11);
-
-var _AnsweredQuestion2 = _interopRequireDefault(_AnsweredQuestion);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var answerSchema = new _Schema2.default({
-  name: { type: String },
-  description: { type: String },
-  survey: { type: _Schema2.default.Types.ObjectId, ref: 'Survey', required: true },
-  surveyor: { type: _Schema2.default.Types.ObjectId, ref: 'Surveyor' },
-  version: { type: Number, default: 0 },
-  rootQuestion: {
-    type: {}, required: true,
-    get: function get(a) {
-      return new _AnsweredQuestion2.default(a);
-    }
-  },
-  checksum: { type: String, required: true, unique: true },
-
-  // Post-processing concerns
-  lastExport: { type: Date }
-});
-answerSchema.index({ survey: 1, lastExport: 1 });
-
-module.exports = _mongoose2.default.model('Answer', answerSchema);
-
-/***/ }),
-
-/***/ 6:
+/***/ 8:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -695,74 +694,23 @@ module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
 
-/***/ 7:
+/***/ 81:
 /***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
+__webpack_require__(82);
+module.exports = __webpack_require__(20);
 
-
-var Schema = __webpack_require__(1);
-var mongoose = __webpack_require__(0);
-
-var processSchema = new Schema({
-    name: { type: String, required: true },
-    path: { type: String },
-    args: { type: {} },
-    status: { type: String },
-    exitCode: { type: Number },
-    stdout: { type: String },
-    stderr: { type: String }
-});
-
-module.exports = mongoose.model('Process', processSchema);
 
 /***/ }),
 
-/***/ 8:
+/***/ 82:
 /***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _Constants = __webpack_require__(4);
-
-var _Constants2 = _interopRequireDefault(_Constants);
-
-var _mongoose = __webpack_require__(0);
-
-var _mongoose2 = _interopRequireDefault(_mongoose);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-// connect to mongoose
-var options = _Constants2.default.db;
-_mongoose2.default.Promise = global.Promise;
-
-exports.default = _mongoose2.default.connect(options.connectionString, options.connectionOptions);
+module.exports = global["Proc"] = __webpack_require__(83);
 
 /***/ }),
 
 /***/ 83:
-/***/ (function(module, exports, __webpack_require__) {
-
-__webpack_require__(84);
-module.exports = __webpack_require__(86);
-
-
-/***/ }),
-
-/***/ 84:
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = global["Proc"] = __webpack_require__(85);
-
-/***/ }),
-
-/***/ 85:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -774,17 +722,17 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _childProcess = __webpack_require__(16);
+var _childProcess = __webpack_require__(9);
 
-var _Survey = __webpack_require__(6);
+var _Survey = __webpack_require__(8);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
-var _Answer = __webpack_require__(5);
+var _Answer = __webpack_require__(11);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 
-var _Statistic = __webpack_require__(14);
+var _Statistic = __webpack_require__(7);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
@@ -1010,38 +958,104 @@ exports.default = CollectResponses;
 
 /***/ }),
 
-/***/ 86:
+/***/ 9:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-__webpack_require__(8);
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ChildTemplate = undefined;
 
-var _mongoose = __webpack_require__(0);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _mongoose2 = _interopRequireDefault(_mongoose);
+var _Process = __webpack_require__(5);
+
+var _Process2 = _interopRequireDefault(_Process);
+
+var _child_process = __webpack_require__(10);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var Process = Proc.default;
-var procId = process.argv[2];
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-if (!procId) {
-  process.exit(-1);
-}
+var ChildProcess = function () {
+  function ChildProcess(opts) {
+    _classCallCheck(this, ChildProcess);
 
-var proc = new Process(procId);
-if (!proc || !proc.promise) {
-  process.exit(-1);
-}
+    Object.assign(this, opts);
+  }
 
-proc.promise.then(function () {
-  return _mongoose2.default.connection.close();
-}, function () {
-  return _mongoose2.default.connection.close();
-});
-process.exitCode = 0;
+  _createClass(ChildProcess, [{
+    key: 'execute',
+    value: function execute(args) {
+      var _this = this;
+
+      this.procName = this.procName || this.constructor.procName || this.constructor.name || 'Unknown';
+      this.procPath = this.procPath || this.constructor.procPath;
+      if (!this.procPath) {
+        throw new Error('No process path configured for class: ' + this.constructor.name);
+      }
+
+      var createP = _Process2.default.create({
+        name: this.procName,
+        status: 'RUNNING',
+        path: this.procPath,
+        args: args
+      });
+
+      var promise = new Promise(function (res, rej) {
+        createP.then(function (proc) {
+          var p = (0, _child_process.spawn)(process.execPath, ['build/procs/' + _this.procPath + '.js', proc._id]);
+          var stdout = [];
+          var stderr = [];
+
+          p.on('close', function (code) {
+            proc.exitCode = code;
+            proc.status = 'COMPLETED';
+            proc.stdout = stdout.join('\n');
+            proc.stderr = stderr.join('\n');
+            console.log(proc.stdout);
+            proc.save();
+          });
+          p.stdout.on('data', function (data) {
+            return stdout = stdout.concat(data);
+          });
+          p.stderr.on('data', function (data) {
+            return stderr = stderr.concat(data);
+          });
+        }).catch(rej);
+      });
+      return { createP: createP, promise: promise };
+    }
+  }]);
+
+  return ChildProcess;
+}();
+
+exports.default = ChildProcess;
+
+var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procId) {
+  var _this2 = this;
+
+  _classCallCheck(this, ChildTemplate);
+
+  this.promise = _Process2.default.findOne({ _id: procId }).then(function (proc) {
+    if (!proc) {
+      throw new Error('Unknown process id: ' + procId);
+    }
+    _this2.proc = proc;
+    return _this2.execute(proc);
+  }).then(function (output) {
+    console.log('Output: ');
+    console.log(output);
+  }).catch(function (err) {
+    console.log('Error: ');
+    console.log(err);
+  });
+};
 
 /***/ })
 

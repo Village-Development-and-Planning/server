@@ -4,7 +4,7 @@ import Question from './Question';
  * Provides export functionalities
  */
 export default class AnsweredQuestion extends Question {
-  _accumulateValue(ans, ansKey) {
+  _accumulateValue(ans, ansKey, refQ) {
     if (!ans.logged_options) return {};
     if (this.type == 'ROOT' || !this.number) {
       return {};
@@ -12,7 +12,9 @@ export default class AnsweredQuestion extends Question {
     const ret = {};
     if (this.type == 'MULTIPLE_CHOICE') {
       ans.logged_options.reduce((acc, opt) => {
-        if (opt.position !== null) acc[`${ansKey}_opt${opt.position}`] = 1;
+        if (opt.position !== null) {
+          acc[`${ansKey}_opt${opt.position}`] = 1;
+        }
         return acc;
       }, ret);
     } else if (this.type == 'GPS') {
@@ -26,6 +28,10 @@ export default class AnsweredQuestion extends Question {
       });
       ret[`${ansKey}_lat`] = lat;
       ret[`${ansKey}_long`] = long;
+    } else if (['INFO', 'INPUT'].indexOf(this.type) !== -1) {
+      ret[ansKey] = ans.logged_options.map(
+        (opt) => opt.value || opt.text.english,
+      ).join(',');
     } else {
       ret[ansKey] = ans.logged_options.map(
         (opt) => (opt.position || opt.value || opt.text.english)
@@ -95,16 +101,19 @@ export default class AnsweredQuestion extends Question {
     keys = keys || [];
     refQ = refQ || this;
 
-    const valObj = this._accumulateValue(ans, ansKey);
+    const valObj = this._accumulateValue(ans, ansKey, refQ);
     Object.keys(valObj).forEach((key) => {
       const oKey = key + suffix;
       acc[oKey] = valObj[key];
       if (!keys[`pos${oKey}`]) {
         keys.push(oKey);
-        let text = '';
-        if (refQ.number) text = text + refQ.number;
-        if (refQ.text && refQ.text.english) {
-          text = text + ` ${refQ.text.english}`;
+        let text = valObj[`pos${key}`];
+        if (!text) {
+          text = '';
+          if (refQ.number) text = text + refQ.number;
+          if (refQ.text && refQ.text.english) {
+            text = text + ` ${refQ.text.english}`;
+          }
         }
         keys[`pos${oKey}`] = text || 'UNKNOWN';
       }

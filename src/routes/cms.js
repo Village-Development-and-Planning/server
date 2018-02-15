@@ -29,8 +29,9 @@ registerCmsRoutes(
   cmsRouter,
   require('../controllers/SurveyController'),
   (app, ctrl) => {
-    app.use('/:id/download', dispatcher(ctrl, 'download'));
-    app.use('/:id/answers', dispatcher(ctrl, 'answers'));
+    app.get('/:id/download', dispatcher(ctrl, 'download'));
+    app.get('/:id/answers', dispatcher(ctrl, 'answers'));
+    app.post('/:id/reset', dispatcher(ctrl, 'reset'));
   }
 );
 registerCmsRoutes(
