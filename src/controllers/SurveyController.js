@@ -22,7 +22,7 @@ class SurveyController extends EntityController {
       .then(
         (header) => (header && header.data) || {keys: [], keyDescriptions: []}
       ).then(({keys, keyDescriptions}) => {
-        return Statistic.find({survey: _id})
+        return Statistic.find({survey: _id}).limit(50)
         .then((stats) => stats.reduce(
           (acc, stat) => {
             if (stat.answer) {

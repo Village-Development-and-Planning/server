@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 84);
+/******/ 	return __webpack_require__(__webpack_require__.s = 83);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -746,23 +746,23 @@ exports.default = _mongoose2.default.connect(options.connectionString, options.c
 
 /***/ }),
 
+/***/ 83:
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(84);
+module.exports = __webpack_require__(86);
+
+
+/***/ }),
+
 /***/ 84:
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(85);
-module.exports = __webpack_require__(87);
-
+module.exports = global["Proc"] = __webpack_require__(85);
 
 /***/ }),
 
 /***/ 85:
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = global["Proc"] = __webpack_require__(86);
-
-/***/ }),
-
-/***/ 86:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1010,7 +1010,7 @@ exports.default = CollectResponses;
 
 /***/ }),
 
-/***/ 87:
+/***/ 86:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

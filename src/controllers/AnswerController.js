@@ -2,7 +2,6 @@ import Answer from '../models/Answer';
 import EntityController from './EntitiyController';
 import CSVWriter from 'csv-write-stream';
 
-import streamToString from 'stream-to-string';
 import streamToArray from 'stream-to-array';
 
 import crypto from 'crypto';

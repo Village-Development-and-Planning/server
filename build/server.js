@@ -1156,7 +1156,7 @@ var SurveyController = function (_EntityController) {
         var keys = _ref.keys,
             keyDescriptions = _ref.keyDescriptions;
 
-        return _Statistic2.default.find({ survey: _id }).then(function (stats) {
+        return _Statistic2.default.find({ survey: _id }).limit(50).then(function (stats) {
           return stats.reduce(function (acc, stat) {
             if (stat.answer) {
               var data = stat.data;
@@ -1454,15 +1454,11 @@ var _csvWriteStream = __webpack_require__(72);
 
 var _csvWriteStream2 = _interopRequireDefault(_csvWriteStream);
 
-var _streamToString = __webpack_require__(73);
-
-var _streamToString2 = _interopRequireDefault(_streamToString);
-
 var _streamToArray = __webpack_require__(27);
 
 var _streamToArray2 = _interopRequireDefault(_streamToArray);
 
-var _crypto = __webpack_require__(74);
+var _crypto = __webpack_require__(73);
 
 var _crypto2 = _interopRequireDefault(_crypto);
 
@@ -1621,7 +1617,7 @@ var _EntitiyController = __webpack_require__(3);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
-var _surveyorCsvParser = __webpack_require__(81);
+var _surveyorCsvParser = __webpack_require__(80);
 
 var _surveyorCsvParser2 = _interopRequireDefault(_surveyorCsvParser);
 
@@ -1757,7 +1753,7 @@ __webpack_require__(40)(app);
 __webpack_require__(42)(app);
 
 // 99. Setup error-handling
-__webpack_require__(83)(app);
+__webpack_require__(82)(app);
 
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
@@ -1987,7 +1983,7 @@ module.exports = require("body-parser");
 
 module.exports = function (app) {
   app.use('/cms', __webpack_require__(43));
-  app.use('/app', __webpack_require__(82));
+  app.use('/app', __webpack_require__(81));
 
   // redirect the home to /cms
   app.get('/', function (req, res) {
@@ -2038,9 +2034,9 @@ registerCmsRoutes(cmsRouter, __webpack_require__(20), function (app, ctrl) {
   app.use('/:id/answers', (0, _dispatcher2.default)(ctrl, 'answers'));
 });
 registerCmsRoutes(cmsRouter, __webpack_require__(26));
-registerCmsRoutes(cmsRouter, __webpack_require__(75));
-registerCmsRoutes(cmsRouter, __webpack_require__(77));
-registerCmsRoutes(cmsRouter, __webpack_require__(79));
+registerCmsRoutes(cmsRouter, __webpack_require__(74));
+registerCmsRoutes(cmsRouter, __webpack_require__(76));
+registerCmsRoutes(cmsRouter, __webpack_require__(78));
 registerCmsRoutes(cmsRouter, __webpack_require__(28));
 module.exports = cmsRouter;
 
@@ -3821,16 +3817,10 @@ module.exports = require("csv-write-stream");
 /* 73 */
 /***/ (function(module, exports) {
 
-module.exports = require("stream-to-string");
-
-/***/ }),
-/* 74 */
-/***/ (function(module, exports) {
-
 module.exports = require("crypto");
 
 /***/ }),
-/* 75 */
+/* 74 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3848,7 +3838,7 @@ var _streamToArray = __webpack_require__(27);
 
 var _streamToArray2 = _interopRequireDefault(_streamToArray);
 
-var _fileType = __webpack_require__(76);
+var _fileType = __webpack_require__(75);
 
 var _fileType2 = _interopRequireDefault(_fileType);
 
@@ -3939,13 +3929,13 @@ Object.assign(ArtifactController, {
 module.exports = ArtifactController;
 
 /***/ }),
-/* 76 */
+/* 75 */
 /***/ (function(module, exports) {
 
 module.exports = require("file-type");
 
 /***/ }),
-/* 77 */
+/* 76 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3957,7 +3947,7 @@ var _EntitiyController = __webpack_require__(3);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
-var _procs = __webpack_require__(78);
+var _procs = __webpack_require__(77);
 
 var _procs2 = _interopRequireDefault(_procs);
 
@@ -4017,7 +4007,7 @@ Object.assign(ProcessController, {
 module.exports = ProcessController;
 
 /***/ }),
-/* 78 */
+/* 77 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4042,7 +4032,7 @@ var CollectResponses = exports.CollectResponses = new _childProcess2.default({
 exports.default = { CollectResponses: CollectResponses };
 
 /***/ }),
-/* 79 */
+/* 78 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4064,7 +4054,7 @@ var _EntitiyController = __webpack_require__(3);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
-var _locationCsvParser = __webpack_require__(80);
+var _locationCsvParser = __webpack_require__(79);
 
 var _locationCsvParser2 = _interopRequireDefault(_locationCsvParser);
 
@@ -4143,7 +4133,7 @@ Object.assign(LocationController, {
 module.exports = LocationController;
 
 /***/ }),
-/* 80 */
+/* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4319,7 +4309,7 @@ var _class = function (_CSVParser) {
 exports.default = _class;
 
 /***/ }),
-/* 81 */
+/* 80 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4444,7 +4434,7 @@ var _class = function (_CSVParser) {
 exports.default = _class;
 
 /***/ }),
-/* 82 */
+/* 81 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4490,7 +4480,7 @@ console.log('[APP] Registered @ /download/:id');
 module.exports = app;
 
 /***/ }),
-/* 83 */
+/* 82 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
