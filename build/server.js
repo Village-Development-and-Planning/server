@@ -635,8 +635,9 @@ var AnsweredQuestion = function (_Question) {
   _createClass(AnsweredQuestion, [{
     key: '_accumulateValue',
     value: function _accumulateValue(ans, ansKey, refQ) {
+      refQ = refQ || this;
       if (!ans.logged_options) return {};
-      if (this.type == 'ROOT' || !this.number) {
+      if (this.type == 'ROOT' || this.type == 'DUMMY' || !this.number) {
         return {};
       }
       var ret = {};
@@ -664,10 +665,10 @@ var AnsweredQuestion = function (_Question) {
         });
         ret[ansKey + '_lat'] = lat;
         ret[ansKey + '_long'] = long;
-      } else if (['INFO', 'INPUT'].indexOf(this.type) !== -1) {
+      } else if (['INFO', 'INPUT'].indexOf(this.type) !== -1 || refQ.flow && refQ.flow.pre.fill && refQ.flow.pre.fill.length) {
         ret[ansKey] = ans.logged_options.map(function (opt) {
           return opt.value || opt.text.english;
-        }).join(',');
+        }).join(',').toUpperCase();
       } else {
         ret[ansKey] = ans.logged_options.map(function (opt) {
           return opt.position || opt.value || opt.text.english;
@@ -1386,8 +1387,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 /**
  * Helper to split string into tags
- * 
- * @param {String} str 
+ *
+ * @param {String} str
  * @return {String[]}
  */
 function _createTagsList(str) {

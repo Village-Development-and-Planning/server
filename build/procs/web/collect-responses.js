@@ -206,8 +206,9 @@ var AnsweredQuestion = function (_Question) {
   _createClass(AnsweredQuestion, [{
     key: '_accumulateValue',
     value: function _accumulateValue(ans, ansKey, refQ) {
+      refQ = refQ || this;
       if (!ans.logged_options) return {};
-      if (this.type == 'ROOT' || !this.number) {
+      if (this.type == 'ROOT' || this.type == 'DUMMY' || !this.number) {
         return {};
       }
       var ret = {};
@@ -235,10 +236,10 @@ var AnsweredQuestion = function (_Question) {
         });
         ret[ansKey + '_lat'] = lat;
         ret[ansKey + '_long'] = long;
-      } else if (['INFO', 'INPUT'].indexOf(this.type) !== -1) {
+      } else if (['INFO', 'INPUT'].indexOf(this.type) !== -1 || refQ.flow && refQ.flow.pre.fill && refQ.flow.pre.fill.length) {
         ret[ansKey] = ans.logged_options.map(function (opt) {
           return opt.value || opt.text.english;
-        }).join(',');
+        }).join(',').toUpperCase();
       } else {
         ret[ansKey] = ans.logged_options.map(function (opt) {
           return opt.position || opt.value || opt.text.english;
@@ -815,6 +816,7 @@ var CollectResponses = function (_ChildTemplate) {
         return console.log('Marked answer ' + answer._id + ' as processed.');
       }).catch(function (err) {
         console.log('Error saving answer: ' + err);
+      }).then(function () {
         return remarks;
       }));
     }

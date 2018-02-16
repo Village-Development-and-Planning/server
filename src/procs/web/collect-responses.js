@@ -48,8 +48,7 @@ export default class CollectResponses extends ChildTemplate {
       .then(() => console.log(`Marked answer ${answer._id} as processed.`))
       .catch((err) => {
         console.log(`Error saving answer: ${err}`);
-        return remarks;
-      })
+      }).then(() => remarks)
     );
   }
 

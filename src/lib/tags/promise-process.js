@@ -1,7 +1,7 @@
 /**
  * Helper to split string into tags
- * 
- * @param {String} str 
+ *
+ * @param {String} str
  * @return {String[]}
  */
 function _createTagsList(str) {
