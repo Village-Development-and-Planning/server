@@ -1,5 +1,6 @@
 const express = require('express');
 const http = require('http');
+import 'babel-polyfill';
 
 // Create the server and load the components.
 const app = express();
@@ -33,8 +34,8 @@ server.on('error', onError);
 
 /**
  * Normalize a port into a number, string or false.
- * 
- * @param {any} val 
+ *
+ * @param {any} val
  * @return {String|Number|Boolean}
  */
 function normalizePort(val) {
@@ -55,8 +56,8 @@ function normalizePort(val) {
 
 /**
  * Event listener for HTTP server "error" event
- * 
- * @param {Error} error 
+ *
+ * @param {Error} error
  */
 function onError(error) {
   if (error.syscall !== 'listen') {

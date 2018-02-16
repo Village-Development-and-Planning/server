@@ -1,3 +1,4 @@
+import 'babel-polyfill';
 const Schema = require('./Schema');
 const mongoose = require('mongoose');
 

@@ -121,6 +121,83 @@ module.exports = Schema;
 "use strict";
 
 
+__webpack_require__(2);
+
+var Schema = __webpack_require__(1);
+var mongoose = __webpack_require__(0);
+
+var surveySchema = new Schema({
+  name: { type: String, required: true },
+  description: { type: String },
+  enabled: { type: Boolean, default: true },
+  question: { type: {}, required: true },
+  respondents: { type: [] }
+});
+surveySchema.index({ name: 1 });
+surveySchema.index({ enabled: 1, name: 1 });
+
+Object.assign(surveySchema.methods, {
+  respondentsIn: /*#__PURE__*/regeneratorRuntime.mark(function respondentsIn(answer, context) {
+    var idx;
+    return regeneratorRuntime.wrap(function respondentsIn$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            if (!(!this.respondents || !this.respondents.length)) {
+              _context.next = 5;
+              break;
+            }
+
+            _context.next = 3;
+            return { question: answer.rootQuestion, context: context };
+
+          case 3:
+            _context.next = 12;
+            break;
+
+          case 5:
+            idx = 0;
+
+          case 6:
+            if (!(i < this.respondents.length)) {
+              _context.next = 12;
+              break;
+            }
+
+            return _context.delegateYield(answer.rootQuestion.findRespondents(Object.assign({
+              respondents: this.respondents,
+              refQ: this.rootQuestion,
+              idx: idx
+            }, context)), 't0', 8);
+
+          case 8:
+
+            ++respIdx;
+
+          case 9:
+            i++;
+            _context.next = 6;
+            break;
+
+          case 12:
+          case 'end':
+            return _context.stop();
+        }
+      }
+    }, respondentsIn, this);
+  })
+});
+
+module.exports = mongoose.model('Survey', surveySchema);
+
+/***/ }),
+
+/***/ 11:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -128,11 +205,11 @@ exports.ChildTemplate = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Process = __webpack_require__(3);
+var _Process = __webpack_require__(4);
 
 var _Process2 = _interopRequireDefault(_Process);
 
-var _child_process = __webpack_require__(11);
+var _child_process = __webpack_require__(12);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -216,14 +293,14 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procId) {
 
 /***/ }),
 
-/***/ 11:
+/***/ 12:
 /***/ (function(module, exports) {
 
 module.exports = require("child_process");
 
 /***/ }),
 
-/***/ 18:
+/***/ 19:
 /***/ (function(module, exports) {
 
 module.exports = require("fs");
@@ -231,38 +308,19 @@ module.exports = require("fs");
 /***/ }),
 
 /***/ 2:
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-"use strict";
-
-
-module.exports = {
-  db: {
-    connectionOptions: {
-      poolSize: 5,
-      useMongoClient: true
-    },
-    connectionString: 'mongodb://localhost/test'
-  },
-  jwt: {
-    secret: 'a general string',
-    requestProperty: 'auth'
-  },
-  admin: {
-    username: 'ptracking',
-    passphrase: 'vaazhvuT'
-  }
-};
+module.exports = require("babel-polyfill");
 
 /***/ }),
 
-/***/ 20:
+/***/ 21:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-__webpack_require__(7);
+__webpack_require__(8);
 
 var _mongoose = __webpack_require__(0);
 
@@ -297,6 +355,32 @@ process.exitCode = 0;
 "use strict";
 
 
+module.exports = {
+  db: {
+    connectionOptions: {
+      poolSize: 5,
+      useMongoClient: true
+    },
+    connectionString: 'mongodb://localhost/test'
+  },
+  jwt: {
+    secret: 'a general string',
+    requestProperty: 'auth'
+  },
+  admin: {
+    username: 'ptracking',
+    passphrase: 'vaazhvuT'
+  }
+};
+
+/***/ }),
+
+/***/ 4:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 var Schema = __webpack_require__(1);
 var mongoose = __webpack_require__(0);
 
@@ -316,7 +400,7 @@ module.exports = mongoose.model('Process', processSchema);
 
 /***/ }),
 
-/***/ 7:
+/***/ 8:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -326,7 +410,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _Constants = __webpack_require__(2);
+var _Constants = __webpack_require__(3);
 
 var _Constants2 = _interopRequireDefault(_Constants);
 
@@ -344,38 +428,11 @@ exports.default = _mongoose2.default.connect(options.connectionString, options.c
 
 /***/ }),
 
-/***/ 8:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _Schema = __webpack_require__(1);
-
-var _Schema2 = _interopRequireDefault(_Schema);
-
-var _mongoose = __webpack_require__(0);
-
-var _mongoose2 = _interopRequireDefault(_mongoose);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var schema = new _Schema2.default({
-  survey: { type: _Schema2.default.Types.ObjectId, ref: 'Survey' },
-  answer: { type: _Schema2.default.Types.ObjectId, ref: 'Answer' },
-  data: { type: {} }
-});
-schema.index({ survey: 1, answer: 1 });
-
-module.exports = _mongoose2.default.model('Statistic', schema);
-
-/***/ }),
-
 /***/ 85:
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(86);
-module.exports = __webpack_require__(20);
+module.exports = __webpack_require__(21);
 
 
 /***/ }),
@@ -399,13 +456,13 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _childProcess = __webpack_require__(10);
+var _childProcess = __webpack_require__(11);
 
-var _Survey = __webpack_require__(9);
+var _Survey = __webpack_require__(10);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
-var _Statistic = __webpack_require__(8);
+var _Statistic = __webpack_require__(9);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
@@ -413,7 +470,7 @@ var _csvStringify = __webpack_require__(88);
 
 var _csvStringify2 = _interopRequireDefault(_csvStringify);
 
-var _fs = __webpack_require__(18);
+var _fs = __webpack_require__(19);
 
 var _fs2 = _interopRequireDefault(_fs);
 
@@ -547,72 +604,24 @@ module.exports = require("csv-stringify");
 "use strict";
 
 
-var Schema = __webpack_require__(1);
-var mongoose = __webpack_require__(0);
+var _Schema = __webpack_require__(1);
 
-var surveySchema = new Schema({
-  name: { type: String, required: true },
-  description: { type: String },
-  enabled: { type: Boolean, default: true },
-  question: { type: {}, required: true },
-  respondents: { type: [] }
+var _Schema2 = _interopRequireDefault(_Schema);
+
+var _mongoose = __webpack_require__(0);
+
+var _mongoose2 = _interopRequireDefault(_mongoose);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var schema = new _Schema2.default({
+  survey: { type: _Schema2.default.Types.ObjectId, ref: 'Survey' },
+  answer: { type: _Schema2.default.Types.ObjectId, ref: 'Answer' },
+  data: { type: {} }
 });
-surveySchema.index({ name: 1 });
-surveySchema.index({ enabled: 1, name: 1 });
+schema.index({ survey: 1, answer: 1 });
 
-Object.assign(surveySchema.methods, {
-  respondentsIn: /*#__PURE__*/regeneratorRuntime.mark(function respondentsIn(answer, context) {
-    var idx;
-    return regeneratorRuntime.wrap(function respondentsIn$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            if (!(!this.respondents || !this.respondents.length)) {
-              _context.next = 5;
-              break;
-            }
-
-            _context.next = 3;
-            return { question: answer.rootQuestion, context: context };
-
-          case 3:
-            _context.next = 12;
-            break;
-
-          case 5:
-            idx = 0;
-
-          case 6:
-            if (!(i < this.respondents.length)) {
-              _context.next = 12;
-              break;
-            }
-
-            return _context.delegateYield(answer.rootQuestion.findRespondents(Object.assign({
-              respondents: this.respondents,
-              refQ: this.rootQuestion,
-              idx: idx
-            }, context)), 't0', 8);
-
-          case 8:
-
-            ++respIdx;
-
-          case 9:
-            i++;
-            _context.next = 6;
-            break;
-
-          case 12:
-          case 'end':
-            return _context.stop();
-        }
-      }
-    }, respondentsIn, this);
-  })
-});
-
-module.exports = mongoose.model('Survey', surveySchema);
+module.exports = _mongoose2.default.model('Statistic', schema);
 
 /***/ })
 
