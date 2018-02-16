@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 84);
+/******/ 	return __webpack_require__(__webpack_require__.s = 85);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -116,13 +116,114 @@ module.exports = Schema;
 /***/ }),
 
 /***/ 10:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ChildTemplate = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Process = __webpack_require__(3);
+
+var _Process2 = _interopRequireDefault(_Process);
+
+var _child_process = __webpack_require__(11);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var ChildProcess = function () {
+  function ChildProcess(opts) {
+    _classCallCheck(this, ChildProcess);
+
+    Object.assign(this, opts);
+  }
+
+  _createClass(ChildProcess, [{
+    key: 'execute',
+    value: function execute(args) {
+      var _this = this;
+
+      this.procName = this.procName || this.constructor.procName || this.constructor.name || 'Unknown';
+      this.procPath = this.procPath || this.constructor.procPath;
+      if (!this.procPath) {
+        throw new Error('No process path configured for class: ' + this.constructor.name);
+      }
+
+      var createP = _Process2.default.create({
+        name: this.procName,
+        status: 'RUNNING',
+        path: this.procPath,
+        args: args
+      });
+
+      var promise = new Promise(function (res, rej) {
+        createP.then(function (proc) {
+          var p = (0, _child_process.spawn)(process.execPath, ['build/procs/' + _this.procPath + '.js', proc._id]);
+          var stdout = [];
+          var stderr = [];
+
+          p.on('close', function (code) {
+            proc.exitCode = code;
+            proc.status = 'COMPLETED';
+            proc.stdout = stdout.join('\n');
+            proc.stderr = stderr.join('\n');
+            console.log(proc.stdout);
+            proc.save();
+          });
+          p.stdout.on('data', function (data) {
+            return stdout = stdout.concat(data);
+          });
+          p.stderr.on('data', function (data) {
+            return stderr = stderr.concat(data);
+          });
+        }).catch(rej);
+      });
+      return { createP: createP, promise: promise };
+    }
+  }]);
+
+  return ChildProcess;
+}();
+
+exports.default = ChildProcess;
+
+var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procId) {
+  var _this2 = this;
+
+  _classCallCheck(this, ChildTemplate);
+
+  this.promise = _Process2.default.findOne({ _id: procId }).then(function (proc) {
+    if (!proc) {
+      throw new Error('Unknown process id: ' + procId);
+    }
+    _this2.proc = proc;
+    return _this2.execute(proc);
+  }).then(function (output) {
+    console.log('Output: ');
+    console.log(output);
+  }).catch(function (err) {
+    console.log('Error: ');
+    console.log(err);
+  });
+};
+
+/***/ }),
+
+/***/ 11:
 /***/ (function(module, exports) {
 
 module.exports = require("child_process");
 
 /***/ }),
 
-/***/ 17:
+/***/ 18:
 /***/ (function(module, exports) {
 
 module.exports = require("fs");
@@ -161,7 +262,7 @@ module.exports = {
 "use strict";
 
 
-__webpack_require__(6);
+__webpack_require__(7);
 
 var _mongoose = __webpack_require__(0);
 
@@ -215,7 +316,7 @@ module.exports = mongoose.model('Process', processSchema);
 
 /***/ }),
 
-/***/ 6:
+/***/ 7:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -243,7 +344,7 @@ exports.default = _mongoose2.default.connect(options.connectionString, options.c
 
 /***/ }),
 
-/***/ 7:
+/***/ 8:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -270,46 +371,23 @@ module.exports = _mongoose2.default.model('Statistic', schema);
 
 /***/ }),
 
-/***/ 8:
+/***/ 85:
 /***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
-
-
-var Schema = __webpack_require__(1);
-var mongoose = __webpack_require__(0);
-
-var surveySchema = new Schema({
-  name: { type: String, required: true },
-  description: { type: String },
-  enabled: { type: Boolean, default: true },
-  question: { type: {}, required: true },
-  respondents: { type: [] }
-});
-surveySchema.index({ name: 1 });
-surveySchema.index({ enabled: 1, name: 1 });
-
-module.exports = mongoose.model('Survey', surveySchema);
-
-/***/ }),
-
-/***/ 84:
-/***/ (function(module, exports, __webpack_require__) {
-
-__webpack_require__(85);
+__webpack_require__(86);
 module.exports = __webpack_require__(20);
 
 
 /***/ }),
 
-/***/ 85:
+/***/ 86:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = global["Proc"] = __webpack_require__(86);
+module.exports = global["Proc"] = __webpack_require__(87);
 
 /***/ }),
 
-/***/ 86:
+/***/ 87:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -321,21 +399,21 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _childProcess = __webpack_require__(9);
+var _childProcess = __webpack_require__(10);
 
-var _Survey = __webpack_require__(8);
+var _Survey = __webpack_require__(9);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
-var _Statistic = __webpack_require__(7);
+var _Statistic = __webpack_require__(8);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
-var _csvStringify = __webpack_require__(87);
+var _csvStringify = __webpack_require__(88);
 
 var _csvStringify2 = _interopRequireDefault(_csvStringify);
 
-var _fs = __webpack_require__(17);
+var _fs = __webpack_require__(18);
 
 var _fs2 = _interopRequireDefault(_fs);
 
@@ -456,7 +534,7 @@ exports.default = ExportResponses;
 
 /***/ }),
 
-/***/ 87:
+/***/ 88:
 /***/ (function(module, exports) {
 
 module.exports = require("csv-stringify");
@@ -469,98 +547,72 @@ module.exports = require("csv-stringify");
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+var Schema = __webpack_require__(1);
+var mongoose = __webpack_require__(0);
+
+var surveySchema = new Schema({
+  name: { type: String, required: true },
+  description: { type: String },
+  enabled: { type: Boolean, default: true },
+  question: { type: {}, required: true },
+  respondents: { type: [] }
 });
-exports.ChildTemplate = undefined;
+surveySchema.index({ name: 1 });
+surveySchema.index({ enabled: 1, name: 1 });
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+Object.assign(surveySchema.methods, {
+  respondentsIn: /*#__PURE__*/regeneratorRuntime.mark(function respondentsIn(answer, context) {
+    var idx;
+    return regeneratorRuntime.wrap(function respondentsIn$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            if (!(!this.respondents || !this.respondents.length)) {
+              _context.next = 5;
+              break;
+            }
 
-var _Process = __webpack_require__(3);
+            _context.next = 3;
+            return { question: answer.rootQuestion, context: context };
 
-var _Process2 = _interopRequireDefault(_Process);
+          case 3:
+            _context.next = 12;
+            break;
 
-var _child_process = __webpack_require__(10);
+          case 5:
+            idx = 0;
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+          case 6:
+            if (!(i < this.respondents.length)) {
+              _context.next = 12;
+              break;
+            }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+            return _context.delegateYield(answer.rootQuestion.findRespondents(Object.assign({
+              respondents: this.respondents,
+              refQ: this.rootQuestion,
+              idx: idx
+            }, context)), 't0', 8);
 
-var ChildProcess = function () {
-  function ChildProcess(opts) {
-    _classCallCheck(this, ChildProcess);
+          case 8:
 
-    Object.assign(this, opts);
-  }
+            ++respIdx;
 
-  _createClass(ChildProcess, [{
-    key: 'execute',
-    value: function execute(args) {
-      var _this = this;
+          case 9:
+            i++;
+            _context.next = 6;
+            break;
 
-      this.procName = this.procName || this.constructor.procName || this.constructor.name || 'Unknown';
-      this.procPath = this.procPath || this.constructor.procPath;
-      if (!this.procPath) {
-        throw new Error('No process path configured for class: ' + this.constructor.name);
+          case 12:
+          case 'end':
+            return _context.stop();
+        }
       }
+    }, respondentsIn, this);
+  })
+});
 
-      var createP = _Process2.default.create({
-        name: this.procName,
-        status: 'RUNNING',
-        path: this.procPath,
-        args: args
-      });
-
-      var promise = new Promise(function (res, rej) {
-        createP.then(function (proc) {
-          var p = (0, _child_process.spawn)(process.execPath, ['build/procs/' + _this.procPath + '.js', proc._id]);
-          var stdout = [];
-          var stderr = [];
-
-          p.on('close', function (code) {
-            proc.exitCode = code;
-            proc.status = 'COMPLETED';
-            proc.stdout = stdout.join('\n');
-            proc.stderr = stderr.join('\n');
-            console.log(proc.stdout);
-            proc.save();
-          });
-          p.stdout.on('data', function (data) {
-            return stdout = stdout.concat(data);
-          });
-          p.stderr.on('data', function (data) {
-            return stderr = stderr.concat(data);
-          });
-        }).catch(rej);
-      });
-      return { createP: createP, promise: promise };
-    }
-  }]);
-
-  return ChildProcess;
-}();
-
-exports.default = ChildProcess;
-
-var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procId) {
-  var _this2 = this;
-
-  _classCallCheck(this, ChildTemplate);
-
-  this.promise = _Process2.default.findOne({ _id: procId }).then(function (proc) {
-    if (!proc) {
-      throw new Error('Unknown process id: ' + procId);
-    }
-    _this2.proc = proc;
-    return _this2.execute(proc);
-  }).then(function (output) {
-    console.log('Output: ');
-    console.log(output);
-  }).catch(function (err) {
-    console.log('Error: ');
-    console.log(err);
-  });
-};
+module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ })
 

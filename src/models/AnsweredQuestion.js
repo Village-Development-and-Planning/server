@@ -1,9 +1,20 @@
 import Question from './Question';
+import Location from './Location';
 
 /**
  * Provides export functionalities
  */
 export default class AnsweredQuestion extends Question {
+  * collectRespondent({acc, prefix, refQ, keys}) {
+    for (let ans of this.answers) {
+      yield this.collectAnswer({
+        acc: Object.assign({}, acc),
+        ansKey: prefix,
+        ans, keys, refQ,
+      });
+    }
+  }
+
   _accumulateValue(ans, ansKey, refQ) {
     refQ = refQ || this;
     if (!ans.logged_options) return {};
@@ -31,7 +42,7 @@ export default class AnsweredQuestion extends Question {
       ret[`${ansKey}_long`] = long;
     } else if (
       (['INFO', 'INPUT'].indexOf(this.type) !== -1)
-      || (refQ.flow && refQ.flow.pre.fill && refQ.flow.pre.fill.length)
+      || (refQ.flow && refQ.flow.pre.fill.length)
     ) {
       ret[ansKey] = ans.logged_options.map(
         (opt) => opt.value || opt.text.english,
@@ -41,11 +52,31 @@ export default class AnsweredQuestion extends Question {
         (opt) => (opt.position || opt.value || opt.text.english)
       ).join(',');
     }
+
+    if (refQ.flow.pre.fill.length) {
+      for (let el of refQ.flow.pre.fill) {
+        let field;
+        let type;
+        let other;
+
+        if (el.endsWith('_NAME')) {
+          field = 'name'; other = 'code';
+        } else if (el.endsWith('_CODE')) {
+          field = 'code'; other = 'name';
+        }
+        type = el.slice(0, -5);
+        if (type && field) {
+          ret[`${type}_${other.toUpperCase()}`] = Location.findOne({
+            type, [field]: ret[ansKey],
+          }).then((loc) => (loc && loc[other] || 'UNKNOWN'));
+        }
+      }
+    }
     return ret;
   }
 
 
-  findRespondents({acc, prefix, keys, respondents, idx, cb, refQ}) {
+  * findRespondents({acc, prefix, keys, respondents, idx, refQ}) {
     const number = respondents[idx];
     if (!this.isParent(number)) return;
     if (!this.answers) return;
@@ -57,11 +88,11 @@ export default class AnsweredQuestion extends Question {
     refQ = refQ || this;
 
     if (this.number === number) {
-      cb(this, {acc, keys, prefix, refQ});
+      yield {question: this, context: {acc, keys, prefix, refQ}};
       return;
     }
 
-    this.answers.forEach((ans, ansIdx) => {
+    for (let ans of this.answers) {
       if (ans.children) {
         let respChild = ans.children.find(
           (child, idx) => {
@@ -78,7 +109,6 @@ export default class AnsweredQuestion extends Question {
           const childQ = refQ.findChildByPosition(respChild.position);
           const newAcc = this.collectAnswer({
             ans, keys,
-            idx: ansIdx,
             ansKey: prefix,
 
             ignore: respondents,
@@ -86,7 +116,7 @@ export default class AnsweredQuestion extends Question {
 
             refQ: childQ,
           });
-          respChild.findRespondents({
+          yield* respChild.findRespondents({
             acc: newAcc,
             prefix: `${prefix}_`,
             refQ: childQ,
@@ -94,11 +124,11 @@ export default class AnsweredQuestion extends Question {
           });
         }
       }
-    });
+    };
   }
 
 
-  collectAnswer({ans, idx, acc, ansKey, suffix, keys, ignore, refQ}) {
+  collectAnswer({ans, acc, ansKey, suffix, keys, ignore, refQ}) {
     acc = acc || {};
     ansKey = ansKey || 'Q';
     suffix = suffix || '';
@@ -160,7 +190,7 @@ export default class AnsweredQuestion extends Question {
         let ansKey = prefix;
         let newSuffix = suffix;
         if (refQ.flow && refQ.flow.answer.scope == 'multiple') {
-          newSuffix = suffix + `_ans${idx}`;
+          newSuffix = suffix + `_ans${idx+1}`;
         }
         return this.collectAnswer({
           ans, idx, acc, ansKey, keys, ignore, refQ,

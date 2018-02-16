@@ -1,8 +1,10 @@
+import 'babel-polyfill';
 import {ChildTemplate} from '../child-process';
 
 import Survey from '../../models/Survey';
 import Answer from '../../models/Answer';
 import Statistic from '../../models/Statistic';
+
 
 export default class CollectResponses extends ChildTemplate {
   execute(proc) {
@@ -20,9 +22,7 @@ export default class CollectResponses extends ChildTemplate {
     .findOne({_id: this.surveyId})
     .then((survey) => {
       this.survey = survey;
-      if (survey) {
-        this.surveyRespondents = survey.respondents;
-      } else {
+      if (!survey) {
         return Promise.reject(`Survey: ${this.surveyId} not found.`);
       }
     });
@@ -35,7 +35,7 @@ export default class CollectResponses extends ChildTemplate {
       lastExport: null,
     }).cursor();
     return new Promise((res, rej) => {
-      cursor.on('data', (ans) => ans && this.collectOneAnswer(ans));
+      cursor.on('data', (ans) => this.collectOneAnswer(ans));
       cursor.on('error', rej);
       cursor.on('end', () => res(Promise.all(this.answersLog)));
     });
@@ -52,49 +52,46 @@ export default class CollectResponses extends ChildTemplate {
     );
   }
 
+  sealAnswer(remarks) {
+    remarks._id = this.currentAnswer._id;
+    this.answersLog.push(
+      Promise.all(this.statsPromises)
+      .then(() => Answer.findOneAndUpdate(
+        {_id: remarks._id},
+        {lastExport: new Date()}
+      )).catch((err) => {
+        console.log(`Error saving answer: ${err}`);
+      }).then(() => remarks)
+    );
+  }
+
   collectOneAnswer(answer) {
+    if (!answer) return;
+    this.currentAnswer = answer;
+
     if (!answer.rootQuestion) {
-      this.finishAnswer(answer, {status: 'SKIPPED', reason: 'EMPTY'});
+      this.sealAnswer({status: 'SKIPPED', reason: 'EMPTY'});
       return;
     }
     if (answer.version == 0) {
-      this.finishAnswer(answer, {status: 'SKIPPED', reason: 'VERSION0'});
+      this.sealAnswer({status: 'SKIPPED', reason: 'VERSION0'});
       return;
     }
-    console.log(`Collecting answer: ${answer._id}`);
-    this.currentAnswer = answer;
-    if (!this.surveyRespondents || !this.surveyRespondents.length) {
-      const obj = answer.rootQuestion.collect({
-        keys: this.collectionKeys,
-      });
-      this.writeStatsObj(obj)
-        .then(() => this.finishAnswer(answer, {status: 'DONE', rows: 1}));
-    } else {
-      this.surveyRespondents.forEach((resp, idx) => {
-        this.answerRows = 0;
-        answer.rootQuestion.findRespondents({
-          keys: this.collectionKeys,
-          respondents: this.surveyRespondents,
-          cb: this.collectRespondent.bind(this),
-          refQ: this.survey.rootQuestion,
-          idx,
-        });
-        this.finishAnswer(answer, {status: 'DONE', rows: this.answerRows});
-      });
-    }
-  }
 
-  collectRespondent(question, {acc, prefix, refQ}) {
-    question.answers.forEach((ans, idx) => {
-      const obj = question.collectAnswer({
-        ans, idx,
-        acc: Object.assign({}, acc),
-        keys: this.collectionKeys,
-        ansKey: prefix, refQ,
-      });
-      this.writeStatsObj(obj);
-      this.answerRows++;
-    });
+    console.log(`Collecting answer: ${answer._id}`);
+    this.statsPromises = [];
+    let statsCount = 0;
+    for (let {question, context}
+      of this.survey.respondentsIn(
+        answer, {keys: this.collectionKeys}
+      )
+    ) {
+      for (let o of question.collectRespondent(context)) {
+        this.writeStatsObj(o);
+        ++statsCount;
+      }
+    }
+    this.sealAnswer({status: 'DONE', statsCount});
   }
 
   getExportHeader() {
@@ -165,10 +162,21 @@ export default class CollectResponses extends ChildTemplate {
   }
 
   writeStatsObj(obj) {
-    return Statistic.create({
-      survey: this.surveyId,
-      answer: this.currentAnswer,
-      data: obj,
-    });
+    const objKeys = Object.keys(obj);
+    const objPromise = Promise.all(objKeys.map((k) => obj[k]))
+    .then((arrObj) => objKeys.reduce((acc, el, idx) => {
+      acc[el] = arrObj[idx];
+      return acc;
+    }, {}));
+
+    this.statsPromises.push(
+      objPromise.then(
+        (obj) => Statistic.create({
+          survey: this.surveyId,
+          answer: this.currentAnswer,
+          data: obj,
+        })
+      )
+    );
   }
 }

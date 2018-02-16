@@ -116,13 +116,114 @@ module.exports = Schema;
 /***/ }),
 
 /***/ 10:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ChildTemplate = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Process = __webpack_require__(3);
+
+var _Process2 = _interopRequireDefault(_Process);
+
+var _child_process = __webpack_require__(11);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var ChildProcess = function () {
+  function ChildProcess(opts) {
+    _classCallCheck(this, ChildProcess);
+
+    Object.assign(this, opts);
+  }
+
+  _createClass(ChildProcess, [{
+    key: 'execute',
+    value: function execute(args) {
+      var _this = this;
+
+      this.procName = this.procName || this.constructor.procName || this.constructor.name || 'Unknown';
+      this.procPath = this.procPath || this.constructor.procPath;
+      if (!this.procPath) {
+        throw new Error('No process path configured for class: ' + this.constructor.name);
+      }
+
+      var createP = _Process2.default.create({
+        name: this.procName,
+        status: 'RUNNING',
+        path: this.procPath,
+        args: args
+      });
+
+      var promise = new Promise(function (res, rej) {
+        createP.then(function (proc) {
+          var p = (0, _child_process.spawn)(process.execPath, ['build/procs/' + _this.procPath + '.js', proc._id]);
+          var stdout = [];
+          var stderr = [];
+
+          p.on('close', function (code) {
+            proc.exitCode = code;
+            proc.status = 'COMPLETED';
+            proc.stdout = stdout.join('\n');
+            proc.stderr = stderr.join('\n');
+            console.log(proc.stdout);
+            proc.save();
+          });
+          p.stdout.on('data', function (data) {
+            return stdout = stdout.concat(data);
+          });
+          p.stderr.on('data', function (data) {
+            return stderr = stderr.concat(data);
+          });
+        }).catch(rej);
+      });
+      return { createP: createP, promise: promise };
+    }
+  }]);
+
+  return ChildProcess;
+}();
+
+exports.default = ChildProcess;
+
+var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procId) {
+  var _this2 = this;
+
+  _classCallCheck(this, ChildTemplate);
+
+  this.promise = _Process2.default.findOne({ _id: procId }).then(function (proc) {
+    if (!proc) {
+      throw new Error('Unknown process id: ' + procId);
+    }
+    _this2.proc = proc;
+    return _this2.execute(proc);
+  }).then(function (output) {
+    console.log('Output: ');
+    console.log(output);
+  }).catch(function (err) {
+    console.log('Error: ');
+    console.log(err);
+  });
+};
+
+/***/ }),
+
+/***/ 11:
 /***/ (function(module, exports) {
 
 module.exports = require("child_process");
 
 /***/ }),
 
-/***/ 11:
+/***/ 12:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -136,7 +237,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _AnsweredQuestion = __webpack_require__(14);
+var _AnsweredQuestion = __webpack_require__(15);
 
 var _AnsweredQuestion2 = _interopRequireDefault(_AnsweredQuestion);
 
@@ -165,7 +266,7 @@ module.exports = _mongoose2.default.model('Answer', answerSchema);
 
 /***/ }),
 
-/***/ 14:
+/***/ 15:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -179,11 +280,17 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Question2 = __webpack_require__(15);
+var _Question2 = __webpack_require__(16);
 
 var _Question3 = _interopRequireDefault(_Question2);
 
+var _Location = __webpack_require__(5);
+
+var _Location2 = _interopRequireDefault(_Location);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -204,6 +311,86 @@ var AnsweredQuestion = function (_Question) {
   }
 
   _createClass(AnsweredQuestion, [{
+    key: 'collectRespondent',
+    value: /*#__PURE__*/regeneratorRuntime.mark(function collectRespondent(_ref) {
+      var acc = _ref.acc,
+          prefix = _ref.prefix,
+          refQ = _ref.refQ,
+          keys = _ref.keys;
+
+      var _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, ans;
+
+      return regeneratorRuntime.wrap(function collectRespondent$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              _iteratorNormalCompletion = true;
+              _didIteratorError = false;
+              _iteratorError = undefined;
+              _context.prev = 3;
+              _iterator = this.answers[Symbol.iterator]();
+
+            case 5:
+              if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
+                _context.next = 12;
+                break;
+              }
+
+              ans = _step.value;
+              _context.next = 9;
+              return this.collectAnswer({
+                acc: Object.assign({}, acc),
+                ansKey: prefix,
+                ans: ans, keys: keys, refQ: refQ
+              });
+
+            case 9:
+              _iteratorNormalCompletion = true;
+              _context.next = 5;
+              break;
+
+            case 12:
+              _context.next = 18;
+              break;
+
+            case 14:
+              _context.prev = 14;
+              _context.t0 = _context['catch'](3);
+              _didIteratorError = true;
+              _iteratorError = _context.t0;
+
+            case 18:
+              _context.prev = 18;
+              _context.prev = 19;
+
+              if (!_iteratorNormalCompletion && _iterator.return) {
+                _iterator.return();
+              }
+
+            case 21:
+              _context.prev = 21;
+
+              if (!_didIteratorError) {
+                _context.next = 24;
+                break;
+              }
+
+              throw _iteratorError;
+
+            case 24:
+              return _context.finish(21);
+
+            case 25:
+              return _context.finish(18);
+
+            case 26:
+            case 'end':
+              return _context.stop();
+          }
+        }
+      }, collectRespondent, this, [[3, 14, 18, 26], [19,, 21, 25]]);
+    })
+  }, {
     key: '_accumulateValue',
     value: function _accumulateValue(ans, ansKey, refQ) {
       refQ = refQ || this;
@@ -236,7 +423,7 @@ var AnsweredQuestion = function (_Question) {
         });
         ret[ansKey + '_lat'] = lat;
         ret[ansKey + '_long'] = long;
-      } else if (['INFO', 'INPUT'].indexOf(this.type) !== -1 || refQ.flow && refQ.flow.pre.fill && refQ.flow.pre.fill.length) {
+      } else if (['INFO', 'INPUT'].indexOf(this.type) !== -1 || refQ.flow && refQ.flow.pre.fill.length) {
         ret[ansKey] = ans.logged_options.map(function (opt) {
           return opt.value || opt.text.english;
         }).join(',').toUpperCase();
@@ -245,80 +432,217 @@ var AnsweredQuestion = function (_Question) {
           return opt.position || opt.value || opt.text.english;
         }).join(',');
       }
+
+      if (refQ.flow.pre.fill.length) {
+        var _loop = function _loop(el) {
+          var field = void 0;
+          var type = void 0;
+          var other = void 0;
+
+          if (el.endsWith('_NAME')) {
+            field = 'name';other = 'code';
+          } else if (el.endsWith('_CODE')) {
+            field = 'code';other = 'name';
+          }
+          type = el.slice(0, -5);
+          if (type && field) {
+            ret[type + '_' + other.toUpperCase()] = _Location2.default.findOne(_defineProperty({
+              type: type }, field, ret[ansKey])).then(function (loc) {
+              return loc && loc[other] || 'UNKNOWN';
+            });
+          }
+        };
+
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
+
+        try {
+          for (var _iterator2 = refQ.flow.pre.fill[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var el = _step2.value;
+
+            _loop(el);
+          }
+        } catch (err) {
+          _didIteratorError2 = true;
+          _iteratorError2 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+              _iterator2.return();
+            }
+          } finally {
+            if (_didIteratorError2) {
+              throw _iteratorError2;
+            }
+          }
+        }
+      }
       return ret;
     }
   }, {
     key: 'findRespondents',
-    value: function findRespondents(_ref) {
-      var _this2 = this;
+    value: /*#__PURE__*/regeneratorRuntime.mark(function findRespondents(_ref2) {
+      var acc = _ref2.acc,
+          prefix = _ref2.prefix,
+          keys = _ref2.keys,
+          respondents = _ref2.respondents,
+          idx = _ref2.idx,
+          refQ = _ref2.refQ;
 
-      var acc = _ref.acc,
-          prefix = _ref.prefix,
-          keys = _ref.keys,
-          respondents = _ref.respondents,
-          idx = _ref.idx,
-          cb = _ref.cb,
-          refQ = _ref.refQ;
+      var number, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, ans, respChild, childQ, newAcc;
 
-      var number = respondents[idx];
-      if (!this.isParent(number)) return;
-      if (!this.answers) return;
+      return regeneratorRuntime.wrap(function findRespondents$(_context2) {
+        while (1) {
+          switch (_context2.prev = _context2.next) {
+            case 0:
+              number = respondents[idx];
 
-      acc = acc || {};
-      prefix = prefix || 'Q';
-      keys = keys || [];
-      prefix = '' + prefix + (this.position || '');
-      refQ = refQ || this;
+              if (this.isParent(number)) {
+                _context2.next = 3;
+                break;
+              }
 
-      if (this.number === number) {
-        cb(this, { acc: acc, keys: keys, prefix: prefix, refQ: refQ });
-        return;
-      }
+              return _context2.abrupt('return');
 
-      this.answers.forEach(function (ans, ansIdx) {
-        if (ans.children) {
-          var respChild = ans.children.find(function (child, idx) {
-            child = AnsweredQuestion.fromChild(child);
-            if (child.isParent(number)) {
-              return child;
-            } else {
-              return false;
-            }
-          });
-          if (respChild) {
-            respChild = AnsweredQuestion.fromChild(respChild);
-            var childQ = refQ.findChildByPosition(respChild.position);
-            var newAcc = _this2.collectAnswer({
-              ans: ans, keys: keys,
-              idx: ansIdx,
-              ansKey: prefix,
+            case 3:
+              if (this.answers) {
+                _context2.next = 5;
+                break;
+              }
 
-              ignore: respondents,
-              acc: Object.assign({}, acc),
+              return _context2.abrupt('return');
 
-              refQ: childQ
-            });
-            respChild.findRespondents({
-              acc: newAcc,
-              prefix: prefix + '_',
-              refQ: childQ,
-              keys: keys, respondents: respondents, idx: idx, cb: cb
-            });
+            case 5:
+
+              acc = acc || {};
+              prefix = prefix || 'Q';
+              keys = keys || [];
+              prefix = '' + prefix + (this.position || '');
+              refQ = refQ || this;
+
+              if (!(this.number === number)) {
+                _context2.next = 14;
+                break;
+              }
+
+              _context2.next = 13;
+              return { question: this, context: { acc: acc, keys: keys, prefix: prefix, refQ: refQ } };
+
+            case 13:
+              return _context2.abrupt('return');
+
+            case 14:
+              _iteratorNormalCompletion3 = true;
+              _didIteratorError3 = false;
+              _iteratorError3 = undefined;
+              _context2.prev = 17;
+              _iterator3 = this.answers[Symbol.iterator]();
+
+            case 19:
+              if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
+                _context2.next = 31;
+                break;
+              }
+
+              ans = _step3.value;
+
+              if (!ans.children) {
+                _context2.next = 28;
+                break;
+              }
+
+              respChild = ans.children.find(function (child, idx) {
+                child = AnsweredQuestion.fromChild(child);
+                if (child.isParent(number)) {
+                  return child;
+                } else {
+                  return false;
+                }
+              });
+
+              if (!respChild) {
+                _context2.next = 28;
+                break;
+              }
+
+              respChild = AnsweredQuestion.fromChild(respChild);
+              childQ = refQ.findChildByPosition(respChild.position);
+              newAcc = this.collectAnswer({
+                ans: ans, keys: keys,
+                ansKey: prefix,
+
+                ignore: respondents,
+                acc: Object.assign({}, acc),
+
+                refQ: childQ
+              });
+              return _context2.delegateYield(respChild.findRespondents({
+                acc: newAcc,
+                prefix: prefix + '_',
+                refQ: childQ,
+                keys: keys, respondents: respondents, idx: idx, cb: cb
+              }), 't0', 28);
+
+            case 28:
+              _iteratorNormalCompletion3 = true;
+              _context2.next = 19;
+              break;
+
+            case 31:
+              _context2.next = 37;
+              break;
+
+            case 33:
+              _context2.prev = 33;
+              _context2.t1 = _context2['catch'](17);
+              _didIteratorError3 = true;
+              _iteratorError3 = _context2.t1;
+
+            case 37:
+              _context2.prev = 37;
+              _context2.prev = 38;
+
+              if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                _iterator3.return();
+              }
+
+            case 40:
+              _context2.prev = 40;
+
+              if (!_didIteratorError3) {
+                _context2.next = 43;
+                break;
+              }
+
+              throw _iteratorError3;
+
+            case 43:
+              return _context2.finish(40);
+
+            case 44:
+              return _context2.finish(37);
+
+            case 45:
+              ;
+
+            case 46:
+            case 'end':
+              return _context2.stop();
           }
         }
-      });
-    }
+      }, findRespondents, this, [[17, 33, 37, 45], [38,, 40, 44]]);
+    })
   }, {
     key: 'collectAnswer',
-    value: function collectAnswer(_ref2) {
-      var ans = _ref2.ans,
-          idx = _ref2.idx,
-          acc = _ref2.acc,
-          ansKey = _ref2.ansKey,
-          suffix = _ref2.suffix,
-          keys = _ref2.keys,
-          ignore = _ref2.ignore,
-          refQ = _ref2.refQ;
+    value: function collectAnswer(_ref3) {
+      var ans = _ref3.ans,
+          acc = _ref3.acc,
+          ansKey = _ref3.ansKey,
+          suffix = _ref3.suffix,
+          keys = _ref3.keys,
+          ignore = _ref3.ignore,
+          refQ = _ref3.refQ;
 
       acc = acc || {};
       ansKey = ansKey || 'Q';
@@ -363,15 +687,15 @@ var AnsweredQuestion = function (_Question) {
     }
   }, {
     key: 'collect',
-    value: function collect(_ref3) {
-      var _this3 = this;
+    value: function collect(_ref4) {
+      var _this2 = this;
 
-      var acc = _ref3.acc,
-          prefix = _ref3.prefix,
-          suffix = _ref3.suffix,
-          keys = _ref3.keys,
-          ignore = _ref3.ignore,
-          refQ = _ref3.refQ;
+      var acc = _ref4.acc,
+          prefix = _ref4.prefix,
+          suffix = _ref4.suffix,
+          keys = _ref4.keys,
+          ignore = _ref4.ignore,
+          refQ = _ref4.refQ;
 
       acc = acc || {};
       prefix = prefix || 'Q';
@@ -386,9 +710,9 @@ var AnsweredQuestion = function (_Question) {
         var ansKey = prefix;
         var newSuffix = suffix;
         if (refQ.flow && refQ.flow.answer.scope == 'multiple') {
-          newSuffix = suffix + ('_ans' + idx);
+          newSuffix = suffix + ('_ans' + (idx + 1));
         }
-        return _this3.collectAnswer({
+        return _this2.collectAnswer({
           ans: ans, idx: idx, acc: acc, ansKey: ansKey, keys: keys, ignore: ignore, refQ: refQ,
           suffix: newSuffix
         });
@@ -415,7 +739,7 @@ exports.default = AnsweredQuestion;
 
 /***/ }),
 
-/***/ 15:
+/***/ 16:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -428,7 +752,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var Schema = __webpack_require__(1);
-var Text = __webpack_require__(16);
+var Text = __webpack_require__(17);
 var mongoose = __webpack_require__(0);
 
 var Question = void 0;
@@ -516,7 +840,7 @@ module.exports = Question = function (_QuestionM) {
 
 /***/ }),
 
-/***/ 16:
+/***/ 17:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -565,7 +889,7 @@ module.exports = {
 "use strict";
 
 
-__webpack_require__(6);
+__webpack_require__(7);
 
 var _mongoose = __webpack_require__(0);
 
@@ -619,7 +943,47 @@ module.exports = mongoose.model('Process', processSchema);
 
 /***/ }),
 
-/***/ 6:
+/***/ 5:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _Schema = __webpack_require__(1);
+
+var _Schema2 = _interopRequireDefault(_Schema);
+
+var _mongoose = __webpack_require__(0);
+
+var _mongoose2 = _interopRequireDefault(_mongoose);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var schema = new _Schema2.default({
+  type: { type: String, required: true },
+  code: { type: String, required: true },
+  uid: { type: String, require: true },
+  name: { type: String, required: true },
+  children: [{
+    code: { type: String },
+    name: { type: String },
+    uid: { type: String }
+  }],
+  payload: { type: {} }
+});
+schema.index({ type: 1, uid: 1 });
+schema.index({ type: 1, code: 1 });
+schema.index({ name: 1, type: 1 });
+
+exports.default = _mongoose2.default.model('Location', schema);
+
+/***/ }),
+
+/***/ 7:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -647,7 +1011,7 @@ exports.default = _mongoose2.default.connect(options.connectionString, options.c
 
 /***/ }),
 
-/***/ 7:
+/***/ 8:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -671,29 +1035,6 @@ var schema = new _Schema2.default({
 schema.index({ survey: 1, answer: 1 });
 
 module.exports = _mongoose2.default.model('Statistic', schema);
-
-/***/ }),
-
-/***/ 8:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var Schema = __webpack_require__(1);
-var mongoose = __webpack_require__(0);
-
-var surveySchema = new Schema({
-  name: { type: String, required: true },
-  description: { type: String },
-  enabled: { type: Boolean, default: true },
-  question: { type: {}, required: true },
-  respondents: { type: [] }
-});
-surveySchema.index({ name: 1 });
-surveySchema.index({ enabled: 1, name: 1 });
-
-module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
 
@@ -725,17 +1066,19 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _childProcess = __webpack_require__(9);
+__webpack_require__(84);
 
-var _Survey = __webpack_require__(8);
+var _childProcess = __webpack_require__(10);
+
+var _Survey = __webpack_require__(9);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
-var _Answer = __webpack_require__(11);
+var _Answer = __webpack_require__(12);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 
-var _Statistic = __webpack_require__(7);
+var _Statistic = __webpack_require__(8);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
@@ -781,9 +1124,7 @@ var CollectResponses = function (_ChildTemplate) {
 
       return _Survey2.default.findOne({ _id: this.surveyId }).then(function (survey) {
         _this3.survey = survey;
-        if (survey) {
-          _this3.surveyRespondents = survey.respondents;
-        } else {
+        if (!survey) {
           return Promise.reject('Survey: ' + _this3.surveyId + ' not found.');
         }
       });
@@ -800,7 +1141,7 @@ var CollectResponses = function (_ChildTemplate) {
       }).cursor();
       return new Promise(function (res, rej) {
         cursor.on('data', function (ans) {
-          return ans && _this4.collectOneAnswer(ans);
+          return _this4.collectOneAnswer(ans);
         });
         cursor.on('error', rej);
         cursor.on('end', function () {
@@ -821,73 +1162,99 @@ var CollectResponses = function (_ChildTemplate) {
       }));
     }
   }, {
+    key: 'sealAnswer',
+    value: function sealAnswer(remarks) {
+      remarks._id = this.currentAnswer._id;
+      this.answersLog.push(Promise.all(this.statsPromises).then(function () {
+        return _Answer2.default.findOneAndUpdate({ _id: remarks._id }, { lastExport: new Date() });
+      }).catch(function (err) {
+        console.log('Error saving answer: ' + err);
+      }).then(function () {
+        return remarks;
+      }));
+    }
+  }, {
     key: 'collectOneAnswer',
     value: function collectOneAnswer(answer) {
-      var _this5 = this;
+      if (!answer) return;
+      this.currentAnswer = answer;
 
       if (!answer.rootQuestion) {
-        this.finishAnswer(answer, { status: 'SKIPPED', reason: 'EMPTY' });
+        this.sealAnswer({ status: 'SKIPPED', reason: 'EMPTY' });
         return;
       }
       if (answer.version == 0) {
-        this.finishAnswer(answer, { status: 'SKIPPED', reason: 'VERSION0' });
+        this.sealAnswer({ status: 'SKIPPED', reason: 'VERSION0' });
         return;
       }
+
       console.log('Collecting answer: ' + answer._id);
-      this.currentAnswer = answer;
-      if (!this.surveyRespondents || !this.surveyRespondents.length) {
-        var obj = answer.rootQuestion.collect({
-          keys: this.collectionKeys
-        });
-        this.writeStatsObj(obj).then(function () {
-          return _this5.finishAnswer(answer, { status: 'DONE', rows: 1 });
-        });
-      } else {
-        this.surveyRespondents.forEach(function (resp, idx) {
-          _this5.answerRows = 0;
-          answer.rootQuestion.findRespondents({
-            keys: _this5.collectionKeys,
-            respondents: _this5.surveyRespondents,
-            cb: _this5.collectRespondent.bind(_this5),
-            refQ: _this5.survey.rootQuestion,
-            idx: idx
-          });
-          _this5.finishAnswer(answer, { status: 'DONE', rows: _this5.answerRows });
-        });
+      this.statsPromises = [];
+      var statsCount = 0;
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = this.survey.respondentsIn(answer, { keys: this.collectionKeys })[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var _ref = _step.value;
+          var question = _ref.question;
+          var context = _ref.context;
+          var _iteratorNormalCompletion2 = true;
+          var _didIteratorError2 = false;
+          var _iteratorError2 = undefined;
+
+          try {
+            for (var _iterator2 = question.collectRespondent(context)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+              var o = _step2.value;
+
+              this.writeStatsObj(o);
+              ++statsCount;
+            }
+          } catch (err) {
+            _didIteratorError2 = true;
+            _iteratorError2 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                _iterator2.return();
+              }
+            } finally {
+              if (_didIteratorError2) {
+                throw _iteratorError2;
+              }
+            }
+          }
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
       }
-    }
-  }, {
-    key: 'collectRespondent',
-    value: function collectRespondent(question, _ref) {
-      var _this6 = this;
 
-      var acc = _ref.acc,
-          prefix = _ref.prefix,
-          refQ = _ref.refQ;
-
-      question.answers.forEach(function (ans, idx) {
-        var obj = question.collectAnswer({
-          ans: ans, idx: idx,
-          acc: Object.assign({}, acc),
-          keys: _this6.collectionKeys,
-          ansKey: prefix, refQ: refQ
-        });
-        _this6.writeStatsObj(obj);
-        _this6.answerRows++;
-      });
+      this.sealAnswer({ status: 'DONE', statsCount: statsCount });
     }
   }, {
     key: 'getExportHeader',
     value: function getExportHeader() {
-      var _this7 = this;
+      var _this5 = this;
 
       return _Statistic2.default.findOne({ survey: this.surveyId, answer: null }).then(function (stat) {
-        _this7.collectionKeys = [];
+        _this5.collectionKeys = [];
         if (stat && stat.data) {
-          _this7.collectionKeys = stat.data.keys;
+          _this5.collectionKeys = stat.data.keys;
           if (stat.data.keyDescriptions) {
-            _this7.collectionKeys.forEach(function (key, idx) {
-              _this7.collectionKeys['pos' + key] = stat.data.keyDescriptions[idx];
+            _this5.collectionKeys.forEach(function (key, idx) {
+              _this5.collectionKeys['pos' + key] = stat.data.keyDescriptions[idx];
             });
           }
         }
@@ -896,12 +1263,12 @@ var CollectResponses = function (_ChildTemplate) {
   }, {
     key: 'sortKeys',
     value: function sortKeys() {
-      var _this8 = this;
+      var _this6 = this;
 
       return this.collectionKeys.map(function (key, index) {
         return { key: key, index: index };
       }).sort(function (a, b) {
-        return _this8._keyListComparator(a.key.split('_'), b.key.split('_'));
+        return _this6._keyListComparator(a.key.split('_'), b.key.split('_'));
       });
     }
   }, {
@@ -929,7 +1296,7 @@ var CollectResponses = function (_ChildTemplate) {
   }, {
     key: 'updateExportHeader',
     value: function updateExportHeader() {
-      var _this9 = this;
+      var _this7 = this;
 
       var data = this.sortKeys().reduce(function (_ref2, _ref3) {
         var keys = _ref2.keys,
@@ -938,7 +1305,7 @@ var CollectResponses = function (_ChildTemplate) {
             index = _ref3.index;
 
         keys.push(key);
-        keyDescriptions.push(_this9.collectionKeys['pos' + key]);
+        keyDescriptions.push(_this7.collectionKeys['pos' + key]);
         return { keys: keys, keyDescriptions: keyDescriptions };
       }, { keys: [], keyDescriptions: [] });
       return _Statistic2.default.findOneAndUpdate({ survey: this.surveyId, answer: null }, { data: data }, { upsert: true });
@@ -946,11 +1313,25 @@ var CollectResponses = function (_ChildTemplate) {
   }, {
     key: 'writeStatsObj',
     value: function writeStatsObj(obj) {
-      return _Statistic2.default.create({
-        survey: this.surveyId,
-        answer: this.currentAnswer,
-        data: obj
+      var _this8 = this;
+
+      var objKeys = Object.keys(obj);
+      var objPromise = Promise.all(objKeys.map(function (k) {
+        return obj[k];
+      })).then(function (arrObj) {
+        return objKeys.reduce(function (acc, el, idx) {
+          acc[el] = arrObj[idx];
+          return acc;
+        }, {});
       });
+
+      this.statsPromises.push(objPromise.then(function (obj) {
+        return _Statistic2.default.create({
+          survey: _this8.surveyId,
+          answer: _this8.currentAnswer,
+          data: obj
+        });
+      }));
     }
   }]);
 
@@ -961,104 +1342,85 @@ exports.default = CollectResponses;
 
 /***/ }),
 
+/***/ 84:
+/***/ (function(module, exports) {
+
+module.exports = require("babel-polyfill");
+
+/***/ }),
+
 /***/ 9:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
+var Schema = __webpack_require__(1);
+var mongoose = __webpack_require__(0);
+
+var surveySchema = new Schema({
+  name: { type: String, required: true },
+  description: { type: String },
+  enabled: { type: Boolean, default: true },
+  question: { type: {}, required: true },
+  respondents: { type: [] }
 });
-exports.ChildTemplate = undefined;
+surveySchema.index({ name: 1 });
+surveySchema.index({ enabled: 1, name: 1 });
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+Object.assign(surveySchema.methods, {
+  respondentsIn: /*#__PURE__*/regeneratorRuntime.mark(function respondentsIn(answer, context) {
+    var idx;
+    return regeneratorRuntime.wrap(function respondentsIn$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            if (!(!this.respondents || !this.respondents.length)) {
+              _context.next = 5;
+              break;
+            }
 
-var _Process = __webpack_require__(3);
+            _context.next = 3;
+            return { question: answer.rootQuestion, context: context };
 
-var _Process2 = _interopRequireDefault(_Process);
+          case 3:
+            _context.next = 12;
+            break;
 
-var _child_process = __webpack_require__(10);
+          case 5:
+            idx = 0;
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+          case 6:
+            if (!(i < this.respondents.length)) {
+              _context.next = 12;
+              break;
+            }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+            return _context.delegateYield(answer.rootQuestion.findRespondents(Object.assign({
+              respondents: this.respondents,
+              refQ: this.rootQuestion,
+              idx: idx
+            }, context)), 't0', 8);
 
-var ChildProcess = function () {
-  function ChildProcess(opts) {
-    _classCallCheck(this, ChildProcess);
+          case 8:
 
-    Object.assign(this, opts);
-  }
+            ++respIdx;
 
-  _createClass(ChildProcess, [{
-    key: 'execute',
-    value: function execute(args) {
-      var _this = this;
+          case 9:
+            i++;
+            _context.next = 6;
+            break;
 
-      this.procName = this.procName || this.constructor.procName || this.constructor.name || 'Unknown';
-      this.procPath = this.procPath || this.constructor.procPath;
-      if (!this.procPath) {
-        throw new Error('No process path configured for class: ' + this.constructor.name);
+          case 12:
+          case 'end':
+            return _context.stop();
+        }
       }
+    }, respondentsIn, this);
+  })
+});
 
-      var createP = _Process2.default.create({
-        name: this.procName,
-        status: 'RUNNING',
-        path: this.procPath,
-        args: args
-      });
-
-      var promise = new Promise(function (res, rej) {
-        createP.then(function (proc) {
-          var p = (0, _child_process.spawn)(process.execPath, ['build/procs/' + _this.procPath + '.js', proc._id]);
-          var stdout = [];
-          var stderr = [];
-
-          p.on('close', function (code) {
-            proc.exitCode = code;
-            proc.status = 'COMPLETED';
-            proc.stdout = stdout.join('\n');
-            proc.stderr = stderr.join('\n');
-            console.log(proc.stdout);
-            proc.save();
-          });
-          p.stdout.on('data', function (data) {
-            return stdout = stdout.concat(data);
-          });
-          p.stderr.on('data', function (data) {
-            return stderr = stderr.concat(data);
-          });
-        }).catch(rej);
-      });
-      return { createP: createP, promise: promise };
-    }
-  }]);
-
-  return ChildProcess;
-}();
-
-exports.default = ChildProcess;
-
-var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procId) {
-  var _this2 = this;
-
-  _classCallCheck(this, ChildTemplate);
-
-  this.promise = _Process2.default.findOne({ _id: procId }).then(function (proc) {
-    if (!proc) {
-      throw new Error('Unknown process id: ' + procId);
-    }
-    _this2.proc = proc;
-    return _this2.execute(proc);
-  }).then(function (output) {
-    console.log('Output: ');
-    console.log(output);
-  }).catch(function (err) {
-    console.log('Error: ');
-    console.log(err);
-  });
-};
+module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ })
 
