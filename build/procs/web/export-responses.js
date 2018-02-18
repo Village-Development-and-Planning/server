@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 85);
+/******/ 	return __webpack_require__(__webpack_require__.s = 86);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -131,7 +131,8 @@ var surveySchema = new Schema({
   description: { type: String },
   enabled: { type: Boolean, default: true },
   question: { type: {}, required: true },
-  respondents: { type: [] }
+  respondents: { type: [] },
+  aggregates: { type: [] }
 });
 surveySchema.index({ name: 1 });
 surveySchema.index({ enabled: 1, name: 1 });
@@ -277,13 +278,7 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procId) {
     }
     _this2.proc = proc;
     return _this2.execute(proc);
-  }).then(function (output) {
-    console.log('Output: ');
-    console.log(output);
-  }).catch(function (err) {
-    console.log('Error: ');
-    console.log(err);
-  });
+  }).then(function (output) {}).catch(function (err) {});
 };
 
 /***/ }),
@@ -423,23 +418,23 @@ exports.default = _mongoose2.default.connect(options.connectionString, options.c
 
 /***/ }),
 
-/***/ 85:
+/***/ 86:
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(86);
+__webpack_require__(87);
 module.exports = __webpack_require__(21);
 
 
 /***/ }),
 
-/***/ 86:
+/***/ 87:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = global["Proc"] = __webpack_require__(87);
+module.exports = global["Proc"] = __webpack_require__(88);
 
 /***/ }),
 
-/***/ 87:
+/***/ 88:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -461,7 +456,7 @@ var _Statistic = __webpack_require__(9);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
-var _csvStringify = __webpack_require__(88);
+var _csvStringify = __webpack_require__(89);
 
 var _csvStringify2 = _interopRequireDefault(_csvStringify);
 
@@ -519,8 +514,9 @@ var ExportResponses = function (_ChildTemplate) {
 
       this.log = [];
       var cursor = _Statistic2.default.find({
-        survey: this.surveyId,
-        answer: { $ne: null }
+        type: 'SurveyResponse',
+        key: this.surveyId,
+        name: 'obj'
       }).cursor();
       return new Promise(function (res, rej) {
         _this4.writer = _this4._createCsvWriter(_this4.surveyId, rej);
@@ -550,7 +546,7 @@ var ExportResponses = function (_ChildTemplate) {
     value: function getExportHeader() {
       var _this5 = this;
 
-      return _Statistic2.default.findOne({ survey: this.surveyId, answer: null }).then(function (stat) {
+      return _Statistic2.default.findOne({ type: 'SurveyResponse', key: this.surveyId, name: 'objKeys' }).then(function (stat) {
         _this5.collectionKeys = [];
         if (stat && stat.data) {
           _this5.collectionKeys = stat.data.keys;
@@ -586,7 +582,7 @@ exports.default = ExportResponses;
 
 /***/ }),
 
-/***/ 88:
+/***/ 89:
 /***/ (function(module, exports) {
 
 module.exports = require("csv-stringify");
@@ -610,11 +606,12 @@ var _mongoose2 = _interopRequireDefault(_mongoose);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var schema = new _Schema2.default({
-  survey: { type: _Schema2.default.Types.ObjectId, ref: 'Survey' },
-  answer: { type: _Schema2.default.Types.ObjectId, ref: 'Answer' },
+  type: { type: String, required: true },
+  key: { type: String, required: true },
+  name: { type: String },
   data: { type: {} }
 });
-schema.index({ survey: 1, answer: 1 });
+schema.index({ type: 1, key: 1, name: 1 });
 
 module.exports = _mongoose2.default.model('Statistic', schema);
 

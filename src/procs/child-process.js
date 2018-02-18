@@ -63,11 +63,7 @@ export class ChildTemplate {
       this.proc = proc;
       return this.execute(proc);
     }).then((output) => {
-      console.log('Output: ');
-      console.log(output);
     }).catch((err) => {
-      console.log('Error: ');
-      console.log(err);
     });
   }
 }

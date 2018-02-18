@@ -9,6 +9,7 @@ module.exports = {
     }    
   },
   rules: {
+    "one-var": 0,
     "guard-for-in": 0,
     "require-jsdoc": [
       "warn", 

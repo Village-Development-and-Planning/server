@@ -131,7 +131,8 @@ var surveySchema = new Schema({
   description: { type: String },
   enabled: { type: Boolean, default: true },
   question: { type: {}, required: true },
-  respondents: { type: [] }
+  respondents: { type: [] },
+  aggregates: { type: [] }
 });
 surveySchema.index({ name: 1 });
 surveySchema.index({ enabled: 1, name: 1 });
@@ -277,13 +278,7 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procId) {
     }
     _this2.proc = proc;
     return _this2.execute(proc);
-  }).then(function (output) {
-    console.log('Output: ');
-    console.log(output);
-  }).catch(function (err) {
-    console.log('Error: ');
-    console.log(err);
-  });
+  }).then(function (output) {}).catch(function (err) {});
 };
 
 /***/ }),
@@ -466,7 +461,6 @@ var AnsweredQuestion = function (_Question) {
     key: '_accumulateValue',
     value: function _accumulateValue(ans, ansKey, refQ) {
       refQ = refQ || this;
-      console.log('accumulateValue: ' + refQ.number + ' ' + this.number);
       if (!ans.logged_options) return {};
       if (this.type == 'ROOT' || this.type == 'DUMMY' || !this.number) {
         return {};
@@ -500,7 +494,6 @@ var AnsweredQuestion = function (_Question) {
         ret[ansKey] = ans.logged_options.map(function (opt) {
           return opt.value || opt.text.english;
         }).join(',').toUpperCase();
-        console.log(ret[ansKey]);
       } else {
         ret[ansKey] = ans.logged_options.map(function (opt) {
           return opt.position || opt.value || opt.text.english;
@@ -1118,6 +1111,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 __webpack_require__(2);
@@ -1135,6 +1130,8 @@ var _Answer2 = _interopRequireDefault(_Answer);
 var _Statistic = __webpack_require__(9);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
+
+var _hotFormulaParser = __webpack_require__(85);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1204,26 +1201,15 @@ var CollectResponses = function (_ChildTemplate) {
       });
     }
   }, {
-    key: 'finishAnswer',
-    value: function finishAnswer(answer, remarks) {
-      remarks._id = answer._id;
-      this.answersLog.push(_Answer2.default.findOneAndUpdate({ _id: answer._id }, { lastExport: new Date() }).then(function () {
-        return console.log('Marked answer ' + answer._id + ' as processed.');
-      }).catch(function (err) {
-        console.log('Error saving answer: ' + err);
-      }).then(function () {
-        return remarks;
-      }));
-    }
-  }, {
     key: 'sealAnswer',
     value: function sealAnswer(remarks) {
       remarks._id = this.currentAnswer._id;
       this.answersLog.push(Promise.all(this.statsPromises).then(function () {
         return _Answer2.default.findOneAndUpdate({ _id: remarks._id }, { lastExport: new Date() });
       }).catch(function (err) {
-        console.log('Error saving answer: ' + err);
+        return console.log(err);
       }).then(function () {
+        console.log(remarks);
         return remarks;
       }));
     }
@@ -1242,7 +1228,6 @@ var CollectResponses = function (_ChildTemplate) {
         return;
       }
 
-      console.log('Collecting answer: ' + answer._id);
       this.statsPromises = [];
       var statsCount = 0;
       var _iteratorNormalCompletion = true;
@@ -1302,7 +1287,7 @@ var CollectResponses = function (_ChildTemplate) {
     value: function getExportHeader() {
       var _this5 = this;
 
-      return _Statistic2.default.findOne({ survey: this.surveyId, answer: null }).then(function (stat) {
+      return _Statistic2.default.findOne({ key: this.surveyId, type: 'SurveyResponse', name: 'objKeys' }).then(function (stat) {
         _this5.collectionKeys = [];
         if (stat && stat.data) {
           _this5.collectionKeys = stat.data.keys;
@@ -1377,15 +1362,13 @@ var CollectResponses = function (_ChildTemplate) {
         keyDescriptions.push(_this6.collectionKeys['pos' + key]);
         return { keys: keys, keyDescriptions: keyDescriptions };
       }, { keys: [], keyDescriptions: [] });
-      return _Statistic2.default.findOneAndUpdate({ survey: this.surveyId, answer: null }, { data: data }, { upsert: true });
+      return _Statistic2.default.findOneAndUpdate({ key: this.surveyId, type: 'SurveyResponse', name: 'objKeys' }, { data: data }, { upsert: true });
     }
   }, {
-    key: 'writeStatsObj',
-    value: function writeStatsObj(obj) {
-      var _this7 = this;
-
+    key: '_resolvePromiseObject',
+    value: function _resolvePromiseObject(obj) {
       var objKeys = Object.keys(obj);
-      var objPromise = Promise.all(objKeys.map(function (k) {
+      return Promise.all(objKeys.map(function (k) {
         return obj[k];
       })).then(function (arrObj) {
         return objKeys.reduce(function (acc, el, idx) {
@@ -1393,14 +1376,179 @@ var CollectResponses = function (_ChildTemplate) {
           return acc;
         }, {});
       });
+    }
+  }, {
+    key: '_parseExpression',
+    value: function _parseExpression(exp) {
+      var parsed = this.parser.parse(exp);
+      if (parsed.error) {
+        console.log('Formula parse error: ' + exp + ': ' + parsed.error);
+        return;
+      }
+      return parsed.result;
+    }
+  }, {
+    key: 'accumulateAggregates',
+    value: function accumulateAggregates(stat) {
+      var _this7 = this;
 
-      this.statsPromises.push(objPromise.then(function (obj) {
+      if (!this.survey.aggregates || !this.survey.aggregates.length) return;
+      if (!stat.data) return;
+
+      this.parser = new _hotFormulaParser.Parser();
+      this.parser.on('callVariable', function (name, done) {
+        var obj = stat.data;
+        if (obj.hasOwnProperty(name)) done(obj[name]);
+      });
+
+      var promises = [];
+
+      var _loop = function _loop(agg) {
+        var type = void 0,
+            key = void 0,
+            name = void 0,
+            data = void 0;
+        if (agg.select) {
+          if (!_this7._parseExpression(agg.select)) return 'continue';
+        }
+        if (agg.key) {
+          key = _this7._parseExpression(agg.key);
+        }
+        key = key || '[NULL]';
+
+        if (agg.type) {
+          type = _this7._parseExpression(agg.type);
+        }
+        type = type || 'Aggregate';
+
+        if (agg.name) {
+          name = _this7._parseExpression(agg.name);
+        }
+        name = name || _this7.survey.name || 'Unnamed';
+
+        promise.push(_Statistic2.default.findOne({ type: type, key: key, name: name }).then(function (stat) {
+          return stat || { type: type, key: key, name: name };
+        }).then(function (stat) {
+          if (_typeof(agg.data) === 'object') {
+            data = stat.data = stat.data || {};
+            var _iteratorNormalCompletion4 = true;
+            var _didIteratorError4 = false;
+            var _iteratorError4 = undefined;
+
+            try {
+              for (var _iterator4 = Object.keys(agg.data)[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                var dataKey = _step4.value;
+
+                var dataObj = agg.data[dataKey];
+                if (!dataObj) continue;
+
+                var formula = void 0,
+                    _type = void 0;
+                if (typeof dataObj === 'string') {
+                  formula = dataObj;
+                } else {
+                  formula = dataObj.formula;
+                  _type = dataObj.type;
+                }
+                _type = _type || 'count';
+
+                if (!formula) {
+                  console.log('No formula: ' + dataKey);
+                  continue;
+                } else {
+                  var value = _this7._parseExpression(agg.data[dataKey]);
+                  if (_type === 'count') {
+                    value = parseInt(value);
+                    if (value === NaN) value = 0;
+
+                    var obj = data[dataKey] = data[dataKey] || {};
+                    obj.value = obj.value || 0;
+                    obj.count = obj.count || 0;
+
+                    obj.value = obj.value + value;
+                    obj.count++;
+                  } else if (_type === 'histogram') {
+                    var _obj = data[dataKey] = data[dataKey] || {};
+
+                    _obj.value = _obj.value || {};
+                    _obj.count = _obj.count || 0;
+                    _obj.value[value] = _obj.value[value] || 0;
+                    _obj.value[value]++;
+                    _obj.count++;
+                  }
+                }
+              }
+            } catch (err) {
+              _didIteratorError4 = true;
+              _iteratorError4 = err;
+            } finally {
+              try {
+                if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                  _iterator4.return();
+                }
+              } finally {
+                if (_didIteratorError4) {
+                  throw _iteratorError4;
+                }
+              }
+            }
+          } else {
+            data = agg.data;
+          }
+        }).then(function () {
+          return _Statistic2.default.findOneAndUpdate({ type: type, key: key, name: name }, { data: data }, { upsert: true });
+        }).catch(function (err) {
+          console.log(err);
+        }));
+      };
+
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
+
+      try {
+        for (var _iterator3 = this.survey.aggregates[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var agg = _step3.value;
+
+          var _ret = _loop(agg);
+
+          if (_ret === 'continue') continue;
+        }
+      } catch (err) {
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion3 && _iterator3.return) {
+            _iterator3.return();
+          }
+        } finally {
+          if (_didIteratorError3) {
+            throw _iteratorError3;
+          }
+        }
+      }
+
+      return Promise.all(promises).then(function (p) {
+        return p.length;
+      });
+    }
+  }, {
+    key: 'writeStatsObj',
+    value: function writeStatsObj(obj) {
+      var _this8 = this;
+
+      var objPromise = this._resolvePromiseObject(obj).then(function (obj) {
         return _Statistic2.default.create({
-          survey: _this7.surveyId,
-          answer: _this7.currentAnswer,
+          key: _this8.surveyId,
+          type: 'SurveyResponse',
+          name: 'obj',
           data: obj
         });
-      }));
+      }).then(function (stat) {
+        return _this8.accumulateAggregates(stat);
+      });
+      this.statsPromises.push(objPromise);
     }
   }]);
 
@@ -1408,6 +1556,13 @@ var CollectResponses = function (_ChildTemplate) {
 }(_childProcess.ChildTemplate);
 
 exports.default = CollectResponses;
+
+/***/ }),
+
+/***/ 85:
+/***/ (function(module, exports) {
+
+module.exports = require("hot-formula-parser");
 
 /***/ }),
 
@@ -1428,11 +1583,12 @@ var _mongoose2 = _interopRequireDefault(_mongoose);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var schema = new _Schema2.default({
-  survey: { type: _Schema2.default.Types.ObjectId, ref: 'Survey' },
-  answer: { type: _Schema2.default.Types.ObjectId, ref: 'Answer' },
+  type: { type: String, required: true },
+  key: { type: String, required: true },
+  name: { type: String },
   data: { type: {} }
 });
-schema.index({ survey: 1, answer: 1 });
+schema.index({ type: 1, key: 1, name: 1 });
 
 module.exports = _mongoose2.default.model('Statistic', schema);
 

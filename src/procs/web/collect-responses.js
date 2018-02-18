@@ -5,6 +5,7 @@ import Survey from '../../models/Survey';
 import Answer from '../../models/Answer';
 import Statistic from '../../models/Statistic';
 
+import {Parser as FormulaParser} from 'hot-formula-parser';
 
 export default class CollectResponses extends ChildTemplate {
   execute(proc) {
@@ -41,17 +42,6 @@ export default class CollectResponses extends ChildTemplate {
     });
   }
 
-  finishAnswer(answer, remarks) {
-    remarks._id = answer._id;
-    this.answersLog.push(
-      Answer.findOneAndUpdate({_id: answer._id}, {lastExport: new Date()})
-      .then(() => console.log(`Marked answer ${answer._id} as processed.`))
-      .catch((err) => {
-        console.log(`Error saving answer: ${err}`);
-      }).then(() => remarks)
-    );
-  }
-
   sealAnswer(remarks) {
     remarks._id = this.currentAnswer._id;
     this.answersLog.push(
@@ -59,9 +49,11 @@ export default class CollectResponses extends ChildTemplate {
       .then(() => Answer.findOneAndUpdate(
         {_id: remarks._id},
         {lastExport: new Date()}
-      )).catch((err) => {
-        console.log(`Error saving answer: ${err}`);
-      }).then(() => remarks)
+      )).catch((err) => console.log(err))
+      .then(() => {
+        console.log(remarks);
+        return remarks;
+      })
     );
   }
 
@@ -78,7 +70,6 @@ export default class CollectResponses extends ChildTemplate {
       return;
     }
 
-    console.log(`Collecting answer: ${answer._id}`);
     this.statsPromises = [];
     let statsCount = 0;
     for (let {question, context}
@@ -96,7 +87,7 @@ export default class CollectResponses extends ChildTemplate {
 
   getExportHeader() {
     return Statistic
-    .findOne({survey: this.surveyId, answer: null})
+    .findOne({key: this.surveyId, type: 'SurveyResponse', name: 'objKeys'})
     .then((stat) => {
       this.collectionKeys = [];
       if (stat && stat.data) {
@@ -167,28 +158,129 @@ export default class CollectResponses extends ChildTemplate {
     );
     return Statistic
     .findOneAndUpdate(
-      {survey: this.surveyId, answer: null},
+      {key: this.surveyId, type: 'SurveyResponse', name: 'objKeys'},
       {data},
       {upsert: true},
     );
   }
 
-  writeStatsObj(obj) {
+  _resolvePromiseObject(obj) {
     const objKeys = Object.keys(obj);
-    const objPromise = Promise.all(objKeys.map((k) => obj[k]))
+    return Promise.all(objKeys.map((k) => obj[k]))
     .then((arrObj) => objKeys.reduce((acc, el, idx) => {
       acc[el] = arrObj[idx];
       return acc;
     }, {}));
+  }
 
-    this.statsPromises.push(
-      objPromise.then(
-        (obj) => Statistic.create({
-          survey: this.surveyId,
-          answer: this.currentAnswer,
-          data: obj,
+  _parseExpression(exp) {
+    const parsed = this.parser.parse(exp);
+    if (parsed.error) {
+      console.log(`Formula parse error: ${exp}: ${parsed.error}`);
+      return;
+    }
+    return parsed.result;
+  }
+
+  accumulateAggregates(stat) {
+    if (!this.survey.aggregates || !this.survey.aggregates.length) return;
+    if (!stat.data) return;
+
+    this.parser = new FormulaParser();
+    this.parser.on('callVariable', (name, done) => {
+      const obj = stat.data;
+      if (obj.hasOwnProperty(name)) done(obj[name]);
+    });
+
+    const promises = [];
+    for (let agg of this.survey.aggregates) {
+      let type, key, name, data;
+      if (agg.select) {
+        if (!this._parseExpression(agg.select)) continue;
+      }
+      if (agg.key) {
+        key = this._parseExpression(agg.key);
+      }
+      key = key || '[NULL]';
+
+      if (agg.type) {
+        type = this._parseExpression(agg.type);
+      }
+      type = type || 'Aggregate';
+
+      if (agg.name) {
+        name = this._parseExpression(agg.name);
+      }
+      name = name || this.survey.name || 'Unnamed';
+
+      promise.push(
+        Statistic.findOne({type, key, name})
+        .then((stat) => stat || {type, key, name})
+        .then((stat) => {
+          if (typeof agg.data === 'object') {
+            data = stat.data = stat.data || {};
+            for (let dataKey of Object.keys(agg.data)) {
+              let dataObj = agg.data[dataKey];
+              if (!dataObj) continue;
+
+              let formula, type;
+              if (typeof dataObj === 'string') {
+                formula = dataObj;
+              } else {
+                formula = dataObj.formula;
+                type = dataObj.type;
+              }
+              type = type || 'count';
+
+              if (!formula) {
+                console.log(`No formula: ${dataKey}`);
+                continue;
+              } else {
+                let value = this._parseExpression(agg.data[dataKey]);
+                if (type === 'count') {
+                  value = parseInt(value);
+                  if (value === NaN) value = 0;
+
+                  let obj = data[dataKey] = data[dataKey] || {};
+                  obj.value = obj.value || 0;
+                  obj.count = obj.count || 0;
+
+                  obj.value = obj.value + value;
+                  obj.count++;
+                } else if (type === 'histogram') {
+                  let obj = data[dataKey] = data[dataKey] || {};
+
+                  obj.value = obj.value || {};
+                  obj.count = obj.count || 0;
+                  obj.value[value] = obj.value[value] || 0;
+                  obj.value[value]++;
+                  obj.count++;
+                }
+              }
+            }
+          } else {
+            data = agg.data;
+          }
+        }).then(() => Statistic.findOneAndUpdate(
+          {type, key, name},
+          {data},
+          {upsert: true},
+        )).catch((err) => {
+          console.log(err);
         })
-      )
-    );
+      );
+    }
+    return Promise.all(promises).then((p) => p.length);
+  }
+
+  writeStatsObj(obj) {
+    const objPromise = this._resolvePromiseObject(obj)
+    .then((obj) => Statistic.create({
+      key: this.surveyId,
+      type: 'SurveyResponse',
+      name: 'obj',
+      data: obj,
+    })).then((stat) => this.accumulateAggregates(stat));
+    this.statsPromises.push(objPromise);
   }
 }

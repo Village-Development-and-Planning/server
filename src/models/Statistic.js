@@ -2,10 +2,11 @@ import Schema from './Schema';
 import mongoose from 'mongoose';
 
 const schema = new Schema({
-  survey: {type: Schema.Types.ObjectId, ref: 'Survey'},
-  answer: {type: Schema.Types.ObjectId, ref: 'Answer'},
+  type: {type: String, required: true},
+  key: {type: String, required: true},
+  name: {type: String},
   data: {type: {}},
 });
-schema.index({survey: 1, answer: 1});
+schema.index({type: 1, key: 1, name: 1});
 
 module.exports = mongoose.model('Statistic', schema);

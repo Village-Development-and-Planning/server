@@ -17,7 +17,7 @@ class SurveyController extends EntityController {
   reset() {
     let _id = this.req.params.id;
     this.renderer.renderPromise(
-      Statistic.deleteMany({survey: _id})
+      Statistic.deleteMany({type: 'SurveyResponse', key: _id})
       .then(
         () => Answer.update({survey: _id}, {lastExport: null}, {multi: true})
       )
@@ -27,20 +27,20 @@ class SurveyController extends EntityController {
   answers() {
     let _id = this.req.params.id;
     this.renderer.renderPromise(
-      Statistic.findOne({survey: _id, answer: null})
+      Statistic.findOne({type: 'SurveyResponse', key: _id, name: 'objKeys'})
       .then(
         (header) => (header && header.data) || {keys: [], keyDescriptions: []}
       ).then(({keys, keyDescriptions}) => {
-        return Statistic.find({survey: _id}).limit(50)
+        return Statistic.find({
+          type: 'SurveyResponse', key: _id, name: 'obj',
+        }).limit(50)
         .then((stats) => stats.reduce(
           (acc, stat) => {
-            if (stat.answer) {
-              let data = stat.data;
-              if (data) {
-                acc.push(
-                  keys.map((k) => data[k])
-                );
-              }
+            let data = stat.data;
+            if (data) {
+              acc.push(
+                keys.map((k) => data[k])
+              );
             }
             return acc;
           },
@@ -121,9 +121,9 @@ class SurveyController extends EntityController {
       obj.question = obj.csv.root;
     }
 
-    let filter = ['name', 'description', 'respondents', 'enabled', 'question'];
+    let filter = 'name description respondents enabled question aggregates';
     if (this.action === 'create') {
-      filter = filter.concat('_id');
+      filter = filter + ' _id';
     }
     return this._filterObject(obj, filter);
   }

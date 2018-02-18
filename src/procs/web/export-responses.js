@@ -30,8 +30,9 @@ export default class ExportResponses extends ChildTemplate {
   collectStatistics() {
     this.log = [];
     const cursor = Statistic.find({
-      survey: this.surveyId,
-      answer: {$ne: null},
+      type: 'SurveyResponse',
+      key: this.surveyId,
+      name: 'obj',
     }).cursor();
     return new Promise((res, rej) => {
       this.writer = this._createCsvWriter(this.surveyId, rej);
@@ -56,7 +57,7 @@ export default class ExportResponses extends ChildTemplate {
 
   getExportHeader() {
     return Statistic
-    .findOne({survey: this.surveyId, answer: null})
+    .findOne({type: 'SurveyResponse', key: this.surveyId, name: 'objKeys'})
     .then((stat) => {
       this.collectionKeys = [];
       if (stat && stat.data) {

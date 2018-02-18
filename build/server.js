@@ -429,11 +429,12 @@ var _mongoose2 = _interopRequireDefault(_mongoose);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var schema = new _Schema2.default({
-  survey: { type: _Schema2.default.Types.ObjectId, ref: 'Survey' },
-  answer: { type: _Schema2.default.Types.ObjectId, ref: 'Answer' },
+  type: { type: String, required: true },
+  key: { type: String, required: true },
+  name: { type: String },
   data: { type: {} }
 });
-schema.index({ survey: 1, answer: 1 });
+schema.index({ type: 1, key: 1, name: 1 });
 
 module.exports = _mongoose2.default.model('Statistic', schema);
 
@@ -454,7 +455,8 @@ var surveySchema = new Schema({
   description: { type: String },
   enabled: { type: Boolean, default: true },
   question: { type: {}, required: true },
-  respondents: { type: [] }
+  respondents: { type: [] },
+  aggregates: { type: [] }
 });
 surveySchema.index({ name: 1 });
 surveySchema.index({ enabled: 1, name: 1 });
@@ -599,13 +601,7 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procId) {
     }
     _this2.proc = proc;
     return _this2.execute(proc);
-  }).then(function (output) {
-    console.log('Output: ');
-    console.log(output);
-  }).catch(function (err) {
-    console.log('Error: ');
-    console.log(err);
-  });
+  }).then(function (output) {}).catch(function (err) {});
 };
 
 /***/ }),
@@ -816,7 +812,6 @@ var AnsweredQuestion = function (_Question) {
     key: '_accumulateValue',
     value: function _accumulateValue(ans, ansKey, refQ) {
       refQ = refQ || this;
-      console.log('accumulateValue: ' + refQ.number + ' ' + this.number);
       if (!ans.logged_options) return {};
       if (this.type == 'ROOT' || this.type == 'DUMMY' || !this.number) {
         return {};
@@ -850,7 +845,6 @@ var AnsweredQuestion = function (_Question) {
         ret[ansKey] = ans.logged_options.map(function (opt) {
           return opt.value || opt.text.english;
         }).join(',').toUpperCase();
-        console.log(ret[ansKey]);
       } else {
         ret[ansKey] = ans.logged_options.map(function (opt) {
           return opt.position || opt.value || opt.text.english;
@@ -1452,7 +1446,7 @@ var SurveyController = function (_EntityController) {
     key: 'reset',
     value: function reset() {
       var _id = this.req.params.id;
-      this.renderer.renderPromise(_Statistic2.default.deleteMany({ survey: _id }).then(function () {
+      this.renderer.renderPromise(_Statistic2.default.deleteMany({ type: 'SurveyResponse', key: _id }).then(function () {
         return _Answer2.default.update({ survey: _id }, { lastExport: null }, { multi: true });
       }));
     }
@@ -1460,21 +1454,21 @@ var SurveyController = function (_EntityController) {
     key: 'answers',
     value: function answers() {
       var _id = this.req.params.id;
-      this.renderer.renderPromise(_Statistic2.default.findOne({ survey: _id, answer: null }).then(function (header) {
+      this.renderer.renderPromise(_Statistic2.default.findOne({ type: 'SurveyResponse', key: _id, name: 'objKeys' }).then(function (header) {
         return header && header.data || { keys: [], keyDescriptions: [] };
       }).then(function (_ref) {
         var keys = _ref.keys,
             keyDescriptions = _ref.keyDescriptions;
 
-        return _Statistic2.default.find({ survey: _id }).limit(50).then(function (stats) {
+        return _Statistic2.default.find({
+          type: 'SurveyResponse', key: _id, name: 'obj'
+        }).limit(50).then(function (stats) {
           return stats.reduce(function (acc, stat) {
-            if (stat.answer) {
-              var data = stat.data;
-              if (data) {
-                acc.push(keys.map(function (k) {
-                  return data[k];
-                }));
-              }
+            var data = stat.data;
+            if (data) {
+              acc.push(keys.map(function (k) {
+                return data[k];
+              }));
             }
             return acc;
           }, [keys, keyDescriptions]);
@@ -1557,9 +1551,9 @@ var SurveyController = function (_EntityController) {
         obj.question = obj.csv.root;
       }
 
-      var filter = ['name', 'description', 'respondents', 'enabled', 'question'];
+      var filter = 'name description respondents enabled question aggregates';
       if (this.action === 'create') {
-        filter = filter.concat('_id');
+        filter = filter + ' _id';
       }
       return this._filterObject(obj, filter);
     }
@@ -4462,15 +4456,11 @@ var app = new express.Router();
 
 
 app.get('/auth', (0, _dispatcher2.default)(_SurveyorController2.default, 'auth'));
-console.log('[APP] Registered @ /auth');
 
 app.post('/upload', (0, _dispatcher2.default)(_AnswerController2.default, 'create'));
-console.log('[APP] Registered @ /upload');
 
 app.get('/download', (0, _dispatcher2.default)(_SurveyController2.default, 'index'));
-console.log('[APP] Registered @ /download');
 app.get('/download/:id', (0, _dispatcher2.default)(_SurveyController2.default, 'get'));
-console.log('[APP] Registered @ /download/:id');
 
 //  (req, res, next) => {
 //   res.sendFile(path.resolve('data/auth.json'));

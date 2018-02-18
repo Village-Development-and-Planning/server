@@ -8,6 +8,7 @@ const surveySchema = new Schema({
   enabled: {type: Boolean, default: true},
   question: {type: {}, required: true},
   respondents: {type: []},
+  aggregates: {type: []},
 });
 surveySchema.index({name: 1});
 surveySchema.index({enabled: 1, name: 1});

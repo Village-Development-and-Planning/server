@@ -17,7 +17,6 @@ export default class AnsweredQuestion extends Question {
 
   _accumulateValue(ans, ansKey, refQ) {
     refQ = refQ || this;
-    console.log(`accumulateValue: ${refQ.number} ${this.number}`);
     if (!ans.logged_options) return {};
     if (this.type == 'ROOT' || this.type == 'DUMMY' || !this.number) {
       return {};
@@ -48,7 +47,6 @@ export default class AnsweredQuestion extends Question {
       ret[ansKey] = ans.logged_options.map(
         (opt) => opt.value || opt.text.english,
       ).join(',').toUpperCase();
-      console.log(ret[ansKey]);
     } else {
       ret[ansKey] = ans.logged_options.map(
         (opt) => (opt.position || opt.value || opt.text.english)
