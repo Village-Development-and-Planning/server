@@ -152,15 +152,15 @@ Object.assign(surveySchema.methods, {
             return { question: answer.rootQuestion, context: context };
 
           case 3:
-            _context.next = 12;
+            _context.next = 11;
             break;
 
           case 5:
             idx = 0;
 
           case 6:
-            if (!(i < this.respondents.length)) {
-              _context.next = 12;
+            if (!(idx < this.respondents.length)) {
+              _context.next = 11;
               break;
             }
 
@@ -171,15 +171,11 @@ Object.assign(surveySchema.methods, {
             }, context)), 't0', 8);
 
           case 8:
-
-            ++respIdx;
-
-          case 9:
-            i++;
+            idx++;
             _context.next = 6;
             break;
 
-          case 12:
+          case 11:
           case 'end':
             return _context.stop();
         }
@@ -251,8 +247,7 @@ var ChildProcess = function () {
             proc.status = 'COMPLETED';
             proc.stdout = stdout.join('\n');
             proc.stderr = stderr.join('\n');
-            console.log(proc.stdout);
-            proc.save();
+            proc.save().then(res).catch(rej);
           });
           p.stdout.on('data', function (data) {
             return stdout = stdout.concat(data);
@@ -471,6 +466,7 @@ var AnsweredQuestion = function (_Question) {
     key: '_accumulateValue',
     value: function _accumulateValue(ans, ansKey, refQ) {
       refQ = refQ || this;
+      console.log('accumulateValue: ' + refQ.number + ' ' + this.number);
       if (!ans.logged_options) return {};
       if (this.type == 'ROOT' || this.type == 'DUMMY' || !this.number) {
         return {};
@@ -504,6 +500,7 @@ var AnsweredQuestion = function (_Question) {
         ret[ansKey] = ans.logged_options.map(function (opt) {
           return opt.value || opt.text.english;
         }).join(',').toUpperCase();
+        console.log(ret[ansKey]);
       } else {
         ret[ansKey] = ans.logged_options.map(function (opt) {
           return opt.position || opt.value || opt.text.english;
@@ -646,19 +643,17 @@ var AnsweredQuestion = function (_Question) {
               respChild = AnsweredQuestion.fromChild(respChild);
               childQ = refQ.findChildByPosition(respChild.position);
               newAcc = this.collectAnswer({
-                ans: ans, keys: keys,
+                ans: ans, keys: keys, refQ: refQ,
                 ansKey: prefix,
 
                 ignore: respondents,
-                acc: Object.assign({}, acc),
-
-                refQ: childQ
+                acc: Object.assign({}, acc)
               });
               return _context2.delegateYield(respChild.findRespondents({
                 acc: newAcc,
                 prefix: prefix + '_',
                 refQ: childQ,
-                keys: keys, respondents: respondents, idx: idx, cb: cb
+                keys: keys, respondents: respondents, idx: idx
               }), 't0', 28);
 
             case 28:
@@ -1322,40 +1317,55 @@ var CollectResponses = function (_ChildTemplate) {
   }, {
     key: 'sortKeys',
     value: function sortKeys() {
-      var _this6 = this;
-
       return this.collectionKeys.map(function (key, index) {
         return { key: key, index: index };
-      }).sort(function (a, b) {
-        return _this6._keyListComparator(a.key.split('_'), b.key.split('_'));
-      });
+      }).sort(this._keyListComparator.bind(this));
+    }
+  }, {
+    key: '_questionNumberParser',
+    value: function _questionNumberParser(acc, el) {
+      var match = el.match(/^([a-zA-Z]*)([0-9]*)$/);
+      if (match && match[2]) {
+        acc.push({
+          num: parseInt(match[2]),
+          type: match[1] || '|question'
+        });
+      }
+      return acc;
     }
   }, {
     key: '_keyListComparator',
     value: function _keyListComparator(arr1, arr2) {
-      var ret = arr1.reduce(function (acc, el, index) {
-        if (acc) return acc;
+      arr1 = arr1.key;
+      arr2 = arr2.key;
+      var isQNum = arr1.startsWith('Q_');
+      var otherIsQNum = arr2.startsWith('Q_');
+      if (isQNum) {
+        if (!otherIsQNum) return 1;
+      } else {
+        if (otherIsQNum) return -1;
+        if (arr1 < arr2) return -1;
+        if (arr1 > arr2) return 1;
+        return 0;
+      }
+      arr1 = arr1.split('_').reduce(this._questionNumberParser, []);
+      arr2 = arr2.split('_').reduce(this._questionNumberParser, []);
 
-        var other = arr2[index];
-        if (!other) return 1;
-        if (el === other) return 0;
+      var len = arr1.length;
+      if (arr2.length < len) len = arr2.length;
+      for (var i = 0; i < len; i++) {
+        if (arr1[i].type < arr2[i].type) return -1;
+        if (arr2[i].type < arr1[i].type) return 1;
 
-        var match1 = el.match(/^([a-z]*)([0-9]*)$/);
-        var match2 = other.match(/^([a-z]*)([0-9]*)$/);
-        if (!match1) return -1;
-        if (!match2) return 1;
-        if (match1[0] && !match2[0]) return -1;
-        if (match2[0] && !match1[0]) return 1;
-        el = parseInt(match1[2]);
-        other = parseInt(match2[2]);
-        return el - other;
-      }, 0);
-      return ret || arr1.length - arr2.length;
+        if (arr1[i].num < arr2[i].num) return -1;
+        if (arr2[i].num < arr1[i].num) return 1;
+      }
+      return arr1.length - arr2.length;
     }
   }, {
     key: 'updateExportHeader',
     value: function updateExportHeader() {
-      var _this7 = this;
+      var _this6 = this;
 
       var data = this.sortKeys().reduce(function (_ref2, _ref3) {
         var keys = _ref2.keys,
@@ -1364,7 +1374,7 @@ var CollectResponses = function (_ChildTemplate) {
             index = _ref3.index;
 
         keys.push(key);
-        keyDescriptions.push(_this7.collectionKeys['pos' + key]);
+        keyDescriptions.push(_this6.collectionKeys['pos' + key]);
         return { keys: keys, keyDescriptions: keyDescriptions };
       }, { keys: [], keyDescriptions: [] });
       return _Statistic2.default.findOneAndUpdate({ survey: this.surveyId, answer: null }, { data: data }, { upsert: true });
@@ -1372,7 +1382,7 @@ var CollectResponses = function (_ChildTemplate) {
   }, {
     key: 'writeStatsObj',
     value: function writeStatsObj(obj) {
-      var _this8 = this;
+      var _this7 = this;
 
       var objKeys = Object.keys(obj);
       var objPromise = Promise.all(objKeys.map(function (k) {
@@ -1386,8 +1396,8 @@ var CollectResponses = function (_ChildTemplate) {
 
       this.statsPromises.push(objPromise.then(function (obj) {
         return _Statistic2.default.create({
-          survey: _this8.surveyId,
-          answer: _this8.currentAnswer,
+          survey: _this7.surveyId,
+          answer: _this7.currentAnswer,
           data: obj
         });
       }));

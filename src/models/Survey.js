@@ -17,7 +17,7 @@ Object.assign(surveySchema.methods, {
     if (!this.respondents || !this.respondents.length) {
       yield {question: answer.rootQuestion, context};
     } else {
-      for (let idx=0; i<this.respondents.length; i++) {
+      for (let idx=0; idx<this.respondents.length; idx++) {
         yield* answer.rootQuestion.findRespondents(
           Object.assign({
             respondents: this.respondents,
@@ -25,8 +25,6 @@ Object.assign(surveySchema.methods, {
             idx,
           }, context)
         );
-
-        ++respIdx;
       }
     }
   },

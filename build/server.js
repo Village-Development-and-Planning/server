@@ -475,15 +475,15 @@ Object.assign(surveySchema.methods, {
             return { question: answer.rootQuestion, context: context };
 
           case 3:
-            _context.next = 12;
+            _context.next = 11;
             break;
 
           case 5:
             idx = 0;
 
           case 6:
-            if (!(i < this.respondents.length)) {
-              _context.next = 12;
+            if (!(idx < this.respondents.length)) {
+              _context.next = 11;
               break;
             }
 
@@ -494,15 +494,11 @@ Object.assign(surveySchema.methods, {
             }, context)), 't0', 8);
 
           case 8:
-
-            ++respIdx;
-
-          case 9:
-            i++;
+            idx++;
             _context.next = 6;
             break;
 
-          case 12:
+          case 11:
           case 'end':
             return _context.stop();
         }
@@ -573,8 +569,7 @@ var ChildProcess = function () {
             proc.status = 'COMPLETED';
             proc.stdout = stdout.join('\n');
             proc.stderr = stderr.join('\n');
-            console.log(proc.stdout);
-            proc.save();
+            proc.save().then(res).catch(rej);
           });
           p.stdout.on('data', function (data) {
             return stdout = stdout.concat(data);
@@ -821,6 +816,7 @@ var AnsweredQuestion = function (_Question) {
     key: '_accumulateValue',
     value: function _accumulateValue(ans, ansKey, refQ) {
       refQ = refQ || this;
+      console.log('accumulateValue: ' + refQ.number + ' ' + this.number);
       if (!ans.logged_options) return {};
       if (this.type == 'ROOT' || this.type == 'DUMMY' || !this.number) {
         return {};
@@ -854,6 +850,7 @@ var AnsweredQuestion = function (_Question) {
         ret[ansKey] = ans.logged_options.map(function (opt) {
           return opt.value || opt.text.english;
         }).join(',').toUpperCase();
+        console.log(ret[ansKey]);
       } else {
         ret[ansKey] = ans.logged_options.map(function (opt) {
           return opt.position || opt.value || opt.text.english;
@@ -996,19 +993,17 @@ var AnsweredQuestion = function (_Question) {
               respChild = AnsweredQuestion.fromChild(respChild);
               childQ = refQ.findChildByPosition(respChild.position);
               newAcc = this.collectAnswer({
-                ans: ans, keys: keys,
+                ans: ans, keys: keys, refQ: refQ,
                 ansKey: prefix,
 
                 ignore: respondents,
-                acc: Object.assign({}, acc),
-
-                refQ: childQ
+                acc: Object.assign({}, acc)
               });
               return _context2.delegateYield(respChild.findRespondents({
                 acc: newAcc,
                 prefix: prefix + '_',
                 refQ: childQ,
-                keys: keys, respondents: respondents, idx: idx, cb: cb
+                keys: keys, respondents: respondents, idx: idx
               }), 't0', 28);
 
             case 28:
@@ -2035,11 +2030,7 @@ __webpack_require__(31);
 
 __webpack_require__(2);
 
-var _database = __webpack_require__(8);
-
-var _database2 = _interopRequireDefault(_database);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+__webpack_require__(8);
 
 var express = __webpack_require__(14);
 var http = __webpack_require__(32);

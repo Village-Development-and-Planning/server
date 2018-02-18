@@ -43,8 +43,7 @@ export default class ChildProcess {
             proc.status = 'COMPLETED';
             proc.stdout = stdout.join('\n');
             proc.stderr = stderr.join('\n');
-            console.log(proc.stdout);
-            proc.save();
+            proc.save().then(res).catch(rej);
           });
           p.stdout.on('data', (data) => stdout = stdout.concat(data));
           p.stderr.on('data', (data) => stderr = stderr.concat(data));

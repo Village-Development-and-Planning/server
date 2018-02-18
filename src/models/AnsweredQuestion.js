@@ -17,6 +17,7 @@ export default class AnsweredQuestion extends Question {
 
   _accumulateValue(ans, ansKey, refQ) {
     refQ = refQ || this;
+    console.log(`accumulateValue: ${refQ.number} ${this.number}`);
     if (!ans.logged_options) return {};
     if (this.type == 'ROOT' || this.type == 'DUMMY' || !this.number) {
       return {};
@@ -47,6 +48,7 @@ export default class AnsweredQuestion extends Question {
       ret[ansKey] = ans.logged_options.map(
         (opt) => opt.value || opt.text.english,
       ).join(',').toUpperCase();
+      console.log(ret[ansKey]);
     } else {
       ret[ansKey] = ans.logged_options.map(
         (opt) => (opt.position || opt.value || opt.text.english)
@@ -108,19 +110,17 @@ export default class AnsweredQuestion extends Question {
           respChild = AnsweredQuestion.fromChild(respChild);
           const childQ = refQ.findChildByPosition(respChild.position);
           const newAcc = this.collectAnswer({
-            ans, keys,
+            ans, keys, refQ,
             ansKey: prefix,
 
             ignore: respondents,
             acc: Object.assign({}, acc),
-
-            refQ: childQ,
           });
           yield* respChild.findRespondents({
             acc: newAcc,
             prefix: `${prefix}_`,
             refQ: childQ,
-            keys, respondents, idx, cb,
+            keys, respondents, idx,
           });
         }
       }

@@ -113,34 +113,46 @@ export default class CollectResponses extends ChildTemplate {
   sortKeys() {
     return this.collectionKeys
     .map((key, index) => ({key, index}))
-    .sort(
-      (a, b) => {
-        return this._keyListComparator(
-          a.key.split('_'), b.key.split('_'),
-        );
-      }
-    );
+    .sort(this._keyListComparator.bind(this));
+  }
+
+  _questionNumberParser(acc, el) {
+    let match = el.match(/^([a-zA-Z]*)([0-9]*)$/);
+    if (match && match[2]) {
+      acc.push({
+        num: parseInt(match[2]),
+        type: match[1] || '|question',
+      });
+    }
+    return acc;
   }
 
   _keyListComparator(arr1, arr2) {
-    const ret = arr1.reduce((acc, el, index) => {
-      if (acc) return acc;
+    arr1 = arr1.key;
+    arr2 = arr2.key;
+    const isQNum = arr1.startsWith('Q_');
+    const otherIsQNum = arr2.startsWith('Q_');
+    if (isQNum) {
+      if (!otherIsQNum) return 1;
+    } else {
+      if (otherIsQNum) return -1;
+      if (arr1 < arr2) return -1;
+      if (arr1 > arr2) return 1;
+      return 0;
+    }
+    arr1 = arr1.split('_').reduce(this._questionNumberParser, []);
+    arr2 = arr2.split('_').reduce(this._questionNumberParser, []);
 
-      let other = arr2[index];
-      if (!other) return 1;
-      if (el === other) return 0;
+    let len = arr1.length;
+    if (arr2.length < len) len = arr2.length;
+    for (let i=0; i<len; i++) {
+      if (arr1[i].type < arr2[i].type) return -1;
+      if (arr2[i].type < arr1[i].type) return 1;
 
-      const match1 = el.match(/^([a-z]*)([0-9]*)$/);
-      const match2 = other.match(/^([a-z]*)([0-9]*)$/);
-      if (!match1) return -1;
-      if (!match2) return 1;
-      if (match1[0] && !match2[0]) return -1;
-      if (match2[0] && !match1[0]) return 1;
-      el = parseInt(match1[2]);
-      other = parseInt(match2[2]);
-      return el - other;
-    }, 0);
-    return ret || (arr1.length - arr2.length);
+      if (arr1[i].num < arr2[i].num) return -1;
+      if (arr2[i].num < arr1[i].num) return 1;
+    }
+    return (arr1.length - arr2.length);
   }
 
 

@@ -152,15 +152,15 @@ Object.assign(surveySchema.methods, {
             return { question: answer.rootQuestion, context: context };
 
           case 3:
-            _context.next = 12;
+            _context.next = 11;
             break;
 
           case 5:
             idx = 0;
 
           case 6:
-            if (!(i < this.respondents.length)) {
-              _context.next = 12;
+            if (!(idx < this.respondents.length)) {
+              _context.next = 11;
               break;
             }
 
@@ -171,15 +171,11 @@ Object.assign(surveySchema.methods, {
             }, context)), 't0', 8);
 
           case 8:
-
-            ++respIdx;
-
-          case 9:
-            i++;
+            idx++;
             _context.next = 6;
             break;
 
-          case 12:
+          case 11:
           case 'end':
             return _context.stop();
         }
@@ -251,8 +247,7 @@ var ChildProcess = function () {
             proc.status = 'COMPLETED';
             proc.stdout = stdout.join('\n');
             proc.stderr = stderr.join('\n');
-            console.log(proc.stdout);
-            proc.save();
+            proc.save().then(res).catch(rej);
           });
           p.stdout.on('data', function (data) {
             return stdout = stdout.concat(data);

@@ -6,7 +6,7 @@ import 'babel-polyfill';
 const app = express();
 
 // 1 Setup Database
-import dbPromise from './database';
+import './database';
 
 // 2.1 Setup cookies
 require('./cookies')(app);
