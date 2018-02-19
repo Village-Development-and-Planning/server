@@ -41,8 +41,8 @@ export default class ChildProcess {
           p.on('close', (code) => {
             proc.exitCode = code;
             proc.status = 'COMPLETED';
-            proc.stdout = stdout.join('\n');
-            proc.stderr = stderr.join('\n');
+            proc.stdout = stdout.join('');
+            proc.stderr = stderr.join('');
             proc.save().then(res).catch(rej);
           });
           p.stdout.on('data', (data) => stdout = stdout.concat(data));
@@ -63,7 +63,9 @@ export class ChildTemplate {
       this.proc = proc;
       return this.execute(proc);
     }).then((output) => {
+      console.log('Output: ', output);
     }).catch((err) => {
+      console.log('Error: ', err);
     });
   }
 }

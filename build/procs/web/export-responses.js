@@ -246,8 +246,8 @@ var ChildProcess = function () {
           p.on('close', function (code) {
             proc.exitCode = code;
             proc.status = 'COMPLETED';
-            proc.stdout = stdout.join('\n');
-            proc.stderr = stderr.join('\n');
+            proc.stdout = stdout.join('');
+            proc.stderr = stderr.join('');
             proc.save().then(res).catch(rej);
           });
           p.stdout.on('data', function (data) {
@@ -278,7 +278,11 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procId) {
     }
     _this2.proc = proc;
     return _this2.execute(proc);
-  }).then(function (output) {}).catch(function (err) {});
+  }).then(function (output) {
+    console.log('Output: ', output);
+  }).catch(function (err) {
+    console.log('Error: ', err);
+  });
 };
 
 /***/ }),
@@ -310,7 +314,7 @@ module.exports = require("babel-polyfill");
 "use strict";
 
 
-__webpack_require__(8);
+__webpack_require__(9);
 
 var _mongoose = __webpack_require__(0);
 
@@ -390,19 +394,15 @@ module.exports = mongoose.model('Process', processSchema);
 
 /***/ }),
 
-/***/ 8:
+/***/ 7:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
+var _Schema = __webpack_require__(1);
 
-var _Constants = __webpack_require__(3);
-
-var _Constants2 = _interopRequireDefault(_Constants);
+var _Schema2 = _interopRequireDefault(_Schema);
 
 var _mongoose = __webpack_require__(0);
 
@@ -410,11 +410,15 @@ var _mongoose2 = _interopRequireDefault(_mongoose);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// connect to mongoose
-var options = _Constants2.default.db;
-_mongoose2.default.Promise = global.Promise;
+var schema = new _Schema2.default({
+  type: { type: String, required: true },
+  key: { type: String, required: true },
+  name: { type: String },
+  data: { type: {} }
+});
+schema.index({ type: 1, key: 1, name: 1 });
 
-exports.default = _mongoose2.default.connect(options.connectionString, options.connectionOptions);
+module.exports = _mongoose2.default.model('Statistic', schema);
 
 /***/ }),
 
@@ -452,7 +456,7 @@ var _Survey = __webpack_require__(10);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
-var _Statistic = __webpack_require__(9);
+var _Statistic = __webpack_require__(7);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
@@ -595,9 +599,13 @@ module.exports = require("csv-stringify");
 "use strict";
 
 
-var _Schema = __webpack_require__(1);
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-var _Schema2 = _interopRequireDefault(_Schema);
+var _Constants = __webpack_require__(3);
+
+var _Constants2 = _interopRequireDefault(_Constants);
 
 var _mongoose = __webpack_require__(0);
 
@@ -605,15 +613,11 @@ var _mongoose2 = _interopRequireDefault(_mongoose);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var schema = new _Schema2.default({
-  type: { type: String, required: true },
-  key: { type: String, required: true },
-  name: { type: String },
-  data: { type: {} }
-});
-schema.index({ type: 1, key: 1, name: 1 });
+// connect to mongoose
+var options = _Constants2.default.db;
+_mongoose2.default.Promise = global.Promise;
 
-module.exports = _mongoose2.default.model('Statistic', schema);
+exports.default = _mongoose2.default.connect(options.connectionString, options.connectionOptions);
 
 /***/ })
 

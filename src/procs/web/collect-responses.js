@@ -36,7 +36,10 @@ export default class CollectResponses extends ChildTemplate {
       lastExport: null,
     }).cursor();
     return new Promise((res, rej) => {
-      cursor.on('data', (ans) => this.collectOneAnswer(ans));
+      cursor.on(
+        'data',
+        (ans) => this.collectOneAnswer(ans),
+      );
       cursor.on('error', rej);
       cursor.on('end', () => res(Promise.all(this.answersLog)));
     });
@@ -50,16 +53,15 @@ export default class CollectResponses extends ChildTemplate {
         {_id: remarks._id},
         {lastExport: new Date()}
       )).catch((err) => console.log(err))
-      .then(() => {
-        console.log(remarks);
-        return remarks;
-      })
+      .then(() => remarks)
     );
   }
 
   collectOneAnswer(answer) {
     if (!answer) return;
     this.currentAnswer = answer;
+    this.currentWaitPromise = Promise.all([].concat(this.answersLog))
+      .then(() => answer);
 
     if (!answer.rootQuestion) {
       this.sealAnswer({status: 'SKIPPED', reason: 'EMPTY'});
@@ -189,7 +191,17 @@ export default class CollectResponses extends ChildTemplate {
     this.parser = new FormulaParser();
     this.parser.on('callVariable', (name, done) => {
       const obj = stat.data;
-      if (obj.hasOwnProperty(name)) done(obj[name]);
+      if (obj.hasOwnProperty(name)) {
+        let val = obj[name];
+        if (typeof val === 'string') {
+          if (val.match(/^[1-9][0-9]*$/)) {
+            val = parseInt(val);
+          } else if (val.match(/^[0-9]*\.[0-9]*/)) {
+            val = parseFloat(val);
+          }
+        }
+         done(val);
+      }
     });
 
     const promises = [];
@@ -201,7 +213,7 @@ export default class CollectResponses extends ChildTemplate {
       if (agg.key) {
         key = this._parseExpression(agg.key);
       }
-      key = key || '[NULL]';
+      key = key || null;
 
       if (agg.type) {
         type = this._parseExpression(agg.type);
@@ -213,7 +225,7 @@ export default class CollectResponses extends ChildTemplate {
       }
       name = name || this.survey.name || 'Unnamed';
 
-      promise.push(
+      promises.push(
         Statistic.findOne({type, key, name})
         .then((stat) => stat || {type, key, name})
         .then((stat) => {
@@ -222,7 +234,6 @@ export default class CollectResponses extends ChildTemplate {
             for (let dataKey of Object.keys(agg.data)) {
               let dataObj = agg.data[dataKey];
               if (!dataObj) continue;
-
               let formula, type;
               if (typeof dataObj === 'string') {
                 formula = dataObj;
@@ -236,7 +247,8 @@ export default class CollectResponses extends ChildTemplate {
                 console.log(`No formula: ${dataKey}`);
                 continue;
               } else {
-                let value = this._parseExpression(agg.data[dataKey]);
+                let value = this._parseExpression(formula);
+                if (typeof value === 'undefined') continue;
                 if (type === 'count') {
                   value = parseInt(value);
                   if (value === NaN) value = 0;
@@ -274,13 +286,16 @@ export default class CollectResponses extends ChildTemplate {
   }
 
   writeStatsObj(obj) {
+    const waitPromise = this.currentWaitPromise;
     const objPromise = this._resolvePromiseObject(obj)
     .then((obj) => Statistic.create({
       key: this.surveyId,
       type: 'SurveyResponse',
       name: 'obj',
       data: obj,
-    })).then((stat) => this.accumulateAggregates(stat));
+    }))
+    .then((stat) => waitPromise.then(() => stat))
+    .then((stat) => this.accumulateAggregates(stat));
     this.statsPromises.push(objPromise);
   }
 }

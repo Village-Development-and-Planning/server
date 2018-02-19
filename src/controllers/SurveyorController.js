@@ -1,6 +1,8 @@
 import EntityController from './EntitiyController';
 import SurveyorParser from '../lib/csv/surveyor-csv-parser';
+
 import User from '../models/User';
+import Statistic from '../models/Statistic';
 
 /**
  * Surveyor document controller.
@@ -46,6 +48,32 @@ export default class SurveyorController extends EntityController {
           {},
         )
       )
+    );
+  }
+
+  _indexQuery() {
+    return {roles: 'SURVEYOR'};
+  }
+
+  _getQuery() {
+    const query = super._getQuery();
+    return query && Object.assign(query, this._indexQuery());
+  }
+
+  _findOne(query) {
+    return super._findOne(query).then(
+      (surveyor) => {
+        if (surveyor) {
+          return Statistic.find({
+            type: 'SurveyorAggregate',
+            key: surveyor.username,
+          }).then((stats) => {
+            surveyor.set('aggregates', stats, {strict: false});
+            return surveyor;
+          });
+        }
+        return surveyor;
+      }
     );
   }
 }

@@ -281,6 +281,33 @@ exports.default = _mongoose2.default.model('Location', schema);
 "use strict";
 
 
+var _Schema = __webpack_require__(1);
+
+var _Schema2 = _interopRequireDefault(_Schema);
+
+var _mongoose = __webpack_require__(0);
+
+var _mongoose2 = _interopRequireDefault(_mongoose);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var schema = new _Schema2.default({
+  type: { type: String, required: true },
+  key: { type: String, required: true },
+  name: { type: String },
+  data: { type: {} }
+});
+schema.index({ type: 1, key: 1, name: 1 });
+
+module.exports = _mongoose2.default.model('Statistic', schema);
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -385,7 +412,7 @@ Object.assign(EntityController, {
 exports.default = EntityController;
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -410,33 +437,6 @@ var options = _Constants2.default.db;
 _mongoose2.default.Promise = global.Promise;
 
 exports.default = _mongoose2.default.connect(options.connectionString, options.connectionOptions);
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _Schema = __webpack_require__(1);
-
-var _Schema2 = _interopRequireDefault(_Schema);
-
-var _mongoose = __webpack_require__(0);
-
-var _mongoose2 = _interopRequireDefault(_mongoose);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var schema = new _Schema2.default({
-  type: { type: String, required: true },
-  key: { type: String, required: true },
-  name: { type: String },
-  data: { type: {} }
-});
-schema.index({ type: 1, key: 1, name: 1 });
-
-module.exports = _mongoose2.default.model('Statistic', schema);
 
 /***/ }),
 /* 10 */
@@ -569,8 +569,8 @@ var ChildProcess = function () {
           p.on('close', function (code) {
             proc.exitCode = code;
             proc.status = 'COMPLETED';
-            proc.stdout = stdout.join('\n');
-            proc.stderr = stderr.join('\n');
+            proc.stdout = stdout.join('');
+            proc.stderr = stderr.join('');
             proc.save().then(res).catch(rej);
           });
           p.stdout.on('data', function (data) {
@@ -601,7 +601,11 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procId) {
     }
     _this2.proc = proc;
     return _this2.execute(proc);
-  }).then(function (output) {}).catch(function (err) {});
+  }).then(function (output) {
+    console.log('Output: ', output);
+  }).catch(function (err) {
+    console.log('Error: ', err);
+  });
 };
 
 /***/ }),
@@ -1396,7 +1400,7 @@ var _Answer = __webpack_require__(13);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 
-var _Statistic = __webpack_require__(9);
+var _Statistic = __webpack_require__(7);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
@@ -1408,7 +1412,7 @@ var _fs = __webpack_require__(19);
 
 var _fs2 = _interopRequireDefault(_fs);
 
-var _EntitiyController = __webpack_require__(7);
+var _EntitiyController = __webpack_require__(8);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
@@ -1743,7 +1747,7 @@ var _Answer = __webpack_require__(13);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 
-var _EntitiyController = __webpack_require__(7);
+var _EntitiyController = __webpack_require__(8);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
@@ -1910,7 +1914,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _EntitiyController = __webpack_require__(7);
+var _EntitiyController = __webpack_require__(8);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
@@ -1921,6 +1925,10 @@ var _surveyorCsvParser2 = _interopRequireDefault(_surveyorCsvParser);
 var _User = __webpack_require__(15);
 
 var _User2 = _interopRequireDefault(_User);
+
+var _Statistic = __webpack_require__(7);
+
+var _Statistic2 = _interopRequireDefault(_Statistic);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1988,6 +1996,33 @@ var SurveyorController = function (_EntityController) {
         }, {});
       }));
     }
+  }, {
+    key: '_indexQuery',
+    value: function _indexQuery() {
+      return { roles: 'SURVEYOR' };
+    }
+  }, {
+    key: '_getQuery',
+    value: function _getQuery() {
+      var query = _get(SurveyorController.prototype.__proto__ || Object.getPrototypeOf(SurveyorController.prototype), '_getQuery', this).call(this);
+      return query && Object.assign(query, this._indexQuery());
+    }
+  }, {
+    key: '_findOne',
+    value: function _findOne(query) {
+      return _get(SurveyorController.prototype.__proto__ || Object.getPrototypeOf(SurveyorController.prototype), '_findOne', this).call(this, query).then(function (surveyor) {
+        if (surveyor) {
+          return _Statistic2.default.find({
+            type: 'SurveyorAggregate',
+            key: surveyor.username
+          }).then(function (stats) {
+            surveyor.set('aggregates', stats, { strict: false });
+            return surveyor;
+          });
+        }
+        return surveyor;
+      });
+    }
   }]);
 
   return SurveyorController;
@@ -2024,7 +2059,7 @@ __webpack_require__(31);
 
 __webpack_require__(2);
 
-__webpack_require__(8);
+__webpack_require__(9);
 
 var express = __webpack_require__(14);
 var http = __webpack_require__(32);
@@ -3819,7 +3854,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _EntitiyController = __webpack_require__(7);
+var _EntitiyController = __webpack_require__(8);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
@@ -3932,7 +3967,7 @@ module.exports = require("file-type");
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _EntitiyController = __webpack_require__(7);
+var _EntitiyController = __webpack_require__(8);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
@@ -4043,7 +4078,7 @@ var _Location = __webpack_require__(6);
 
 var _Location2 = _interopRequireDefault(_Location);
 
-var _EntitiyController = __webpack_require__(7);
+var _EntitiyController = __webpack_require__(8);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
@@ -4120,8 +4155,8 @@ Object.assign(LocationController, {
   entityName: 'Location',
   routeName: 'locations',
 
-  _findFields: '_id name code type modifiedAt',
-  _createFields: '_id name code type children modifiedAt'
+  _findFields: '_id name code uid type modifiedAt',
+  _createFields: '_id name code uid type children modifiedAt'
 });
 module.exports = LocationController;
 

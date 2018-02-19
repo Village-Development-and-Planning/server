@@ -246,8 +246,8 @@ var ChildProcess = function () {
           p.on('close', function (code) {
             proc.exitCode = code;
             proc.status = 'COMPLETED';
-            proc.stdout = stdout.join('\n');
-            proc.stderr = stderr.join('\n');
+            proc.stdout = stdout.join('');
+            proc.stderr = stderr.join('');
             proc.save().then(res).catch(rej);
           });
           p.stdout.on('data', function (data) {
@@ -278,7 +278,11 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procId) {
     }
     _this2.proc = proc;
     return _this2.execute(proc);
-  }).then(function (output) {}).catch(function (err) {});
+  }).then(function (output) {
+    console.log('Output: ', output);
+  }).catch(function (err) {
+    console.log('Error: ', err);
+  });
 };
 
 /***/ }),
@@ -937,7 +941,7 @@ module.exports = require("babel-polyfill");
 "use strict";
 
 
-__webpack_require__(8);
+__webpack_require__(9);
 
 var _mongoose = __webpack_require__(0);
 
@@ -1057,19 +1061,15 @@ exports.default = _mongoose2.default.model('Location', schema);
 
 /***/ }),
 
-/***/ 8:
+/***/ 7:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
+var _Schema = __webpack_require__(1);
 
-var _Constants = __webpack_require__(3);
-
-var _Constants2 = _interopRequireDefault(_Constants);
+var _Schema2 = _interopRequireDefault(_Schema);
 
 var _mongoose = __webpack_require__(0);
 
@@ -1077,11 +1077,15 @@ var _mongoose2 = _interopRequireDefault(_mongoose);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// connect to mongoose
-var options = _Constants2.default.db;
-_mongoose2.default.Promise = global.Promise;
+var schema = new _Schema2.default({
+  type: { type: String, required: true },
+  key: { type: String, required: true },
+  name: { type: String },
+  data: { type: {} }
+});
+schema.index({ type: 1, key: 1, name: 1 });
 
-exports.default = _mongoose2.default.connect(options.connectionString, options.connectionOptions);
+module.exports = _mongoose2.default.model('Statistic', schema);
 
 /***/ }),
 
@@ -1127,7 +1131,7 @@ var _Answer = __webpack_require__(13);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 
-var _Statistic = __webpack_require__(9);
+var _Statistic = __webpack_require__(7);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
@@ -1209,7 +1213,6 @@ var CollectResponses = function (_ChildTemplate) {
       }).catch(function (err) {
         return console.log(err);
       }).then(function () {
-        console.log(remarks);
         return remarks;
       }));
     }
@@ -1218,6 +1221,9 @@ var CollectResponses = function (_ChildTemplate) {
     value: function collectOneAnswer(answer) {
       if (!answer) return;
       this.currentAnswer = answer;
+      this.currentWaitPromise = Promise.all([].concat(this.answersLog)).then(function () {
+        return answer;
+      });
 
       if (!answer.rootQuestion) {
         this.sealAnswer({ status: 'SKIPPED', reason: 'EMPTY' });
@@ -1398,7 +1404,17 @@ var CollectResponses = function (_ChildTemplate) {
       this.parser = new _hotFormulaParser.Parser();
       this.parser.on('callVariable', function (name, done) {
         var obj = stat.data;
-        if (obj.hasOwnProperty(name)) done(obj[name]);
+        if (obj.hasOwnProperty(name)) {
+          var val = obj[name];
+          if (typeof val === 'string') {
+            if (val.match(/^[1-9][0-9]*$/)) {
+              val = parseInt(val);
+            } else if (val.match(/^[0-9]*\.[0-9]*/)) {
+              val = parseFloat(val);
+            }
+          }
+          done(val);
+        }
       });
 
       var promises = [];
@@ -1414,7 +1430,7 @@ var CollectResponses = function (_ChildTemplate) {
         if (agg.key) {
           key = _this7._parseExpression(agg.key);
         }
-        key = key || '[NULL]';
+        key = key || null;
 
         if (agg.type) {
           type = _this7._parseExpression(agg.type);
@@ -1426,7 +1442,7 @@ var CollectResponses = function (_ChildTemplate) {
         }
         name = name || _this7.survey.name || 'Unnamed';
 
-        promise.push(_Statistic2.default.findOne({ type: type, key: key, name: name }).then(function (stat) {
+        promises.push(_Statistic2.default.findOne({ type: type, key: key, name: name }).then(function (stat) {
           return stat || { type: type, key: key, name: name };
         }).then(function (stat) {
           if (_typeof(agg.data) === 'object') {
@@ -1441,7 +1457,6 @@ var CollectResponses = function (_ChildTemplate) {
 
                 var dataObj = agg.data[dataKey];
                 if (!dataObj) continue;
-
                 var formula = void 0,
                     _type = void 0;
                 if (typeof dataObj === 'string') {
@@ -1456,7 +1471,8 @@ var CollectResponses = function (_ChildTemplate) {
                   console.log('No formula: ' + dataKey);
                   continue;
                 } else {
-                  var value = _this7._parseExpression(agg.data[dataKey]);
+                  var value = _this7._parseExpression(formula);
+                  if (typeof value === 'undefined') continue;
                   if (_type === 'count') {
                     value = parseInt(value);
                     if (value === NaN) value = 0;
@@ -1538,12 +1554,17 @@ var CollectResponses = function (_ChildTemplate) {
     value: function writeStatsObj(obj) {
       var _this8 = this;
 
+      var waitPromise = this.currentWaitPromise;
       var objPromise = this._resolvePromiseObject(obj).then(function (obj) {
         return _Statistic2.default.create({
           key: _this8.surveyId,
           type: 'SurveyResponse',
           name: 'obj',
           data: obj
+        });
+      }).then(function (stat) {
+        return waitPromise.then(function () {
+          return stat;
         });
       }).then(function (stat) {
         return _this8.accumulateAggregates(stat);
@@ -1572,9 +1593,13 @@ module.exports = require("hot-formula-parser");
 "use strict";
 
 
-var _Schema = __webpack_require__(1);
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-var _Schema2 = _interopRequireDefault(_Schema);
+var _Constants = __webpack_require__(3);
+
+var _Constants2 = _interopRequireDefault(_Constants);
 
 var _mongoose = __webpack_require__(0);
 
@@ -1582,15 +1607,11 @@ var _mongoose2 = _interopRequireDefault(_mongoose);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var schema = new _Schema2.default({
-  type: { type: String, required: true },
-  key: { type: String, required: true },
-  name: { type: String },
-  data: { type: {} }
-});
-schema.index({ type: 1, key: 1, name: 1 });
+// connect to mongoose
+var options = _Constants2.default.db;
+_mongoose2.default.Promise = global.Promise;
 
-module.exports = _mongoose2.default.model('Statistic', schema);
+exports.default = _mongoose2.default.connect(options.connectionString, options.connectionOptions);
 
 /***/ })
 
