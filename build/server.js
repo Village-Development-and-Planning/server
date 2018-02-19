@@ -2174,10 +2174,10 @@ module.exports = require("cookie-parser");
 "use strict";
 
 
-var jwt = __webpack_require__(36);
-var constants = __webpack_require__(3);
+var _authentication = __webpack_require__(36);
 
-var httpDigest = __webpack_require__(37);
+var jwt = __webpack_require__(40);
+var constants = __webpack_require__(3);
 
 var jwtOpts = Object.assign({
   getToken: function getToken(req) {
@@ -2185,6 +2185,7 @@ var jwtOpts = Object.assign({
       req.skipCSRF = true;
       return req.headers.authorization.split(' ')[1];
     } else if (req.cookies && req.cookies.ptracking_jwt) {
+      req.skipCSRF = false;
       return req.cookies.ptracking_jwt;
     } else {
       return null;
@@ -2193,30 +2194,26 @@ var jwtOpts = Object.assign({
 }, constants.jwt);
 
 module.exports = function (app) {
-  app.use(jwt(jwtOpts).unless({
-    path: ['/auth', '/auth/out']
-  }), function (err, req, res, next) {
+  app.use(jwt(jwtOpts), function (err, req, res, next) {
     if (err.name === 'UnauthorizedError') {
-      res.redirect('/auth?referrer=' + encodeURIComponent(req.originalUrl));
+      (0, _authentication.signIn)(req, res, next);
     } else {
       next(err);
     }
   });
-  httpDigest(app, '/auth');
 };
 
 /***/ }),
 /* 36 */
-/***/ (function(module, exports) {
-
-module.exports = require("express-jwt");
-
-/***/ }),
-/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.signIn = undefined;
 
 var _User = __webpack_require__(15);
 
@@ -2224,9 +2221,9 @@ var _User2 = _interopRequireDefault(_User);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var passport = __webpack_require__(38);
-var Digest = __webpack_require__(39).DigestStrategy;
-var jwt = __webpack_require__(40);
+var passport = __webpack_require__(37);
+var Digest = __webpack_require__(38).DigestStrategy;
+var jwt = __webpack_require__(39);
 var Constants = __webpack_require__(3);
 
 passport.use(new Digest({ qop: 'auth' }, function (username, cb) {
@@ -2249,38 +2246,44 @@ passport.use(new Digest({ qop: 'auth' }, function (username, cb) {
   }
 }));
 
-module.exports = function (app, path) {
-  app.get(path, passport.authenticate('digest', { session: false }), function (req, res) {
-    res.cookie('ptracking_jwt', jwt.sign(req.user, Constants.jwt.secret));
-    if (req.query.referrer) {
-      res.redirect(req.query.referrer);
-    } else {
-      res.json(req.user);
-    }
-  });
-  app.get(path + '/out', function (req, res) {
-    res.clearCookie('ptracking_jwt');
-    res.json({});
+var passportMiddleware = passport.authenticate('digest', { session: false });
+
+var setCookie = function setCookie(req, res, next) {
+  res.cookie('ptracking_jwt', jwt.sign(req.user, Constants.jwt.secret));
+  next();
+};
+
+var signIn = function signIn(req, res, next) {
+  passportMiddleware(req, res, function (err) {
+    return err ? next(err) : setCookie(req, res, next);
   });
 };
 
+exports.signIn = signIn;
+
 /***/ }),
-/* 38 */
+/* 37 */
 /***/ (function(module, exports) {
 
 module.exports = require("passport");
 
 /***/ }),
-/* 39 */
+/* 38 */
 /***/ (function(module, exports) {
 
 module.exports = require("passport-http");
 
 /***/ }),
-/* 40 */
+/* 39 */
 /***/ (function(module, exports) {
 
 module.exports = require("jsonwebtoken");
+
+/***/ }),
+/* 40 */
+/***/ (function(module, exports) {
+
+module.exports = require("express-jwt");
 
 /***/ }),
 /* 41 */

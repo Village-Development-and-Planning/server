@@ -1,7 +1,7 @@
 const jwt = require('express-jwt');
 const constants = require('../config/Constants');
 
-const httpDigest = require('./digest-auth');
+import {signIn} from './authentication';
 
 const jwtOpts = Object.assign({
   getToken(req) {
@@ -12,6 +12,7 @@ const jwtOpts = Object.assign({
       req.skipCSRF = true;
       return req.headers.authorization.split(' ')[1];
     } else if (req.cookies && req.cookies.ptracking_jwt) {
+      req.skipCSRF = false;
       return req.cookies.ptracking_jwt;
     } else {
       return null;
@@ -21,16 +22,13 @@ const jwtOpts = Object.assign({
 
 module.exports = function(app) {
   app.use(
-    jwt(jwtOpts).unless({
-      path: ['/auth', '/auth/out'],
-    }),
+    jwt(jwtOpts),
     (err, req, res, next) => {
       if (err.name === 'UnauthorizedError') {
-        res.redirect('/auth?referrer=' + encodeURIComponent(req.originalUrl));
+        signIn(req, res, next);
       } else {
         next(err);
       }
     }
   );
-  httpDigest(app, '/auth');
 };

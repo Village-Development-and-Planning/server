@@ -31,24 +31,18 @@ passport.use(new Digest(
   }
 ));
 
-module.exports = (app, path) => {
-  app.get(
-    path,
-    passport.authenticate('digest', {session: false}),
-    (req, res) => {
-      res.cookie('ptracking_jwt', jwt.sign(req.user, Constants.jwt.secret));
-      if (req.query.referrer) {
-        res.redirect(req.query.referrer);
-      } else {
-        res.json(req.user);
-      }
-    }
-  );
-  app.get(
-    `${path}/out`,
-    (req, res) => {
-      res.clearCookie('ptracking_jwt');
-      res.json({});
-    }
+const passportMiddleware = passport.authenticate('digest', {session: false});
+
+const setCookie = (req, res, next) => {
+  res.cookie('ptracking_jwt', jwt.sign(req.user, Constants.jwt.secret));
+  next();
+};
+
+const signIn = (req, res, next) => {
+  passportMiddleware(
+    req, res,
+    (err) => (err ? next(err) : setCookie(req, res, next))
   );
 };
+
+export {signIn};
