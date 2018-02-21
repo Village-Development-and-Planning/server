@@ -1,9 +1,9 @@
 const Survey = require('../models/Survey');
 import Answer from '../models/Answer';
 import Statistic from '../models/Statistic';
-import Process from '../models/Process';
 
 import fs from 'fs';
+import co from 'co';
 import EntityController from './EntitiyController';
 let SurveyCSVParser = require('../lib/csv/survey-csv-parser');
 
@@ -17,9 +17,13 @@ class SurveyController extends EntityController {
   reset() {
     let _id = this.req.params.id;
     this.renderer.renderPromise(
-      Statistic.deleteMany({type: 'SurveyResponse', key: _id})
-      .then(
-        () => Answer.update({survey: _id}, {lastExport: null}, {multi: true})
+      Statistic.deleteMany({key: _id})
+      .then(() =>
+        Answer.update(
+          {survey: _id, lastExport: {$ne: null}},
+          {lastExport: null},
+          {multi: true}
+        )
       )
     );
   }
@@ -27,12 +31,12 @@ class SurveyController extends EntityController {
   answers() {
     let _id = this.req.params.id;
     this.renderer.renderPromise(
-      Statistic.findOne({type: 'SurveyResponse', key: _id, name: 'objKeys'})
+      Statistic.findOne({type: 'SurveyResponseHeader', key: _id})
       .then(
         (header) => (header && header.data) || {keys: [], keyDescriptions: []}
       ).then(({keys, keyDescriptions}) => {
         return Statistic.find({
-          type: 'SurveyResponse', key: _id, name: 'obj',
+          type: 'SurveyResponse', key: _id,
         }).limit(50)
         .then((stats) => stats.reduce(
           (acc, stat) => {
@@ -83,24 +87,18 @@ class SurveyController extends EntityController {
   _findOne(query) {
     return super._findOne(query)
     .then((survey) => survey.toObject())
-    .then((survey) => Answer.find({survey: survey._id})
-      .select('checksum lastExport')
-      .then((answers) => {
-        survey.answerStats = {
-          total: answers.length,
-          processed: answers.reduce((acc, el, idx) => {
-            if (el.lastExport) acc++;
-            return acc;
-          }, 0),
-        };
-        return survey;
-      })
-    ).then((survey) => Process.find({status: 'RUNNING', args: survey._id})
-      .then((procs) => {
-        survey.processes = procs;
-        return survey;
-      })
-    );
+    .then((survey) => co(function* () {
+      survey.answerStats = {
+        total: yield Answer.count({
+          survey: survey._id,
+        }),
+        processed: yield Answer.count({
+          survey: survey._id,
+          lastExport: {$ne: null},
+        }),
+      };
+      return survey;
+    }));
   }
 
 

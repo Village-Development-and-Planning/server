@@ -1,13 +1,18 @@
 import 'babel-polyfill';
-import {ChildTemplate} from '../child-process';
+import co from 'co';
 
-import Survey from '../../models/Survey';
-import Answer from '../../models/Answer';
+import {ChildTemplate} from '../child-process';
+import Mixin from '../../lib/Mixin';
+import SurveyExport from '../concerns/SurveyExport';
+import Cursor from '../concerns/Cursor';
+
 import Statistic from '../../models/Statistic';
+import Answer from '../../models/Answer';
 
 import {Parser as FormulaParser} from 'hot-formula-parser';
 
-export default class CollectResponses extends ChildTemplate {
+export default class CollectResponses
+extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
   execute(proc) {
     this.surveyId = proc.args;
     return this.getSurvey()
@@ -18,170 +23,86 @@ export default class CollectResponses extends ChildTemplate {
     .then(() => this.response);
   }
 
-  getSurvey() {
-    return Survey
-    .findOne({_id: this.surveyId})
-    .then((survey) => {
-      this.survey = survey;
-      if (!survey) {
-        return Promise.reject(`Survey: ${this.surveyId} not found.`);
-      }
-    });
-  }
-
   collectAnswers() {
-    this.answersLog = [];
-    const cursor = Answer.find({
+    this.answersCount = 0;
+    this.totalStatsCount = 0;
+    this.aggregates = {};
+
+    return this.iterateCursor(Answer.find({
       survey: this.surveyId,
       lastExport: null,
-    }).cursor();
-    return new Promise((res, rej) => {
-      cursor.on(
-        'data',
-        (ans) => this.collectOneAnswer(ans),
-      );
-      cursor.on('error', rej);
-      cursor.on('end', () => res(Promise.all(this.answersLog)));
-    });
-  }
-
-  sealAnswer(remarks) {
-    remarks._id = this.currentAnswer._id;
-    this.answersLog.push(
-      Promise.all(this.statsPromises)
-      .then(() => Answer.findOneAndUpdate(
-        {_id: remarks._id},
-        {lastExport: new Date()}
-      )).catch((err) => console.log(err))
-      .then(() => remarks)
-    );
+    }), 'collectOneAnswer').then((answers) => this.answers = answers)
+    .then(() => this._saveAllAggregates())
+    .then(() => ({
+      answers: this.answers,
+      answersCount: this.answersCount,
+      totalStatsCount: this.totalStatsCount,
+    }));
   }
 
   collectOneAnswer(answer) {
-    if (!answer) return;
-    this.currentAnswer = answer;
-    this.currentWaitPromise = Promise.all([].concat(this.answersLog))
-      .then(() => answer);
-
     if (!answer.rootQuestion) {
-      this.sealAnswer({status: 'SKIPPED', reason: 'EMPTY'});
-      return;
+      return {status: 'SKIPPED', reason: 'EMPTY', _id: answer._id};
     }
-    if (answer.version == 0) {
-      this.sealAnswer({status: 'SKIPPED', reason: 'VERSION0'});
-      return;
+    if (answer.version === 0) {
+      return {status: 'SKIPPED', reason: 'VERSION0', _id: answer._id};
     }
 
-    this.statsPromises = [];
+    const _this = this;
     let statsCount = 0;
-    for (let {question, context}
-      of this.survey.respondentsIn(
-        answer, {keys: this.collectionKeys}
-      )
-    ) {
-      for (let o of question.collectRespondent(context)) {
-        this.writeStatsObj(o);
-        ++statsCount;
-      }
-    }
-    this.sealAnswer({status: 'DONE', statsCount});
-  }
-
-  getExportHeader() {
-    return Statistic
-    .findOne({key: this.surveyId, type: 'SurveyResponse', name: 'objKeys'})
-    .then((stat) => {
-      this.collectionKeys = [];
-      if (stat && stat.data) {
-        this.collectionKeys = stat.data.keys;
-        if (stat.data.keyDescriptions) {
-          this.collectionKeys.forEach((key, idx) => {
-            this.collectionKeys[`pos${key}`] = stat.data.keyDescriptions[idx];
-          });
+    return co(function* () {
+      for (let {question, context}
+        of _this.survey.respondentsIn(
+          answer, {keys: _this.collectionKeys}
+        )
+      ) {
+        for (let o of question.collectRespondent(context)) {
+          yield _this.writeStatsObj(o);
+          ++statsCount;
         }
       }
+      answer.set('lastExport', new Date());
+      return answer.save()
+      .then(() => _this.totalStatsCount = _this.totalStatsCount + statsCount)
+      .then(() => ++_this.answersCount)
+      .then(() => ({status: 'DONE', statsCount, _id: answer._id}));
     });
   }
 
-  sortKeys() {
-    return this.collectionKeys
-    .map((key, index) => ({key, index}))
-    .sort(this._keyListComparator.bind(this));
-  }
-
-  _questionNumberParser(acc, el) {
-    let match = el.match(/^([a-zA-Z]*)([0-9]*)$/);
-    if (match && match[2]) {
-      acc.push({
-        num: parseInt(match[2]),
-        type: match[1] || '|question',
-      });
-    }
-    return acc;
-  }
-
-  _keyListComparator(arr1, arr2) {
-    arr1 = arr1.key;
-    arr2 = arr2.key;
-    const isQNum = arr1.startsWith('Q_');
-    const otherIsQNum = arr2.startsWith('Q_');
-    if (isQNum) {
-      if (!otherIsQNum) return 1;
-    } else {
-      if (otherIsQNum) return -1;
-      if (arr1 < arr2) return -1;
-      if (arr1 > arr2) return 1;
-      return 0;
-    }
-    arr1 = arr1.split('_').reduce(this._questionNumberParser, []);
-    arr2 = arr2.split('_').reduce(this._questionNumberParser, []);
-
-    let len = arr1.length;
-    if (arr2.length < len) len = arr2.length;
-    for (let i=0; i<len; i++) {
-      if (arr1[i].type < arr2[i].type) return -1;
-      if (arr2[i].type < arr1[i].type) return 1;
-
-      if (arr1[i].num < arr2[i].num) return -1;
-      if (arr2[i].num < arr1[i].num) return 1;
-    }
-    return (arr1.length - arr2.length);
-  }
-
-
-  updateExportHeader() {
-    const data = this.sortKeys().reduce(
-      ({keys, keyDescriptions}, {key, index}) => {
-        keys.push(key);
-        keyDescriptions.push(this.collectionKeys[`pos${key}`]);
-        return {keys, keyDescriptions};
-      },
-      {keys: [], keyDescriptions: []},
-    );
-    return Statistic
-    .findOneAndUpdate(
-      {key: this.surveyId, type: 'SurveyResponse', name: 'objKeys'},
-      {data},
-      {upsert: true},
-    );
-  }
-
-  _resolvePromiseObject(obj) {
-    const objKeys = Object.keys(obj);
-    return Promise.all(objKeys.map((k) => obj[k]))
-    .then((arrObj) => objKeys.reduce((acc, el, idx) => {
-      acc[el] = arrObj[idx];
-      return acc;
-    }, {}));
-  }
 
   _parseExpression(exp) {
     const parsed = this.parser.parse(exp);
     if (parsed.error) {
-      console.log(`Formula parse error: ${exp}: ${parsed.error}`);
       return;
     }
     return parsed.result;
+  }
+
+  _findAggregate({type, key}) {
+    let objKey = `${type}/${key}`;
+    let agg;
+    if (agg = this.aggregates[objKey]) {
+      return Promise.resolve(agg);
+    }
+    return this.aggregates[objKey] = Statistic.findOne({type, key})
+    .then((stat) => stat || {type, key})
+    .then((stat) => this.aggregates[objKey] = stat);
+  }
+
+  _saveAllAggregates() {
+    return Promise.all(
+      Object.keys(this.aggregates)
+      .map((key) => {
+        const agg = this.aggregates[key];
+        if (agg.save) return agg.save();
+        console.log(agg);
+        return Statistic.findOneAndUpdate(
+          {type: agg.type, key: agg.key},
+          agg,
+          {upsert: true, new: true}
+        ).then((stat) => console.log('Saved stat: ', stat));
+      })
+    ).catch((err) => console.log('error saving aggreagtes'));
   }
 
   accumulateAggregates(stat) {
@@ -193,13 +114,6 @@ export default class CollectResponses extends ChildTemplate {
       const obj = stat.data;
       if (obj.hasOwnProperty(name)) {
         let val = obj[name];
-        if (typeof val === 'string') {
-          if (val.match(/^[1-9][0-9]*$/)) {
-            val = parseInt(val);
-          } else if (val.match(/^[0-9]*\.[0-9]*/)) {
-            val = parseFloat(val);
-          }
-        }
          done(val);
       }
     });
@@ -213,6 +127,7 @@ export default class CollectResponses extends ChildTemplate {
       if (agg.key) {
         key = this._parseExpression(agg.key);
       }
+      if (!key) continue;
       key = key || null;
 
       if (agg.type) {
@@ -226,8 +141,9 @@ export default class CollectResponses extends ChildTemplate {
       name = name || this.survey.name || 'Unnamed';
 
       promises.push(
-        Statistic.findOne({type, key, name})
-        .then((stat) => stat || {type, key, name})
+        this._findAggregate({type, key})
+        // Statistic.findOne({type, key})
+        // .then((stat) => stat || new Statistic({type, key}))
         .then((stat) => {
           if (typeof agg.data === 'object') {
             data = stat.data = stat.data || {};
@@ -273,11 +189,8 @@ export default class CollectResponses extends ChildTemplate {
           } else {
             data = agg.data;
           }
-        }).then(() => Statistic.findOneAndUpdate(
-          {type, key, name},
-          {data},
-          {upsert: true},
-        )).catch((err) => {
+        })
+        .catch((err) => {
           console.log(err);
         })
       );
@@ -286,16 +199,14 @@ export default class CollectResponses extends ChildTemplate {
   }
 
   writeStatsObj(obj) {
-    const waitPromise = this.currentWaitPromise;
-    const objPromise = this._resolvePromiseObject(obj)
-    .then((obj) => Statistic.create({
-      key: this.surveyId,
-      type: 'SurveyResponse',
-      name: 'obj',
-      data: obj,
-    }))
-    .then((stat) => waitPromise.then(() => stat))
-    .then((stat) => this.accumulateAggregates(stat));
-    this.statsPromises.push(objPromise);
+    return co(function* () {
+      return yield obj;
+    }).then(
+      (obj) => Statistic.create({
+        key: this.surveyId,
+        type: 'SurveyResponse',
+        data: obj,
+      })
+    ).then((stat) => this.accumulateAggregates(stat));
   }
 }

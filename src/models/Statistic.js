@@ -7,6 +7,6 @@ const schema = new Schema({
   name: {type: String},
   data: {type: {}},
 });
-schema.index({type: 1, key: 1, name: 1});
+schema.index({key: 1, type: 1});
 
 module.exports = mongoose.model('Statistic', schema);

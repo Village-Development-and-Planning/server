@@ -1,12 +1,15 @@
 import {ChildTemplate} from '../child-process';
+import Mixin from '../../lib/Mixin';
+import SurveyExport from '../concerns/SurveyExport';
+import Cursor from '../concerns/Cursor';
 
-import Survey from '../../models/Survey';
 import Statistic from '../../models/Statistic';
 
 import CSVWriter from 'csv-stringify';
 import fs from 'fs';
 
-export default class ExportResponses extends ChildTemplate {
+export default class ExportResponses
+extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
   execute(proc) {
     this.surveyId = proc.args;
     return this.getSurvey()
@@ -14,26 +17,7 @@ export default class ExportResponses extends ChildTemplate {
     .then(() => this.collectStatistics());
   }
 
-  getSurvey() {
-    return Survey
-    .findOne({_id: this.surveyId})
-    .then((survey) => {
-      this.survey = survey;
-      if (survey) {
-        this.surveyRespondents = survey.respondents;
-      } else {
-        return Promise.reject(`Survey: ${this.surveyId} not found.`);
-      }
-    });
-  }
-
   collectStatistics() {
-    this.log = [];
-    const cursor = Statistic.find({
-      type: 'SurveyResponse',
-      key: this.surveyId,
-      name: 'obj',
-    }).cursor();
     return new Promise((res, rej) => {
       this.writer = this._createCsvWriter(this.surveyId, rej);
       this.writer.on('error', rej);
@@ -41,36 +25,34 @@ export default class ExportResponses extends ChildTemplate {
       this.writer.write(this.collectionKeys.map(
         (k) => this.collectionKeys[`pos${k}`]
       ));
-      cursor.on('data', (stat) => stat && this.collectOneStatistic(stat));
-      cursor.on('error', rej);
-      cursor.on('end', () => this.writer.end(null, null, res));
+      this.rowCount = 2;
+      this.iterateCursor(
+        Statistic.find({
+          type: 'SurveyResponse',
+          key: this.surveyId,
+        }),
+        'collectOneStatistic',
+      ).then((out) => {
+        this.writer.end(null, null, () => res({
+          processedStats: out,
+          numRows: this.rowCount,
+        }));
+      });
     });
   }
-
 
   collectOneStatistic(stat) {
-    this.writer.write(
-      this.collectionKeys.map((k) => stat.data[k])
-    );
-  }
-
-
-  getExportHeader() {
-    return Statistic
-    .findOne({type: 'SurveyResponse', key: this.surveyId, name: 'objKeys'})
-    .then((stat) => {
-      this.collectionKeys = [];
-      if (stat && stat.data) {
-        this.collectionKeys = stat.data.keys;
-        if (stat.data.keyDescriptions) {
-          this.collectionKeys.forEach((key, idx) => {
-            this.collectionKeys[`pos${key}`] = stat.data.keyDescriptions[idx];
-          });
+    return new Promise((res, rej) => {
+      this.writer.write(
+        this.collectionKeys.map((k) => stat.data[k]),
+        null,
+        () => {
+          ++this.rowCount;
+          res(stat._id);
         }
-      }
+      );
     });
   }
-
 
   _createCsvWriter(surveyId, errH) {
     const path = `data/export-responses/${surveyId}.csv`;

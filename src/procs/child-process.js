@@ -1,4 +1,5 @@
 import ProcessM from '../models/Process';
+import mongoose from 'mongoose';
 
 import {spawn} from 'child_process';
 
@@ -38,14 +39,17 @@ export default class ChildProcess {
           let stdout = [];
           let stderr = [];
 
-          p.on('close', (code) => {
+          p.on('close', (code, signal) => {
+            proc.exitSignal = signal;
             proc.exitCode = code;
             proc.status = 'COMPLETED';
             proc.stdout = stdout.join('');
             proc.stderr = stderr.join('');
             proc.save().then(res).catch(rej);
           });
-          p.stdout.on('data', (data) => stdout = stdout.concat(data));
+          p.stdout.on('data', (data) => {
+            stdout = stdout.concat(data);
+          });
           p.stderr.on('data', (data) => stderr = stderr.concat(data));
       }).catch(rej);
     });
@@ -54,15 +58,19 @@ export default class ChildProcess {
 }
 
 export class ChildTemplate {
-  constructor(procId) {
-    this.promise = ProcessM.findOne({_id: procId})
-    .then((proc) => {
-      if (!proc) {
-        throw new Error(`Unknown process id: ${procId}`);
-      }
-      this.proc = proc;
-      return this.execute(proc);
-    }).then((output) => {
+  constructor(procArgs) {
+    if (mongoose.Types.ObjectId.isValid(procArgs)) {
+      this.promise = ProcessM.findOne({_id: procArgs})
+      .then((proc) => proc || Promise.reject(`Not found: proc ${procArgs}`));
+    } else if ((typeof procArgs === 'object') && procArgs._id) {
+      this.promise = Promise.resolve(procArgs);
+    } else {
+      this.promise = Promise.reject(`Unknown process/id: ${procArgs}`);
+    };
+    this.promise = this.promise.then(
+      (proc) => this.execute(proc),
+    )
+    .then((output) => {
       console.log('Output: ', output);
     }).catch((err) => {
       console.log('Error: ', err);
