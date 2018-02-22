@@ -88,9 +88,9 @@ var mongoose = __webpack_require__(0);
 
 /**
  * Wrapper for our document schemas.
- * 
+ *
  *   Adds modifiedAt property.
- * 
+ *
  * @class Schema
  * @extends {mongoose.Schema}
  */

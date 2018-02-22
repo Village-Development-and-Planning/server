@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 
 /**
  * Wrapper for our document schemas.
- * 
+ *
  *   Adds modifiedAt property.
- * 
+ *
  * @class Schema
  * @extends {mongoose.Schema}
  */

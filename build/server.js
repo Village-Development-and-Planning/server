@@ -86,9 +86,9 @@ var mongoose = __webpack_require__(0);
 
 /**
  * Wrapper for our document schemas.
- * 
+ *
  *   Adds modifiedAt property.
- * 
+ *
  * @class Schema
  * @extends {mongoose.Schema}
  */
@@ -1552,18 +1552,20 @@ var SurveyController = function (_EntityController) {
                   _context.next = 5;
                   return _Answer2.default.count({
                     survey: survey._id,
-                    lastExport: { $ne: null }
+                    lastExport: null
                   });
 
                 case 5:
                   _context.t1 = _context.sent;
                   survey.answerStats = {
                     total: _context.t0,
-                    processed: _context.t1
+                    unProcessed: _context.t1
                   };
+
+                  survey.answerStats.processed = survey.answerStats.total - survey.answerStats.unProcessed;
                   return _context.abrupt('return', survey);
 
-                case 8:
+                case 9:
                 case 'end':
                   return _context.stop();
               }

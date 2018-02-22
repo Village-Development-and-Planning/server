@@ -92,11 +92,13 @@ class SurveyController extends EntityController {
         total: yield Answer.count({
           survey: survey._id,
         }),
-        processed: yield Answer.count({
+        unProcessed: yield Answer.count({
           survey: survey._id,
-          lastExport: {$ne: null},
+          lastExport: null,
         }),
       };
+      survey.answerStats.processed = survey.answerStats.total
+        - survey.answerStats.unProcessed;
       return survey;
     }));
   }
