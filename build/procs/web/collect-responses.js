@@ -121,6 +121,31 @@ module.exports = Schema;
 "use strict";
 
 
+var Schema = __webpack_require__(1);
+var mongoose = __webpack_require__(0);
+
+var processSchema = new Schema({
+    name: { type: String, required: true },
+    path: { type: String },
+    args: { type: {} },
+    status: { type: String },
+    exitCode: { type: Number },
+    stdout: { type: String },
+    stderr: { type: String }
+});
+processSchema.index({ status: 1, name: 1 });
+processSchema.index({ name: 1 });
+
+module.exports = mongoose.model('Process', processSchema);
+
+/***/ }),
+
+/***/ 11:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -143,7 +168,24 @@ exports.default = _mongoose2.default.connect(options.connectionString, options.c
 
 /***/ }),
 
-/***/ 11:
+/***/ 12:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var Schema = __webpack_require__(1);
+
+module.exports = new Schema({
+  default: { type: String },
+  english: { type: String },
+  tamil: { type: String },
+  hindi: { type: String }
+});
+
+/***/ }),
+
+/***/ 13:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -151,14 +193,23 @@ exports.default = _mongoose2.default.connect(options.connectionString, options.c
 
 __webpack_require__(3);
 
+var _Question = __webpack_require__(6);
+
+var _Question2 = _interopRequireDefault(_Question);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var Schema = __webpack_require__(1);
 var mongoose = __webpack_require__(0);
+
 
 var surveySchema = new Schema({
   name: { type: String, required: true },
   description: { type: String },
   enabled: { type: Boolean, default: true },
-  question: { type: {}, required: true },
+  question: { type: {}, get: function get(q) {
+      return new _Question2.default(q);
+    }, required: true },
   respondents: { type: [] },
   aggregates: { type: [] }
 });
@@ -195,7 +246,7 @@ Object.assign(surveySchema.methods, {
 
             return _context.delegateYield(answer.rootQuestion.findRespondents(Object.assign({
               respondents: this.respondents,
-              refQ: this.rootQuestion,
+              refQ: this.question,
               idx: idx
             }, context)), 't0', 8);
 
@@ -217,7 +268,7 @@ module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
 
-/***/ 12:
+/***/ 14:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -232,7 +283,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Process = __webpack_require__(9);
+var _Process = __webpack_require__(10);
 
 var _Process2 = _interopRequireDefault(_Process);
 
@@ -240,7 +291,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _child_process = __webpack_require__(13);
+var _child_process = __webpack_require__(15);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -327,14 +378,14 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procArgs) {
 
 /***/ }),
 
-/***/ 13:
+/***/ 15:
 /***/ (function(module, exports) {
 
 module.exports = require("child_process");
 
 /***/ }),
 
-/***/ 14:
+/***/ 16:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -348,7 +399,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _AnsweredQuestion = __webpack_require__(17);
+var _AnsweredQuestion = __webpack_require__(19);
 
 var _AnsweredQuestion2 = _interopRequireDefault(_AnsweredQuestion);
 
@@ -377,7 +428,7 @@ module.exports = _mongoose2.default.model('Answer', answerSchema);
 
 /***/ }),
 
-/***/ 17:
+/***/ 19:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -391,11 +442,11 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Question2 = __webpack_require__(18);
+var _Question2 = __webpack_require__(6);
 
 var _Question3 = _interopRequireDefault(_Question2);
 
-var _Location = __webpack_require__(6);
+var _Location = __webpack_require__(7);
 
 var _Location2 = _interopRequireDefault(_Location);
 
@@ -506,18 +557,18 @@ var AnsweredQuestion = function (_Question) {
     value: function _accumulateValue(ans, ansKey, refQ) {
       refQ = refQ || this;
       if (!ans.logged_options) return {};
-      if (this.type == 'ROOT' || this.type == 'DUMMY' || !this.number) {
+      if (refQ.type == 'ROOT' || refQ.type == 'DUMMY' || !this.number) {
         return {};
       }
       var ret = {};
-      if (this.type == 'MULTIPLE_CHOICE') {
+      if (refQ.type == 'MULTIPLE_CHOICE') {
         ans.logged_options.reduce(function (acc, opt) {
           if (opt.position !== null) {
             acc[ansKey + '_opt' + opt.position] = 1;
           }
           return acc;
         }, ret);
-      } else if (this.type == 'GPS') {
+      } else if (refQ.type == 'GPS') {
         var lat = void 0;
         var long = void 0;
         ans.logged_options.forEach(function (opt) {
@@ -534,7 +585,7 @@ var AnsweredQuestion = function (_Question) {
         });
         ret[ansKey + '_lat'] = lat;
         ret[ansKey + '_long'] = long;
-      } else if (['INFO', 'INPUT'].indexOf(this.type) !== -1 || refQ.flow && refQ.flow.pre.fill.length) {
+      } else if (['INFO', 'INPUT', 'CONFIRMATION'].indexOf(refQ.type) !== -1 || refQ.flow && refQ.flow.pre.fill.length) {
         ret[ansKey] = ans.logged_options.map(function (opt) {
           return opt.value || opt.text.english;
         }).join(',').toUpperCase();
@@ -848,126 +899,6 @@ exports.default = AnsweredQuestion;
 
 /***/ }),
 
-/***/ 18:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-__webpack_require__(3);
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var Schema = __webpack_require__(1);
-var Text = __webpack_require__(19);
-var mongoose = __webpack_require__(0);
-
-var Question = void 0;
-
-var questionSchema = new Schema({
-  type: { type: String },
-  tags: [{ type: String }],
-  text: { type: Text },
-  number: { type: String },
-  position: { type: String },
-  options: [{
-    position: { type: String, required: true },
-    option: { type: {}, required: true }
-  }],
-  children: [{
-    position: { type: String, required: true },
-    question: {
-      type: {},
-      get: function get(q) {
-        return new Question(q);
-      },
-      required: true
-    }
-  }],
-  flow: {
-    pre: { type: Object },
-    question: { type: Object },
-    answer: { type: Object },
-    child: { type: Object },
-    post: { type: Object },
-    exit: { type: Object }
-  }
-});
-
-Object.assign(questionSchema.methods, {
-  isParent: function isParent(number) {
-    if (!this.number) return true;
-    return number === this.number || number.startsWith(this.number + '.');
-  },
-  find: function find(number) {
-    if (!this.isParent(number)) return null;
-
-    if (this.number === number) return this;
-    var child = this.children.find(function (el) {
-      return el.question && el.question.isParent(number);
-    });
-    if (child) {
-      return child.question.find(number);
-    } else {
-      return null;
-    }
-  },
-  findChildByPosition: function findChildByPosition(pos) {
-    var ret = this.children.find(function (el) {
-      return el.position == pos;
-    });
-    if (ret) {
-      return new Question(ret.question, ret.position);
-    }
-    return null;
-  },
-  findOptionByPosition: function findOptionByPosition(pos) {
-    return this.options.find(function (el) {
-      return el.position == pos;
-    });
-  }
-});
-
-var QuestionM = mongoose.model('Question', questionSchema);
-module.exports = Question = function (_QuestionM) {
-  _inherits(Question, _QuestionM);
-
-  function Question(obj, position) {
-    _classCallCheck(this, Question);
-
-    var _this = _possibleConstructorReturn(this, (Question.__proto__ || Object.getPrototypeOf(Question)).call(this, obj));
-
-    Object.assign(_this, obj);
-    if (position) _this.position = position;
-    return _this;
-  }
-
-  return Question;
-}(QuestionM);
-
-/***/ }),
-
-/***/ 19:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var Schema = __webpack_require__(1);
-
-module.exports = new Schema({
-  default: { type: String },
-  english: { type: String },
-  tamil: { type: String },
-  hindi: { type: String }
-});
-
-/***/ }),
-
 /***/ 2:
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1054,7 +985,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _Survey = __webpack_require__(11);
+var _Survey = __webpack_require__(13);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
@@ -1204,7 +1135,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _co = __webpack_require__(7);
+var _co = __webpack_require__(8);
 
 var _co2 = _interopRequireDefault(_co);
 
@@ -1286,7 +1217,7 @@ exports.default = _class;
 "use strict";
 
 
-__webpack_require__(10);
+__webpack_require__(11);
 
 var _mongoose = __webpack_require__(0);
 
@@ -1382,6 +1313,109 @@ module.exports = {
 "use strict";
 
 
+__webpack_require__(3);
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Schema = __webpack_require__(1);
+var Text = __webpack_require__(12);
+var mongoose = __webpack_require__(0);
+
+var Question = void 0;
+
+var questionSchema = new Schema({
+  type: { type: String },
+  tags: [{ type: String }],
+  text: { type: Text },
+  number: { type: String },
+  position: { type: String },
+  options: [{
+    position: { type: String, required: true },
+    option: { type: {}, required: true }
+  }],
+  children: [{
+    position: { type: String, required: true },
+    question: {
+      type: {},
+      get: function get(q) {
+        return new Question(q);
+      },
+      required: true
+    }
+  }],
+  flow: {
+    pre: { type: Object },
+    question: { type: Object },
+    answer: { type: Object },
+    child: { type: Object },
+    post: { type: Object },
+    exit: { type: Object }
+  }
+});
+
+Object.assign(questionSchema.methods, {
+  isParent: function isParent(number) {
+    if (!this.number) return true;
+    return number === this.number || number.startsWith(this.number + '.');
+  },
+  find: function find(number) {
+    if (!this.isParent(number)) return null;
+
+    if (this.number === number) return this;
+    var child = this.children.find(function (el) {
+      return el.question && el.question.isParent(number);
+    });
+    if (child) {
+      return child.question.find(number);
+    } else {
+      return null;
+    }
+  },
+  findChildByPosition: function findChildByPosition(pos) {
+    var ret = this.children.find(function (el) {
+      return el.position == pos;
+    });
+    if (ret) {
+      return new Question(ret.question, ret.position);
+    }
+    return null;
+  },
+  findOptionByPosition: function findOptionByPosition(pos) {
+    return this.options.find(function (el) {
+      return el.position == pos;
+    });
+  }
+});
+
+var QuestionM = mongoose.model('Question', questionSchema);
+module.exports = Question = function (_QuestionM) {
+  _inherits(Question, _QuestionM);
+
+  function Question(obj, position) {
+    _classCallCheck(this, Question);
+
+    var _this = _possibleConstructorReturn(this, (Question.__proto__ || Object.getPrototypeOf(Question)).call(this, obj));
+
+    Object.assign(_this, obj);
+    if (position) _this.position = position;
+    return _this;
+  }
+
+  return Question;
+}(QuestionM);
+
+/***/ }),
+
+/***/ 7:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -1416,7 +1450,7 @@ exports.default = _mongoose2.default.model('Location', schema);
 
 /***/ }),
 
-/***/ 7:
+/***/ 8:
 /***/ (function(module, exports) {
 
 module.exports = require("co");
@@ -1455,11 +1489,11 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 __webpack_require__(3);
 
-var _co = __webpack_require__(7);
+var _co = __webpack_require__(8);
 
 var _co2 = _interopRequireDefault(_co);
 
-var _childProcess = __webpack_require__(12);
+var _childProcess = __webpack_require__(14);
 
 var _Mixin = __webpack_require__(2);
 
@@ -1477,7 +1511,7 @@ var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
-var _Answer = __webpack_require__(14);
+var _Answer = __webpack_require__(16);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 
@@ -1727,7 +1761,6 @@ var CollectResponses = function (_Mixin$mixin) {
       return Promise.all(Object.keys(this.aggregates).map(function (key) {
         var agg = _this6.aggregates[key];
         if (agg.save) return agg.save();
-        console.log(agg);
         return _Statistic2.default.findOneAndUpdate({ type: agg.type, key: agg.key }, agg, { upsert: true, new: true }).then(function (stat) {
           return console.log('Saved stat: ', stat);
         });
@@ -1805,7 +1838,6 @@ var CollectResponses = function (_Mixin$mixin) {
                 _type = _type || 'count';
 
                 if (!formula) {
-                  console.log('No formula: ' + dataKey);
                   continue;
                 } else {
                   var value = _this7._parseExpression(formula);
@@ -1848,9 +1880,7 @@ var CollectResponses = function (_Mixin$mixin) {
           } else {
             data = agg.data;
           }
-        }).catch(function (err) {
-          console.log(err);
-        }));
+        }).catch(function (err) {}));
       };
 
       var _iteratorNormalCompletion3 = true;
@@ -1929,31 +1959,6 @@ exports.default = CollectResponses;
 /***/ (function(module, exports) {
 
 module.exports = require("hot-formula-parser");
-
-/***/ }),
-
-/***/ 9:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var Schema = __webpack_require__(1);
-var mongoose = __webpack_require__(0);
-
-var processSchema = new Schema({
-    name: { type: String, required: true },
-    path: { type: String },
-    args: { type: {} },
-    status: { type: String },
-    exitCode: { type: Number },
-    stdout: { type: String },
-    stderr: { type: String }
-});
-processSchema.index({ status: 1, name: 1 });
-processSchema.index({ name: 1 });
-
-module.exports = mongoose.model('Process', processSchema);
 
 /***/ })
 

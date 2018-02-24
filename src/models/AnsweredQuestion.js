@@ -18,18 +18,18 @@ export default class AnsweredQuestion extends Question {
   _accumulateValue(ans, ansKey, refQ) {
     refQ = refQ || this;
     if (!ans.logged_options) return {};
-    if (this.type == 'ROOT' || this.type == 'DUMMY' || !this.number) {
+    if (refQ.type == 'ROOT' || refQ.type == 'DUMMY' || !this.number) {
       return {};
     }
     const ret = {};
-    if (this.type == 'MULTIPLE_CHOICE') {
+    if (refQ.type == 'MULTIPLE_CHOICE') {
       ans.logged_options.reduce((acc, opt) => {
         if (opt.position !== null) {
           acc[`${ansKey}_opt${opt.position}`] = 1;
         }
         return acc;
       }, ret);
-    } else if (this.type == 'GPS') {
+    } else if (refQ.type == 'GPS') {
       let lat;
       let long;
       ans.logged_options.forEach((opt) => {
@@ -41,7 +41,7 @@ export default class AnsweredQuestion extends Question {
       ret[`${ansKey}_lat`] = lat;
       ret[`${ansKey}_long`] = long;
     } else if (
-      (['INFO', 'INPUT'].indexOf(this.type) !== -1)
+      (['INFO', 'INPUT', 'CONFIRMATION'].indexOf(refQ.type) !== -1)
       || (refQ.flow && refQ.flow.pre.fill.length)
     ) {
       ret[ansKey] = ans.logged_options.map(
@@ -80,6 +80,7 @@ export default class AnsweredQuestion extends Question {
     const number = respondents[idx];
     if (!this.isParent(number)) return;
     if (!this.answers) return;
+
 
     acc = acc || {};
     prefix = prefix || 'Q';

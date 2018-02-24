@@ -1,12 +1,13 @@
 import 'babel-polyfill';
 const Schema = require('./Schema');
 const mongoose = require('mongoose');
+import Question from './Question';
 
 const surveySchema = new Schema({
   name: {type: String, required: true},
   description: {type: String},
   enabled: {type: Boolean, default: true},
-  question: {type: {}, required: true},
+  question: {type: {}, get: (q) => new Question(q), required: true},
   respondents: {type: []},
   aggregates: {type: []},
 });
@@ -22,7 +23,7 @@ Object.assign(surveySchema.methods, {
         yield* answer.rootQuestion.findRespondents(
           Object.assign({
             respondents: this.respondents,
-            refQ: this.rootQuestion,
+            refQ: this.question,
             idx,
           }, context)
         );

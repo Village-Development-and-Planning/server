@@ -95,7 +95,6 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
       .map((key) => {
         const agg = this.aggregates[key];
         if (agg.save) return agg.save();
-        console.log(agg);
         return Statistic.findOneAndUpdate(
           {type: agg.type, key: agg.key},
           agg,
@@ -160,7 +159,6 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
               type = type || 'count';
 
               if (!formula) {
-                console.log(`No formula: ${dataKey}`);
                 continue;
               } else {
                 let value = this._parseExpression(formula);
@@ -191,7 +189,6 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
           }
         })
         .catch((err) => {
-          console.log(err);
         })
       );
     }

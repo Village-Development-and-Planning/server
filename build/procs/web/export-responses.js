@@ -121,6 +121,31 @@ module.exports = Schema;
 "use strict";
 
 
+var Schema = __webpack_require__(1);
+var mongoose = __webpack_require__(0);
+
+var processSchema = new Schema({
+    name: { type: String, required: true },
+    path: { type: String },
+    args: { type: {} },
+    status: { type: String },
+    exitCode: { type: Number },
+    stdout: { type: String },
+    stderr: { type: String }
+});
+processSchema.index({ status: 1, name: 1 });
+processSchema.index({ name: 1 });
+
+module.exports = mongoose.model('Process', processSchema);
+
+/***/ }),
+
+/***/ 11:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -143,7 +168,24 @@ exports.default = _mongoose2.default.connect(options.connectionString, options.c
 
 /***/ }),
 
-/***/ 11:
+/***/ 12:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var Schema = __webpack_require__(1);
+
+module.exports = new Schema({
+  default: { type: String },
+  english: { type: String },
+  tamil: { type: String },
+  hindi: { type: String }
+});
+
+/***/ }),
+
+/***/ 13:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -151,14 +193,23 @@ exports.default = _mongoose2.default.connect(options.connectionString, options.c
 
 __webpack_require__(3);
 
+var _Question = __webpack_require__(6);
+
+var _Question2 = _interopRequireDefault(_Question);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var Schema = __webpack_require__(1);
 var mongoose = __webpack_require__(0);
+
 
 var surveySchema = new Schema({
   name: { type: String, required: true },
   description: { type: String },
   enabled: { type: Boolean, default: true },
-  question: { type: {}, required: true },
+  question: { type: {}, get: function get(q) {
+      return new _Question2.default(q);
+    }, required: true },
   respondents: { type: [] },
   aggregates: { type: [] }
 });
@@ -195,7 +246,7 @@ Object.assign(surveySchema.methods, {
 
             return _context.delegateYield(answer.rootQuestion.findRespondents(Object.assign({
               respondents: this.respondents,
-              refQ: this.rootQuestion,
+              refQ: this.question,
               idx: idx
             }, context)), 't0', 8);
 
@@ -217,7 +268,7 @@ module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
 
-/***/ 12:
+/***/ 14:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -232,7 +283,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Process = __webpack_require__(9);
+var _Process = __webpack_require__(10);
 
 var _Process2 = _interopRequireDefault(_Process);
 
@@ -240,7 +291,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _child_process = __webpack_require__(13);
+var _child_process = __webpack_require__(15);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -327,7 +378,7 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procArgs) {
 
 /***/ }),
 
-/***/ 13:
+/***/ 15:
 /***/ (function(module, exports) {
 
 module.exports = require("child_process");
@@ -427,7 +478,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _Survey = __webpack_require__(11);
+var _Survey = __webpack_require__(13);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
@@ -577,7 +628,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _co = __webpack_require__(7);
+var _co = __webpack_require__(8);
 
 var _co2 = _interopRequireDefault(_co);
 
@@ -659,7 +710,7 @@ exports.default = _class;
 "use strict";
 
 
-__webpack_require__(10);
+__webpack_require__(11);
 
 var _mongoose = __webpack_require__(0);
 
@@ -749,7 +800,110 @@ module.exports = {
 
 /***/ }),
 
-/***/ 7:
+/***/ 6:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+__webpack_require__(3);
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Schema = __webpack_require__(1);
+var Text = __webpack_require__(12);
+var mongoose = __webpack_require__(0);
+
+var Question = void 0;
+
+var questionSchema = new Schema({
+  type: { type: String },
+  tags: [{ type: String }],
+  text: { type: Text },
+  number: { type: String },
+  position: { type: String },
+  options: [{
+    position: { type: String, required: true },
+    option: { type: {}, required: true }
+  }],
+  children: [{
+    position: { type: String, required: true },
+    question: {
+      type: {},
+      get: function get(q) {
+        return new Question(q);
+      },
+      required: true
+    }
+  }],
+  flow: {
+    pre: { type: Object },
+    question: { type: Object },
+    answer: { type: Object },
+    child: { type: Object },
+    post: { type: Object },
+    exit: { type: Object }
+  }
+});
+
+Object.assign(questionSchema.methods, {
+  isParent: function isParent(number) {
+    if (!this.number) return true;
+    return number === this.number || number.startsWith(this.number + '.');
+  },
+  find: function find(number) {
+    if (!this.isParent(number)) return null;
+
+    if (this.number === number) return this;
+    var child = this.children.find(function (el) {
+      return el.question && el.question.isParent(number);
+    });
+    if (child) {
+      return child.question.find(number);
+    } else {
+      return null;
+    }
+  },
+  findChildByPosition: function findChildByPosition(pos) {
+    var ret = this.children.find(function (el) {
+      return el.position == pos;
+    });
+    if (ret) {
+      return new Question(ret.question, ret.position);
+    }
+    return null;
+  },
+  findOptionByPosition: function findOptionByPosition(pos) {
+    return this.options.find(function (el) {
+      return el.position == pos;
+    });
+  }
+});
+
+var QuestionM = mongoose.model('Question', questionSchema);
+module.exports = Question = function (_QuestionM) {
+  _inherits(Question, _QuestionM);
+
+  function Question(obj, position) {
+    _classCallCheck(this, Question);
+
+    var _this = _possibleConstructorReturn(this, (Question.__proto__ || Object.getPrototypeOf(Question)).call(this, obj));
+
+    Object.assign(_this, obj);
+    if (position) _this.position = position;
+    return _this;
+  }
+
+  return Question;
+}(QuestionM);
+
+/***/ }),
+
+/***/ 8:
 /***/ (function(module, exports) {
 
 module.exports = require("co");
@@ -762,31 +916,6 @@ module.exports = require("co");
 __webpack_require__(90);
 module.exports = __webpack_require__(24);
 
-
-/***/ }),
-
-/***/ 9:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var Schema = __webpack_require__(1);
-var mongoose = __webpack_require__(0);
-
-var processSchema = new Schema({
-    name: { type: String, required: true },
-    path: { type: String },
-    args: { type: {} },
-    status: { type: String },
-    exitCode: { type: Number },
-    stdout: { type: String },
-    stderr: { type: String }
-});
-processSchema.index({ status: 1, name: 1 });
-processSchema.index({ name: 1 });
-
-module.exports = mongoose.model('Process', processSchema);
 
 /***/ }),
 
@@ -809,7 +938,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _childProcess = __webpack_require__(12);
+var _childProcess = __webpack_require__(14);
 
 var _Mixin = __webpack_require__(2);
 
