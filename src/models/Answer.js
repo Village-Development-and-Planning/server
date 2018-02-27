@@ -17,7 +17,10 @@ const answerSchema = new Schema({
 
   // Post-processing concerns
   lastExport: {type: Date},
+  createdAt: {type: Date, default: Date.now},
+
 });
 answerSchema.index({survey: 1, lastExport: 1});
+answerSchema.index({createdAt: 1, survey: 1});
 
 module.exports = mongoose.model('Answer', answerSchema);

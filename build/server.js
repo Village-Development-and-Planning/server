@@ -235,7 +235,8 @@ module.exports = {
   admin: {
     username: 'ptracking',
     passphrase: 'vaazhvuT'
-  }
+  },
+  routeSecurity: [{ prefix: '/cms', roles: 'root content-manager' }, { prefix: '/app', roles: 'root surveyor' }]
 };
 
 /***/ }),
@@ -795,9 +796,12 @@ var answerSchema = new _Schema2.default({
   checksum: { type: String, required: true, unique: true },
 
   // Post-processing concerns
-  lastExport: { type: Date }
+  lastExport: { type: Date },
+  createdAt: { type: Date, default: Date.now }
+
 });
 answerSchema.index({ survey: 1, lastExport: 1 });
+answerSchema.index({ createdAt: 1, survey: 1 });
 
 module.exports = _mongoose2.default.model('Answer', answerSchema);
 
@@ -2245,10 +2249,13 @@ var jwtOpts = Object.assign({
 module.exports = function (app) {
   app.use(jwt(jwtOpts), function (err, req, res, next) {
     if (err.name === 'UnauthorizedError') {
-      (0, _authentication.signIn)(req, res, next);
+      next();
     } else {
       next(err);
     }
+  }, _authentication.signIn);
+  app.get('/auth', function (req, res, next) {
+    res.json(req.user);
   });
 };
 
@@ -2279,7 +2286,7 @@ passport.use(new Digest({ qop: 'auth' }, function (username, cb) {
   if (username === Constants.admin.username) {
     return cb(null, {
       username: Constants.admin.username,
-      name: 'Dev Admin',
+      name: 'Admin',
       roles: ['root'] }, Constants.admin.passphrase);
   } else {
     _User2.default.findOne({ username: username }).then(function (user) {
@@ -2288,7 +2295,7 @@ passport.use(new Digest({ qop: 'auth' }, function (username, cb) {
         username: user.username,
         name: user.name,
         roles: user.roles
-      }, user.passphrase);
+      }, user.passphrase || 'none');
     }).catch(function (err) {
       return cb(err);
     });
@@ -2297,17 +2304,66 @@ passport.use(new Digest({ qop: 'auth' }, function (username, cb) {
 
 var passportMiddleware = passport.authenticate('digest', { session: false });
 
+/**
+ * Inspects roles based on the route
+ *
+ * @param {Request} req
+ * @param {Response} res
+ * @param {Next} next
+ */
+function rolesMiddleware(req, res, next) {
+  if (req.path.startsWith('/auth')) {
+    next();
+    return;
+  }
+  var user = req.user;
+  var rolesHash = {};
+  for (var role in user.roles) {
+    rolesHash[role.toLowerCase()] = 1;
+  }
+
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = Constants.routeSecurity[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var sec = _step.value;
+
+      if (req.path.startsWith(sec.prefix)) {
+        var roles2Check = sec.roles.split(' ');
+        for (var _role in roles2Check) {
+          if (rolesHash[_role]) {
+            next();
+            return;
+          }
+        }
+      }
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator.return) {
+        _iterator.return();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+
+  next({ status: 401, message: 'Unauthorized' });
+}
+
 var setCookie = function setCookie(req, res, next) {
   res.cookie('ptracking_jwt', jwt.sign(req.user, Constants.jwt.secret));
   next();
 };
 
-var signIn = function signIn(req, res, next) {
-  passportMiddleware(req, res, function (err) {
-    return err ? next(err) : setCookie(req, res, next);
-  });
-};
-
+var signIn = [passportMiddleware, rolesMiddleware, setCookie];
 exports.signIn = signIn;
 
 /***/ }),

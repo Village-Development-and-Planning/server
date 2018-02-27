@@ -25,10 +25,14 @@ module.exports = function(app) {
     jwt(jwtOpts),
     (err, req, res, next) => {
       if (err.name === 'UnauthorizedError') {
-        signIn(req, res, next);
+        next();
       } else {
         next(err);
       }
-    }
+    },
+    signIn,
   );
+  app.get('/auth', (req, res, next) => {
+    res.json(req.user);
+  });
 };

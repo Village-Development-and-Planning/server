@@ -420,9 +420,12 @@ var answerSchema = new _Schema2.default({
   checksum: { type: String, required: true, unique: true },
 
   // Post-processing concerns
-  lastExport: { type: Date }
+  lastExport: { type: Date },
+  createdAt: { type: Date, default: Date.now }
+
 });
 answerSchema.index({ survey: 1, lastExport: 1 });
+answerSchema.index({ createdAt: 1, survey: 1 });
 
 module.exports = _mongoose2.default.model('Answer', answerSchema);
 
@@ -1302,7 +1305,8 @@ module.exports = {
   admin: {
     username: 'ptracking',
     passphrase: 'vaazhvuT'
-  }
+  },
+  routeSecurity: [{ prefix: '/cms', roles: 'root content-manager' }, { prefix: '/app', roles: 'root surveyor' }]
 };
 
 /***/ }),
