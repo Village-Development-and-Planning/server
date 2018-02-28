@@ -790,7 +790,7 @@ var answerSchema = new _Schema2.default({
   name: { type: String },
   description: { type: String },
   survey: { type: _Schema2.default.Types.ObjectId, ref: 'Survey', required: true },
-  surveyor: { type: _Schema2.default.Types.ObjectId, ref: 'Surveyor' },
+  surveyor: { type: String },
   version: { type: Number, default: 0 },
   rootQuestion: {
     type: {}, required: true,
@@ -1031,6 +1031,8 @@ var AnsweredQuestion = function (_Question) {
             ret[type + '_' + other.toUpperCase()] = _Location2.default.findOne(_defineProperty({
               type: type }, field, ret[ansKey])).then(function (loc) {
               return loc && loc[other] || 'UNKNOWN';
+            }).catch(function (err) {
+              return console.log(err);
             });
           }
         };

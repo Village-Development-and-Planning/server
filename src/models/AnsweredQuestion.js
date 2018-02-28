@@ -79,7 +79,8 @@ export default class AnsweredQuestion extends Question {
         if (type && field) {
           ret[`${type}_${other.toUpperCase()}`] = Location.findOne({
             type, [field]: ret[ansKey],
-          }).then((loc) => (loc && loc[other] || 'UNKNOWN'));
+          }).then((loc) => (loc && loc[other] || 'UNKNOWN'))
+          .catch((err) => console.log(err));
         }
       }
     }

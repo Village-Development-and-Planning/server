@@ -7,7 +7,7 @@ const answerSchema = new Schema({
   name: {type: String},
   description: {type: String},
   survey: {type: Schema.Types.ObjectId, ref: 'Survey', required: true},
-  surveyor: {type: Schema.Types.ObjectId, ref: 'Surveyor'},
+  surveyor: {type: String},
   version: {type: Number, default: 0},
   rootQuestion: {
     type: {}, required: true,

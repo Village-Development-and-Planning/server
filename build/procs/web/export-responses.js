@@ -582,13 +582,11 @@ var _class = function (_Mixin) {
         if (!otherIsQNum) return 1;
       } else {
         if (otherIsQNum) return -1;
-
-        if (arr1 < arr2) return -1;
-        if (arr1 > arr2) return 1;
-        return 0;
+        arr1 = arr1.split('').reverse().join('');
+        arr2 = arr2.split('').reverse().join('');
       }
-      arr1 = arr1.slice(2).split('_').reduce(this._questionNumberParser, []);
-      arr2 = arr2.slice(2).split('_').reduce(this._questionNumberParser, []);
+      arr1 = arr1.split('_').reduce(this._questionNumberParser, []);
+      arr2 = arr2.split('_').reduce(this._questionNumberParser, []);
 
       var len = arr1.length;
       if (arr2.length < len) len = arr2.length;
