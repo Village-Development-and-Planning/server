@@ -7,21 +7,32 @@ import Location from './Location';
 export default class AnsweredQuestion extends Question {
   * collectRespondent({acc, prefix, refQ, keys}) {
     for (let ans of this.answers) {
-      yield this.collectAnswer({
+      const obj = this.collectAnswer({
         acc: Object.assign({}, acc),
         ansKey: prefix,
         ans, keys, refQ,
       });
+      if (ans.startTimestamp) {
+        obj.START_TIME = ans.startTimestamp;
+        obj.END_TIME = ans.endTimestamp;
+        if (!keys.posSTART_TIME) {
+          keys.push('START_TIME');
+          keys.push('END_TIME');
+          keys.posSTART_TIME = 'Start time of respondent.';
+          keys.posEND_TIME = 'End time of respondent.';
+        }
+      }
+      yield obj;
     }
   }
 
   _accumulateValue(ans, ansKey, refQ) {
     refQ = refQ || this;
     if (!ans.logged_options) return {};
-    if (refQ.type == 'ROOT' || refQ.type == 'DUMMY' || !this.number) {
-      return {};
-    }
     const ret = {};
+    if (refQ.type === 'ROOT' || refQ.type == 'DUMMY' || !this.number) {
+      return ret;
+    }
     if (refQ.type == 'MULTIPLE_CHOICE') {
       ans.logged_options.reduce((acc, opt) => {
         if (opt.position !== null) {

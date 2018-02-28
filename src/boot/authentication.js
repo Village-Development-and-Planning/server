@@ -35,8 +35,6 @@ const passportMiddleware = passport.authenticate('digest', {session: false});
 
 const setCookie = (req, res, next) => {
   const cookie = jwt.sign(req.user, Constants.jwt.secret);
-  console.log(req.user);
-  console.log(cookie);
   res.cookie('ptracking_jwt', cookie);
   next();
 };

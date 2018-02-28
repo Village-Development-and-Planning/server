@@ -587,7 +587,6 @@ var _class = function (_Mixin) {
         if (arr1 > arr2) return 1;
         return 0;
       }
-      console.log('Comparing: ' + arr1 + ' ' + arr2);
       arr1 = arr1.slice(2).split('_').reduce(this._questionNumberParser, []);
       arr2 = arr2.slice(2).split('_').reduce(this._questionNumberParser, []);
 
@@ -595,7 +594,6 @@ var _class = function (_Mixin) {
       if (arr2.length < len) len = arr2.length;
 
       for (var i = 0; i < len; i++) {
-        console.log(i, arr1[i], arr2[i]);
         if (arr1[i].type < arr2[i].type) return -1;
         if (arr2[i].type < arr1[i].type) return 1;
 

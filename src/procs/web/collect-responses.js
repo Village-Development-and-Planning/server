@@ -51,8 +51,7 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
     const _this = this;
     let statsCount = 0;
     return co(function* () {
-      for (let {question, context}
-        of _this.survey.respondentsIn(
+      for (let {question, context} of _this.survey.respondentsIn(
           answer, {keys: _this.collectionKeys}
         )
       ) {

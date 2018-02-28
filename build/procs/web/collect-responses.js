@@ -483,7 +483,7 @@ var AnsweredQuestion = function (_Question) {
           refQ = _ref.refQ,
           keys = _ref.keys;
 
-      var _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, ans;
+      var _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, ans, obj;
 
       return regeneratorRuntime.wrap(function collectRespondent$(_context) {
         while (1) {
@@ -497,73 +497,85 @@ var AnsweredQuestion = function (_Question) {
 
             case 5:
               if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-                _context.next = 12;
+                _context.next = 14;
                 break;
               }
 
               ans = _step.value;
-              _context.next = 9;
-              return this.collectAnswer({
+              obj = this.collectAnswer({
                 acc: Object.assign({}, acc),
                 ansKey: prefix,
                 ans: ans, keys: keys, refQ: refQ
               });
 
-            case 9:
+              if (ans.startTimestamp) {
+                obj.START_TIME = ans.startTimestamp;
+                obj.END_TIME = ans.endTimestamp;
+                if (!keys.posSTART_TIME) {
+                  keys.push('START_TIME');
+                  keys.push('END_TIME');
+                  keys.posSTART_TIME = 'Start time of respondent.';
+                  keys.posEND_TIME = 'End time of respondent.';
+                }
+              }
+              _context.next = 11;
+              return obj;
+
+            case 11:
               _iteratorNormalCompletion = true;
               _context.next = 5;
               break;
 
-            case 12:
-              _context.next = 18;
+            case 14:
+              _context.next = 20;
               break;
 
-            case 14:
-              _context.prev = 14;
+            case 16:
+              _context.prev = 16;
               _context.t0 = _context['catch'](3);
               _didIteratorError = true;
               _iteratorError = _context.t0;
 
-            case 18:
-              _context.prev = 18;
-              _context.prev = 19;
+            case 20:
+              _context.prev = 20;
+              _context.prev = 21;
 
               if (!_iteratorNormalCompletion && _iterator.return) {
                 _iterator.return();
               }
 
-            case 21:
-              _context.prev = 21;
+            case 23:
+              _context.prev = 23;
 
               if (!_didIteratorError) {
-                _context.next = 24;
+                _context.next = 26;
                 break;
               }
 
               throw _iteratorError;
 
-            case 24:
-              return _context.finish(21);
-
-            case 25:
-              return _context.finish(18);
-
             case 26:
+              return _context.finish(23);
+
+            case 27:
+              return _context.finish(20);
+
+            case 28:
             case 'end':
               return _context.stop();
           }
         }
-      }, collectRespondent, this, [[3, 14, 18, 26], [19,, 21, 25]]);
+      }, collectRespondent, this, [[3, 16, 20, 28], [21,, 23, 27]]);
     })
   }, {
     key: '_accumulateValue',
     value: function _accumulateValue(ans, ansKey, refQ) {
       refQ = refQ || this;
       if (!ans.logged_options) return {};
-      if (refQ.type == 'ROOT' || refQ.type == 'DUMMY' || !this.number) {
-        return {};
-      }
       var ret = {};
+      if (refQ.type === 'ROOT' || refQ.type == 'DUMMY' || !this.number) {
+        return ret;
+      }
       if (refQ.type == 'MULTIPLE_CHOICE') {
         ans.logged_options.reduce(function (acc, opt) {
           if (opt.position !== null) {
@@ -1097,7 +1109,6 @@ var _class = function (_Mixin) {
         if (arr1 > arr2) return 1;
         return 0;
       }
-      console.log('Comparing: ' + arr1 + ' ' + arr2);
       arr1 = arr1.slice(2).split('_').reduce(this._questionNumberParser, []);
       arr2 = arr2.slice(2).split('_').reduce(this._questionNumberParser, []);
 
@@ -1105,7 +1116,6 @@ var _class = function (_Mixin) {
       if (arr2.length < len) len = arr2.length;
 
       for (var i = 0; i < len; i++) {
-        console.log(i, arr1[i], arr2[i]);
         if (arr1[i].type < arr2[i].type) return -1;
         if (arr2[i].type < arr1[i].type) return 1;
 
