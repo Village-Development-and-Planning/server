@@ -370,9 +370,9 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procArgs) {
   this.promise = this.promise.then(function (proc) {
     return _this2.execute(proc);
   }).then(function (output) {
-    console.log('Output: ', output);
+    return console.log('Output: ', output);
   }).catch(function (err) {
-    console.log('Error: ', err);
+    return console.log('Error: ', err);
   });
 };
 

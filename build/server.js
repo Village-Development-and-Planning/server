@@ -748,9 +748,9 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procArgs) {
   this.promise = this.promise.then(function (proc) {
     return _this2.execute(proc);
   }).then(function (output) {
-    console.log('Output: ', output);
+    return console.log('Output: ', output);
   }).catch(function (err) {
-    console.log('Error: ', err);
+    return console.log('Error: ', err);
   });
 };
 
@@ -762,6 +762,12 @@ module.exports = require("child_process");
 
 /***/ }),
 /* 16 */
+/***/ (function(module, exports) {
+
+module.exports = require("express");
+
+/***/ }),
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -804,12 +810,6 @@ answerSchema.index({ survey: 1, lastExport: 1 });
 answerSchema.index({ createdAt: 1, survey: 1 });
 
 module.exports = _mongoose2.default.model('Answer', answerSchema);
-
-/***/ }),
-/* 17 */
-/***/ (function(module, exports) {
-
-module.exports = require("express");
 
 /***/ }),
 /* 18 */
@@ -1429,7 +1429,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _Answer = __webpack_require__(16);
+var _Answer = __webpack_require__(17);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 
@@ -1796,7 +1796,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _Answer = __webpack_require__(16);
+var _Answer = __webpack_require__(17);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 
@@ -2114,7 +2114,7 @@ __webpack_require__(3);
 
 __webpack_require__(11);
 
-var express = __webpack_require__(17);
+var express = __webpack_require__(16);
 var http = __webpack_require__(35);
 
 
@@ -2227,10 +2227,20 @@ module.exports = require("cookie-parser");
 "use strict";
 
 
+var _express = __webpack_require__(16);
+
+var _express2 = _interopRequireDefault(_express);
+
 var _authentication = __webpack_require__(39);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 var jwt = __webpack_require__(43);
 var constants = __webpack_require__(5);
+
+var secRouter = new _express2.default.Router();
 
 var jwtOpts = Object.assign({
   getToken: function getToken(req) {
@@ -2246,14 +2256,18 @@ var jwtOpts = Object.assign({
   }
 }, constants.jwt);
 
+secRouter.use.apply(secRouter, [jwt(jwtOpts), function (req, res, next) {
+  return console.log('jwt success') || next('router');
+}, function (err, req, res, next) {
+  if (err.name === 'UnauthorizedError') {
+    next();
+  } else {
+    next(err);
+  }
+}].concat(_toConsumableArray(_authentication.signIn)));
+
 module.exports = function (app) {
-  app.use(jwt(jwtOpts), function (err, req, res, next) {
-    if (err.name === 'UnauthorizedError') {
-      next();
-    } else {
-      next(err);
-    }
-  }, _authentication.signIn);
+  app.use(secRouter);
   app.get('/auth', function (req, res, next) {
     res.json(req.user);
   });
@@ -2400,10 +2414,10 @@ module.exports = require("express-jwt");
 var bodyParser = __webpack_require__(45);
 
 module.exports = function (app) {
-  // parse application/x-www-form-urlencoded 
+  // parse application/x-www-form-urlencoded
   app.use(bodyParser.urlencoded({ extended: false }));
 
-  // parse application/json 
+  // parse application/json
   app.use(bodyParser.json({ limit: '10mb' }));
 };
 
@@ -2443,7 +2457,7 @@ var _dispatcher2 = _interopRequireDefault(_dispatcher);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var express = __webpack_require__(17);
+var express = __webpack_require__(16);
 
 
 /**
@@ -4594,7 +4608,7 @@ var _SurveyController2 = _interopRequireDefault(_SurveyController);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var express = __webpack_require__(17);
+var express = __webpack_require__(16);
 var app = new express.Router();
 
 

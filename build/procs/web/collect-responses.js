@@ -370,9 +370,9 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procArgs) {
   this.promise = this.promise.then(function (proc) {
     return _this2.execute(proc);
   }).then(function (output) {
-    console.log('Output: ', output);
+    return console.log('Output: ', output);
   }).catch(function (err) {
-    console.log('Error: ', err);
+    return console.log('Error: ', err);
   });
 };
 
@@ -385,7 +385,7 @@ module.exports = require("child_process");
 
 /***/ }),
 
-/***/ 16:
+/***/ 17:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1515,7 +1515,7 @@ var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
-var _Answer = __webpack_require__(16);
+var _Answer = __webpack_require__(17);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 

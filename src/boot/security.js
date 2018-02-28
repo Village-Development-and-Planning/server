@@ -1,7 +1,12 @@
 const jwt = require('express-jwt');
 const constants = require('../config/Constants');
 
+import express from 'express';
 import {signIn} from './authentication';
+
+
+const secRouter = new express.Router();
+
 
 const jwtOpts = Object.assign({
   getToken(req) {
@@ -20,18 +25,22 @@ const jwtOpts = Object.assign({
   },
 }, constants.jwt);
 
+secRouter.use(
+  jwt(jwtOpts),
+  (req, res, next) => console.log('jwt success') || next('router'),
+  (err, req, res, next) => {
+    if (err.name === 'UnauthorizedError') {
+      next();
+    } else {
+      next(err);
+    }
+  },
+  ...signIn,
+);
+
+
 module.exports = function(app) {
-  app.use(
-    jwt(jwtOpts),
-    (err, req, res, next) => {
-      if (err.name === 'UnauthorizedError') {
-        next();
-      } else {
-        next(err);
-      }
-    },
-    signIn,
-  );
+  app.use(secRouter);
   app.get('/auth', (req, res, next) => {
     res.json(req.user);
   });
