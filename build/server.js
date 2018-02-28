@@ -1605,7 +1605,7 @@ var SurveyController = function (_EntityController) {
     value: function _parseEntity(obj) {
       obj.enabled = !!obj.enabled;
       if (typeof obj.respondents === 'string') {
-        if (obj.respondents == 'none') {
+        if (!obj.respondents || obj.respondents == 'none') {
           obj.respondents = null;
         } else {
           obj.respondents = obj.respondents && obj.respondents.split(',');
