@@ -3,6 +3,7 @@ const constants = require('../config/Constants');
 
 import express from 'express';
 import {signIn} from './authentication';
+import roles from './roles';
 
 
 const secRouter = new express.Router();
@@ -15,7 +16,7 @@ const jwtOpts = Object.assign({
       && req.headers.authorization.split(' ')[0] === 'Bearer'
     ) {
       req.skipCSRF = true;
-      return req.headers.authorization.split(' ')[1];
+      return req.headers.authorization.slice(6).trim();
     } else if (req.cookies && req.cookies.ptracking_jwt) {
       req.skipCSRF = false;
       return req.cookies.ptracking_jwt;
@@ -27,8 +28,13 @@ const jwtOpts = Object.assign({
 
 secRouter.use(
   jwt(jwtOpts),
-  (req, res, next) => console.log('jwt success') || next('router'),
+  (req, res, next) => {
+    console.log('JWT Succeeded', req.user);
+    return (req.user ? next('router') : next({name: 'UnauthorizedError'}));
+  },
   (err, req, res, next) => {
+    console.log('JWT Err Handler', err.name);
+    console.log(req);
     if (err.name === 'UnauthorizedError') {
       next();
     } else {
@@ -41,6 +47,7 @@ secRouter.use(
 
 module.exports = function(app) {
   app.use(secRouter);
+  app.use(roles);
   app.get('/auth', (req, res, next) => {
     res.json(req.user);
   });

@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 85);
+/******/ 	return __webpack_require__(__webpack_require__.s = 86);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -150,7 +150,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _Constants = __webpack_require__(5);
+var _Constants = __webpack_require__(4);
 
 var _Constants2 = _interopRequireDefault(_Constants);
 
@@ -992,7 +992,7 @@ var _Survey = __webpack_require__(13);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
-var _Statistic = __webpack_require__(4);
+var _Statistic = __webpack_require__(5);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
@@ -1092,17 +1092,20 @@ var _class = function (_Mixin) {
         if (!otherIsQNum) return 1;
       } else {
         if (otherIsQNum) return -1;
+
         if (arr1 < arr2) return -1;
         if (arr1 > arr2) return 1;
         return 0;
       }
-      arr1 = arr1.split('_').reduce(this._questionNumberParser, []);
-      arr2 = arr2.split('_').reduce(this._questionNumberParser, []);
+      console.log('Comparing: ' + arr1 + ' ' + arr2);
+      arr1 = arr1.slice(2).split('_').reduce(this._questionNumberParser, []);
+      arr2 = arr2.slice(2).split('_').reduce(this._questionNumberParser, []);
 
       var len = arr1.length;
-
       if (arr2.length < len) len = arr2.length;
+
       for (var i = 0; i < len; i++) {
+        console.log(i, arr1[i], arr2[i]);
         if (arr1[i].type < arr2[i].type) return -1;
         if (arr2[i].type < arr1[i].type) return 1;
 
@@ -1262,6 +1265,32 @@ module.exports = require("babel-polyfill");
 "use strict";
 
 
+module.exports = {
+  db: {
+    connectionOptions: {
+      poolSize: 5,
+      useMongoClient: true
+    },
+    connectionString: 'mongodb://localhost/test'
+  },
+  jwt: {
+    secret: 'a general string'
+  },
+  admin: {
+    username: 'ptracking',
+    passphrase: 'vaazhvuT'
+  },
+  routeSecurity: [{ prefix: '/cms', roles: 'root content-manager' }, { prefix: '/app', roles: 'root surveyor' }]
+};
+
+/***/ }),
+
+/***/ 5:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 var _Schema = __webpack_require__(1);
 
 var _Schema2 = _interopRequireDefault(_Schema);
@@ -1281,33 +1310,6 @@ var schema = new _Schema2.default({
 schema.index({ key: 1, type: 1 });
 
 module.exports = _mongoose2.default.model('Statistic', schema);
-
-/***/ }),
-
-/***/ 5:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-module.exports = {
-  db: {
-    connectionOptions: {
-      poolSize: 5,
-      useMongoClient: true
-    },
-    connectionString: 'mongodb://localhost/test'
-  },
-  jwt: {
-    secret: 'a general string',
-    requestProperty: 'auth'
-  },
-  admin: {
-    username: 'ptracking',
-    passphrase: 'vaazhvuT'
-  },
-  routeSecurity: [{ prefix: '/cms', roles: 'root content-manager' }, { prefix: '/app', roles: 'root surveyor' }]
-};
 
 /***/ }),
 
@@ -1461,23 +1463,23 @@ module.exports = require("co");
 
 /***/ }),
 
-/***/ 85:
+/***/ 86:
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(86);
+__webpack_require__(87);
 module.exports = __webpack_require__(24);
 
 
 /***/ }),
 
-/***/ 86:
+/***/ 87:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = global["Proc"] = __webpack_require__(87);
+module.exports = global["Proc"] = __webpack_require__(88);
 
 /***/ }),
 
-/***/ 87:
+/***/ 88:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1511,7 +1513,7 @@ var _Cursor = __webpack_require__(23);
 
 var _Cursor2 = _interopRequireDefault(_Cursor);
 
-var _Statistic = __webpack_require__(4);
+var _Statistic = __webpack_require__(5);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
@@ -1519,7 +1521,7 @@ var _Answer = __webpack_require__(17);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 
-var _hotFormulaParser = __webpack_require__(88);
+var _hotFormulaParser = __webpack_require__(89);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1959,7 +1961,7 @@ exports.default = CollectResponses;
 
 /***/ }),
 
-/***/ 88:
+/***/ 89:
 /***/ (function(module, exports) {
 
 module.exports = require("hot-formula-parser");

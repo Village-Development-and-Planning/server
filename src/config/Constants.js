@@ -8,7 +8,6 @@ module.exports = {
   },
   jwt: {
     secret: 'a general string',
-    requestProperty: 'auth',
   },
   admin: {
     username: 'ptracking',

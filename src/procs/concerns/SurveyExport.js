@@ -76,17 +76,20 @@ export default class extends Mixin {
       if (!otherIsQNum) return 1;
     } else {
       if (otherIsQNum) return -1;
+
       if (arr1 < arr2) return -1;
       if (arr1 > arr2) return 1;
       return 0;
     }
-    arr1 = arr1.split('_').reduce(this._questionNumberParser, []);
-    arr2 = arr2.split('_').reduce(this._questionNumberParser, []);
+    console.log(`Comparing: ${arr1} ${arr2}`);
+    arr1 = arr1.slice(2).split('_').reduce(this._questionNumberParser, []);
+    arr2 = arr2.slice(2).split('_').reduce(this._questionNumberParser, []);
 
     let len = arr1.length;
-
     if (arr2.length < len) len = arr2.length;
+
     for (let i=0; i<len; i++) {
+      console.log(i, arr1[i], arr2[i]);
       if (arr1[i].type < arr2[i].type) return -1;
       if (arr2[i].type < arr1[i].type) return 1;
 
