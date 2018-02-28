@@ -575,7 +575,7 @@ var AnsweredQuestion = function (_Question) {
         var lat = void 0;
         var long = void 0;
         ans.logged_options.forEach(function (opt) {
-          if (opt.type == 'GPS') {
+          if (opt.position == 'GPS') {
             var val = opt.value || opt.text.english;
 
             var _val$split = val.split(',');

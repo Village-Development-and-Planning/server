@@ -33,7 +33,7 @@ export default class AnsweredQuestion extends Question {
       let lat;
       let long;
       ans.logged_options.forEach((opt) => {
-        if (opt.type == 'GPS') {
+        if (opt.position == 'GPS') {
           const val = opt.value || opt.text.english;
           [lat, long] = val.split(',');
         }
