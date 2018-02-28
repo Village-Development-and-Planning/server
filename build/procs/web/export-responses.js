@@ -563,7 +563,7 @@ var _class = function (_Mixin) {
     key: '_questionNumberParser',
     value: function _questionNumberParser(acc, el) {
       var match = el.match(/^([a-zA-Z]*)([0-9]*)$/);
-      if (match && match[2]) {
+      if (match) {
         acc.push({
           num: parseInt(match[2]),
           type: match[1] || '|question'

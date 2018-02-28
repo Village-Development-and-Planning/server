@@ -58,7 +58,7 @@ export default class extends Mixin {
 
   _questionNumberParser(acc, el) {
     let match = el.match(/^([a-zA-Z]*)([0-9]*)$/);
-    if (match && match[2]) {
+    if (match) {
       acc.push({
         num: parseInt(match[2]),
         type: match[1] || '|question',

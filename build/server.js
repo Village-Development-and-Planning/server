@@ -2260,11 +2260,8 @@ var jwtOpts = Object.assign({
 }, constants.jwt);
 
 secRouter.use.apply(secRouter, [jwt(jwtOpts), function (req, res, next) {
-  console.log('JWT Succeeded', req.user);
   return req.user ? next('router') : next({ name: 'UnauthorizedError' });
 }, function (err, req, res, next) {
-  console.log('JWT Err Handler', err.name);
-  console.log(req);
   if (err.name === 'UnauthorizedError') {
     next();
   } else {

@@ -29,12 +29,9 @@ const jwtOpts = Object.assign({
 secRouter.use(
   jwt(jwtOpts),
   (req, res, next) => {
-    console.log('JWT Succeeded', req.user);
     return (req.user ? next('router') : next({name: 'UnauthorizedError'}));
   },
   (err, req, res, next) => {
-    console.log('JWT Err Handler', err.name);
-    console.log(req);
     if (err.name === 'UnauthorizedError') {
       next();
     } else {
