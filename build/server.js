@@ -1447,8 +1447,6 @@ function dispatcher(Controller, method) {
 "use strict";
 
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
@@ -1614,7 +1612,7 @@ var SurveyController = function (_EntityController) {
   }, {
     key: '_parseEntity',
     value: function _parseEntity(obj) {
-      if (_typeof(obj.enabled) !== undefined) obj.enabled = !!obj.enabled;
+      if (typeof obj.enabled !== 'undefined') obj.enabled = !!obj.enabled;
       if (typeof obj.respondents === 'string') {
         if (!obj.respondents || obj.respondents == 'none') {
           obj.respondents = null;
