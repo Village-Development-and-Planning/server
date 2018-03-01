@@ -31,7 +31,8 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
     return this.iterateCursor(Answer.find({
       survey: this.surveyId,
       lastExport: null,
-    }).limit(100), 'collectOneAnswer').then((answers) => this.answers = answers)
+    }).limit(1000), 'collectOneAnswer')
+    .then((answers) => this.answers = answers)
     .then(() => this._saveAllAggregates())
     .then(() => ({
       answers: this.answers,
@@ -57,18 +58,18 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
     }
     return co(function* () {
       try {
-          for (let {question, context} of _this.survey.respondentsIn(
-              answer, {keys: _this.collectionKeys}
-            )
-          ) {
-            for (let o of question.collectRespondent(context)) {
-              if (answer.createdAt) {
-                o.UPLOAD_TIME = answer.createdAt.getTime();
-              }
-              yield _this.writeStatsObj(o);
-              ++statsCount;
+        for (let {question, context} of _this.survey.respondentsIn(
+            answer, {keys: _this.collectionKeys}
+          )
+        ) {
+          for (let o of question.collectRespondent(context)) {
+            if (answer.createdAt) {
+              o.UPLOAD_TIME = answer.createdAt.getTime();
             }
+            yield _this.writeStatsObj(o);
+            ++statsCount;
           }
+        }
         answer.set('lastExport', new Date());
         return answer.save()
         .then(() => _this.totalStatsCount = _this.totalStatsCount + statsCount)
@@ -97,7 +98,8 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
       return Promise.resolve(agg);
     }
     return this.aggregates[objKey] = Statistic.findOne({type, key})
-    .then((stat) => stat || {type, key})
+    .catch((err) => null)
+    .then((stat) => stat ? stat.toObject({versionKey: false}) : {type, key})
     .then((stat) => this.aggregates[objKey] = stat);
   }
 
@@ -106,14 +108,13 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
       Object.keys(this.aggregates)
       .map((key) => {
         const agg = this.aggregates[key];
-        if (agg.save) return agg.save();
         return Statistic.findOneAndUpdate(
           {type: agg.type, key: agg.key},
           agg,
           {upsert: true, new: true}
-        ).then((stat) => console.log('New stat: ', stat));
+        ).then((stat) => console.log('Stat: ', stat));
       })
-    ).catch((err) => console.log('error saving aggreagtes'));
+    ).catch((err) => console.log('Error saving aggreagtes', err));
   }
 
   accumulateAggregates(stat) {

@@ -1589,7 +1589,7 @@ var CollectResponses = function (_Mixin$mixin) {
       return this.iterateCursor(_Answer2.default.find({
         survey: this.surveyId,
         lastExport: null
-      }).limit(100), 'collectOneAnswer').then(function (answers) {
+      }).limit(1000), 'collectOneAnswer').then(function (answers) {
         return _this4.answers = answers;
       }).then(function () {
         return _this4._saveAllAggregates();
@@ -1789,8 +1789,10 @@ var CollectResponses = function (_Mixin$mixin) {
       if (agg = this.aggregates[objKey]) {
         return Promise.resolve(agg);
       }
-      return this.aggregates[objKey] = _Statistic2.default.findOne({ type: type, key: key }).then(function (stat) {
-        return stat || { type: type, key: key };
+      return this.aggregates[objKey] = _Statistic2.default.findOne({ type: type, key: key }).catch(function (err) {
+        return null;
+      }).then(function (stat) {
+        return stat ? stat.toObject({ versionKey: false }) : { type: type, key: key };
       }).then(function (stat) {
         return _this5.aggregates[objKey] = stat;
       });
@@ -1802,12 +1804,11 @@ var CollectResponses = function (_Mixin$mixin) {
 
       return Promise.all(Object.keys(this.aggregates).map(function (key) {
         var agg = _this6.aggregates[key];
-        if (agg.save) return agg.save();
         return _Statistic2.default.findOneAndUpdate({ type: agg.type, key: agg.key }, agg, { upsert: true, new: true }).then(function (stat) {
-          return console.log('New stat: ', stat);
+          return console.log('Stat: ', stat);
         });
       })).catch(function (err) {
-        return console.log('error saving aggreagtes');
+        return console.log('Error saving aggreagtes', err);
       });
     }
   }, {
