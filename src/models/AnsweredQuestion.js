@@ -127,7 +127,8 @@ export default class AnsweredQuestion extends Question {
           });
           if (!childQ) {
             throw new Error(
-              `Child question ${respChild.position} not found in ${refQ.number || refQ.type}`
+              `Child question ${respChild.position} not found.
+               In Q ${refQ.number || refQ.type}.`
             );
           }
           yield* respChild.findRespondents({
@@ -178,7 +179,8 @@ export default class AnsweredQuestion extends Question {
 
           if (!childQ) {
             throw new Error(
-              `Child question ${respChild.position} not found in ${refQ.number || refQ.type}`
+              `Child question ${respChild.position} not found.
+               In Q ${refQ.number || refQ.type}.`
             );
           }
 

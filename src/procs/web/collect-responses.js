@@ -51,20 +51,25 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
     const _this = this;
     let statsCount = 0;
     return co(function* () {
-      for (let {question, context} of _this.survey.respondentsIn(
-          answer, {keys: _this.collectionKeys}
-        )
-      ) {
-        for (let o of question.collectRespondent(context)) {
-          yield _this.writeStatsObj(o);
-          ++statsCount;
-        }
+      try {
+          for (let {question, context} of _this.survey.respondentsIn(
+              answer, {keys: _this.collectionKeys}
+            )
+          ) {
+            for (let o of question.collectRespondent(context)) {
+              yield _this.writeStatsObj(o);
+              ++statsCount;
+            }
+          }
+        answer.set('lastExport', new Date());
+        return answer.save()
+        .then(() => _this.totalStatsCount = _this.totalStatsCount + statsCount)
+        .then(() => ++_this.answersCount)
+        .then(() => ({status: 'DONE', statsCount, _id: answer._id}));
+      } catch (e) {
+        console.log(`Error processing ${answer._id}:\n${e.message}`);
+        return Promise.resolve({status: 'ERROR', _id: answer._id});
       }
-      answer.set('lastExport', new Date());
-      return answer.save()
-      .then(() => _this.totalStatsCount = _this.totalStatsCount + statsCount)
-      .then(() => ++_this.answersCount)
-      .then(() => ({status: 'DONE', statsCount, _id: answer._id}));
     });
   }
 

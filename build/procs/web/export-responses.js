@@ -223,39 +223,39 @@ Object.assign(surveySchema.methods, {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
+            context = Object.assign({}, context, { refQ: this.question });
+
             if (!(!this.respondents || !this.respondents.length)) {
-              _context.next = 5;
+              _context.next = 6;
               break;
             }
 
-            _context.next = 3;
+            _context.next = 4;
             return { question: answer.rootQuestion, context: context };
 
-          case 3:
-            _context.next = 11;
+          case 4:
+            _context.next = 14;
             break;
 
-          case 5:
+          case 6:
+            context.respondents = this.respondents;
             idx = 0;
 
-          case 6:
+          case 8:
             if (!(idx < this.respondents.length)) {
-              _context.next = 11;
+              _context.next = 14;
               break;
             }
 
-            return _context.delegateYield(answer.rootQuestion.findRespondents(Object.assign({
-              respondents: this.respondents,
-              refQ: this.question,
-              idx: idx
-            }, context)), 't0', 8);
-
-          case 8:
-            idx++;
-            _context.next = 6;
-            break;
+            context.idx = idx;
+            return _context.delegateYield(answer.rootQuestion.findRespondents(context), 't0', 11);
 
           case 11:
+            idx++;
+            _context.next = 8;
+            break;
+
+          case 14:
           case 'end':
             return _context.stop();
         }

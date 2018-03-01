@@ -16,17 +16,14 @@ surveySchema.index({enabled: 1, name: 1});
 
 Object.assign(surveySchema.methods, {
   * respondentsIn(answer, context) {
+    context = Object.assign({}, context, {refQ: this.question});
     if (!this.respondents || !this.respondents.length) {
       yield {question: answer.rootQuestion, context};
     } else {
+      context.respondents = this.respondents;
       for (let idx=0; idx<this.respondents.length; idx++) {
-        yield* answer.rootQuestion.findRespondents(
-          Object.assign({
-            respondents: this.respondents,
-            refQ: this.question,
-            idx,
-          }, context)
-        );
+        context.idx = idx;
+        yield* answer.rootQuestion.findRespondents(context);
       }
     }
   },

@@ -223,39 +223,39 @@ Object.assign(surveySchema.methods, {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
+            context = Object.assign({}, context, { refQ: this.question });
+
             if (!(!this.respondents || !this.respondents.length)) {
-              _context.next = 5;
+              _context.next = 6;
               break;
             }
 
-            _context.next = 3;
+            _context.next = 4;
             return { question: answer.rootQuestion, context: context };
 
-          case 3:
-            _context.next = 11;
+          case 4:
+            _context.next = 14;
             break;
 
-          case 5:
+          case 6:
+            context.respondents = this.respondents;
             idx = 0;
 
-          case 6:
+          case 8:
             if (!(idx < this.respondents.length)) {
-              _context.next = 11;
+              _context.next = 14;
               break;
             }
 
-            return _context.delegateYield(answer.rootQuestion.findRespondents(Object.assign({
-              respondents: this.respondents,
-              refQ: this.question,
-              idx: idx
-            }, context)), 't0', 8);
-
-          case 8:
-            idx++;
-            _context.next = 6;
-            break;
+            context.idx = idx;
+            return _context.delegateYield(answer.rootQuestion.findRespondents(context), 't0', 11);
 
           case 11:
+            idx++;
+            _context.next = 8;
+            break;
+
+          case 14:
           case 'end':
             return _context.stop();
         }
@@ -758,7 +758,7 @@ var AnsweredQuestion = function (_Question) {
                 break;
               }
 
-              throw new Error('Child question ' + _respChild.position + ' not found in ' + (refQ.number || refQ.type));
+              throw new Error('Child question ' + _respChild.position + ' not found.\n               In Q ' + (refQ.number || refQ.type) + '.');
 
             case 28:
               return _context2.delegateYield(_respChild.findRespondents({
@@ -860,7 +860,7 @@ var AnsweredQuestion = function (_Question) {
           }, false)) return acc;
 
           if (!childQ) {
-            throw new Error('Child question ' + respChild.position + ' not found in ' + (refQ.number || refQ.type));
+            throw new Error('Child question ' + respChild.position + ' not found.\n               In Q ' + (refQ.number || refQ.type) + '.');
           }
 
           return childAnswer.collect({
@@ -1620,15 +1620,16 @@ var CollectResponses = function (_Mixin$mixin) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
+                _context.prev = 0;
                 _iteratorNormalCompletion = true;
                 _didIteratorError = false;
                 _iteratorError = undefined;
-                _context.prev = 3;
+                _context.prev = 4;
                 _iterator = _this.survey.respondentsIn(answer, { keys: _this.collectionKeys })[Symbol.iterator]();
 
-              case 5:
+              case 6:
                 if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-                  _context.next = 39;
+                  _context.next = 40;
                   break;
                 }
 
@@ -1638,101 +1639,101 @@ var CollectResponses = function (_Mixin$mixin) {
                 _iteratorNormalCompletion2 = true;
                 _didIteratorError2 = false;
                 _iteratorError2 = undefined;
-                _context.prev = 12;
+                _context.prev = 13;
                 _iterator2 = question.collectRespondent(context)[Symbol.iterator]();
 
-              case 14:
+              case 15:
                 if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
-                  _context.next = 22;
+                  _context.next = 23;
                   break;
                 }
 
                 o = _step2.value;
-                _context.next = 18;
+                _context.next = 19;
                 return _this.writeStatsObj(o);
 
-              case 18:
+              case 19:
                 ++statsCount;
 
-              case 19:
+              case 20:
                 _iteratorNormalCompletion2 = true;
-                _context.next = 14;
+                _context.next = 15;
                 break;
 
-              case 22:
-                _context.next = 28;
+              case 23:
+                _context.next = 29;
                 break;
 
-              case 24:
-                _context.prev = 24;
-                _context.t0 = _context['catch'](12);
+              case 25:
+                _context.prev = 25;
+                _context.t0 = _context['catch'](13);
                 _didIteratorError2 = true;
                 _iteratorError2 = _context.t0;
 
-              case 28:
-                _context.prev = 28;
+              case 29:
                 _context.prev = 29;
+                _context.prev = 30;
 
                 if (!_iteratorNormalCompletion2 && _iterator2.return) {
                   _iterator2.return();
                 }
 
-              case 31:
-                _context.prev = 31;
+              case 32:
+                _context.prev = 32;
 
                 if (!_didIteratorError2) {
-                  _context.next = 34;
+                  _context.next = 35;
                   break;
                 }
 
                 throw _iteratorError2;
 
-              case 34:
-                return _context.finish(31);
-
               case 35:
-                return _context.finish(28);
+                return _context.finish(32);
 
               case 36:
+                return _context.finish(29);
+
+              case 37:
                 _iteratorNormalCompletion = true;
-                _context.next = 5;
+                _context.next = 6;
                 break;
 
-              case 39:
-                _context.next = 45;
+              case 40:
+                _context.next = 46;
                 break;
 
-              case 41:
-                _context.prev = 41;
-                _context.t1 = _context['catch'](3);
+              case 42:
+                _context.prev = 42;
+                _context.t1 = _context['catch'](4);
                 _didIteratorError = true;
                 _iteratorError = _context.t1;
 
-              case 45:
-                _context.prev = 45;
+              case 46:
                 _context.prev = 46;
+                _context.prev = 47;
 
                 if (!_iteratorNormalCompletion && _iterator.return) {
                   _iterator.return();
                 }
 
-              case 48:
-                _context.prev = 48;
+              case 49:
+                _context.prev = 49;
 
                 if (!_didIteratorError) {
-                  _context.next = 51;
+                  _context.next = 52;
                   break;
                 }
 
                 throw _iteratorError;
 
-              case 51:
-                return _context.finish(48);
-
               case 52:
-                return _context.finish(45);
+                return _context.finish(49);
 
               case 53:
+                return _context.finish(46);
+
+              case 54:
                 answer.set('lastExport', new Date());
                 return _context.abrupt('return', answer.save().then(function () {
                   return _this.totalStatsCount = _this.totalStatsCount + statsCount;
@@ -1742,12 +1743,19 @@ var CollectResponses = function (_Mixin$mixin) {
                   return { status: 'DONE', statsCount: statsCount, _id: answer._id };
                 }));
 
-              case 55:
+              case 58:
+                _context.prev = 58;
+                _context.t2 = _context['catch'](0);
+
+                console.log('Error processing ' + answer._id + ':\n' + _context.t2.message);
+                return _context.abrupt('return', Promise.resolve({ status: 'ERROR', _id: answer._id }));
+
+              case 62:
               case 'end':
                 return _context.stop();
             }
           }
-        }, _callee, this, [[3, 41, 45, 53], [12, 24, 28, 36], [29,, 31, 35], [46,, 48, 52]]);
+        }, _callee, this, [[0, 58], [4, 42, 46, 54], [13, 25, 29, 37], [30,, 32, 36], [47,, 49, 53]]);
       }));
     }
   }, {
