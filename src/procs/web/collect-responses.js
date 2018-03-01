@@ -31,7 +31,7 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
     return this.iterateCursor(Answer.find({
       survey: this.surveyId,
       lastExport: null,
-    }), 'collectOneAnswer').then((answers) => this.answers = answers)
+    }).limit(100), 'collectOneAnswer').then((answers) => this.answers = answers)
     .then(() => this._saveAllAggregates())
     .then(() => ({
       answers: this.answers,
@@ -62,7 +62,9 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
             )
           ) {
             for (let o of question.collectRespondent(context)) {
-              o.UPLOAD_TIME = answer.createdAt;
+              if (answer.createdAt) {
+                o.UPLOAD_TIME = answer.createdAt.getTime();
+              }
               yield _this.writeStatsObj(o);
               ++statsCount;
             }
@@ -109,7 +111,7 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
           {type: agg.type, key: agg.key},
           agg,
           {upsert: true, new: true}
-        ).then((stat) => console.log('Saved stat: ', stat));
+        ).then((stat) => console.log('New stat: ', stat));
       })
     ).catch((err) => console.log('error saving aggreagtes'));
   }
@@ -137,7 +139,8 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
         key = this._parseExpression(agg.key);
       }
       if (!key) {
-        console.error(`Error parsing key: ${key}`);
+        console.error(`Error parsing key: ${agg.key}`);
+        continue;
       };
       key = key || null;
 

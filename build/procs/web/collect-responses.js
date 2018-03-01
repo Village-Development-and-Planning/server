@@ -1589,7 +1589,7 @@ var CollectResponses = function (_Mixin$mixin) {
       return this.iterateCursor(_Answer2.default.find({
         survey: this.surveyId,
         lastExport: null
-      }), 'collectOneAnswer').then(function (answers) {
+      }).limit(100), 'collectOneAnswer').then(function (answers) {
         return _this4.answers = answers;
       }).then(function () {
         return _this4._saveAllAggregates();
@@ -1655,7 +1655,9 @@ var CollectResponses = function (_Mixin$mixin) {
 
                 o = _step2.value;
 
-                o.UPLOAD_TIME = answer.createdAt;
+                if (answer.createdAt) {
+                  o.UPLOAD_TIME = answer.createdAt.getTime();
+                }
                 _context.next = 20;
                 return _this.writeStatsObj(o);
 
@@ -1802,7 +1804,7 @@ var CollectResponses = function (_Mixin$mixin) {
         var agg = _this6.aggregates[key];
         if (agg.save) return agg.save();
         return _Statistic2.default.findOneAndUpdate({ type: agg.type, key: agg.key }, agg, { upsert: true, new: true }).then(function (stat) {
-          return console.log('Saved stat: ', stat);
+          return console.log('New stat: ', stat);
         });
       })).catch(function (err) {
         return console.log('error saving aggreagtes');
@@ -1839,7 +1841,8 @@ var CollectResponses = function (_Mixin$mixin) {
           key = _this7._parseExpression(agg.key);
         }
         if (!key) {
-          console.error('Error parsing key: ' + key);
+          console.error('Error parsing key: ' + agg.key);
+          return 'continue';
         };
         key = key || null;
 
