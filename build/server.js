@@ -977,7 +977,7 @@ var AnsweredQuestion = function (_Question) {
     value: function _accumulateValue(ans, ansKey, refQ) {
       if (!ans.logged_options) return {};
       var ret = {};
-      if (refQ.type === 'ROOT' || refQ.type == 'DUMMY' || !this.number) {
+      if (refQ.type === 'ROOT' || refQ.type === 'DUMMY' || !this.number) {
         return ret;
       }
       if (refQ.type == 'MULTIPLE_CHOICE') {
@@ -988,20 +988,20 @@ var AnsweredQuestion = function (_Question) {
           return acc;
         }, ret);
       } else if (refQ.type == 'GPS') {
-        var lat = void 0;
-        var long = void 0;
-        ans.logged_options.forEach(function (opt) {
-          if (opt.position == 'GPS') {
-            var val = opt.value || opt.text.english;
+        var lat = void 0,
+            long = void 0,
+            val = void 0;
+        var opt = ans.logged_options[0];
+        val = opt && (opt.value || opt.text.english);
+        val = val || '';
 
-            var _val$split = val.split(',');
+        var _val$split = val.split(',');
 
-            var _val$split2 = _slicedToArray(_val$split, 2);
+        var _val$split2 = _slicedToArray(_val$split, 2);
 
-            lat = _val$split2[0];
-            long = _val$split2[1];
-          }
-        });
+        lat = _val$split2[0];
+        long = _val$split2[1];
+
         ret[ansKey + '_lat'] = lat;
         ret[ansKey + '_long'] = long;
       } else if (['INFO', 'INPUT', 'CONFIRMATION'].indexOf(refQ.type) !== -1 || refQ.flow && refQ.flow.pre.fill.length) {
@@ -1031,7 +1031,7 @@ var AnsweredQuestion = function (_Question) {
               type: type }, field, ret[ansKey])).then(function (loc) {
               return loc && loc[other] || 'UNKNOWN';
             }).catch(function (err) {
-              return console.log(err);
+              return console.log(err) || 'UNKNOWN';
             });
           }
         };

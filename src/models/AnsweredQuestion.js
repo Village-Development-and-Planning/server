@@ -29,7 +29,7 @@ export default class AnsweredQuestion extends Question {
   _accumulateValue(ans, ansKey, refQ) {
     if (!ans.logged_options) return {};
     const ret = {};
-    if (refQ.type === 'ROOT' || refQ.type == 'DUMMY' || !this.number) {
+    if (refQ.type === 'ROOT' || refQ.type === 'DUMMY' || !this.number) {
       return ret;
     }
     if (refQ.type == 'MULTIPLE_CHOICE') {
@@ -40,14 +40,11 @@ export default class AnsweredQuestion extends Question {
         return acc;
       }, ret);
     } else if (refQ.type == 'GPS') {
-      let lat;
-      let long;
-      ans.logged_options.forEach((opt) => {
-        if (opt.position == 'GPS') {
-          const val = opt.value || opt.text.english;
-          [lat, long] = val.split(',');
-        }
-      });
+      let lat, long, val;
+      const opt = ans.logged_options[0];
+      val = opt && (opt.value || opt.text.english);
+      val = val || '';
+      [lat, long] = val.split(',');
       ret[`${ansKey}_lat`] = lat;
       ret[`${ansKey}_long`] = long;
     } else if (
@@ -79,7 +76,7 @@ export default class AnsweredQuestion extends Question {
           ret[`${type}_${other.toUpperCase()}`] = Location.findOne({
             type, [field]: ret[ansKey],
           }).then((loc) => (loc && loc[other] || 'UNKNOWN'))
-          .catch((err) => console.log(err));
+          .catch((err) => console.log(err) || 'UNKNOWN');
         }
       }
     }

@@ -50,6 +50,11 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
 
     const _this = this;
     let statsCount = 0;
+    const keys = this.collectionKeys;
+    if (!keys.posUPLOAD_TIME) {
+      keys.push('UPLOAD_TIME');
+      keys.posUPLOAD_TIME = 'Time of upload.';
+    }
     return co(function* () {
       try {
           for (let {question, context} of _this.survey.respondentsIn(
@@ -57,6 +62,7 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
             )
           ) {
             for (let o of question.collectRespondent(context)) {
+              o.UPLOAD_TIME = answer.createdAt;
               yield _this.writeStatsObj(o);
               ++statsCount;
             }
@@ -117,7 +123,7 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
       const obj = stat.data;
       if (obj.hasOwnProperty(name)) {
         let val = obj[name];
-         done(val);
+        done(val);
       }
     });
 
@@ -130,7 +136,9 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
       if (agg.key) {
         key = this._parseExpression(agg.key);
       }
-      if (!key) continue;
+      if (!key) {
+        console.error(`Error parsing key: ${key}`);
+      };
       key = key || null;
 
       if (agg.type) {

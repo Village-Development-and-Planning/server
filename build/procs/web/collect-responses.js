@@ -572,7 +572,7 @@ var AnsweredQuestion = function (_Question) {
     value: function _accumulateValue(ans, ansKey, refQ) {
       if (!ans.logged_options) return {};
       var ret = {};
-      if (refQ.type === 'ROOT' || refQ.type == 'DUMMY' || !this.number) {
+      if (refQ.type === 'ROOT' || refQ.type === 'DUMMY' || !this.number) {
         return ret;
       }
       if (refQ.type == 'MULTIPLE_CHOICE') {
@@ -583,20 +583,20 @@ var AnsweredQuestion = function (_Question) {
           return acc;
         }, ret);
       } else if (refQ.type == 'GPS') {
-        var lat = void 0;
-        var long = void 0;
-        ans.logged_options.forEach(function (opt) {
-          if (opt.position == 'GPS') {
-            var val = opt.value || opt.text.english;
+        var lat = void 0,
+            long = void 0,
+            val = void 0;
+        var opt = ans.logged_options[0];
+        val = opt && (opt.value || opt.text.english);
+        val = val || '';
 
-            var _val$split = val.split(',');
+        var _val$split = val.split(',');
 
-            var _val$split2 = _slicedToArray(_val$split, 2);
+        var _val$split2 = _slicedToArray(_val$split, 2);
 
-            lat = _val$split2[0];
-            long = _val$split2[1];
-          }
-        });
+        lat = _val$split2[0];
+        long = _val$split2[1];
+
         ret[ansKey + '_lat'] = lat;
         ret[ansKey + '_long'] = long;
       } else if (['INFO', 'INPUT', 'CONFIRMATION'].indexOf(refQ.type) !== -1 || refQ.flow && refQ.flow.pre.fill.length) {
@@ -626,7 +626,7 @@ var AnsweredQuestion = function (_Question) {
               type: type }, field, ret[ansKey])).then(function (loc) {
               return loc && loc[other] || 'UNKNOWN';
             }).catch(function (err) {
-              return console.log(err);
+              return console.log(err) || 'UNKNOWN';
             });
           }
         };
@@ -1613,6 +1613,11 @@ var CollectResponses = function (_Mixin$mixin) {
 
       var _this = this;
       var statsCount = 0;
+      var keys = this.collectionKeys;
+      if (!keys.posUPLOAD_TIME) {
+        keys.push('UPLOAD_TIME');
+        keys.posUPLOAD_TIME = 'Time of upload.';
+      }
       return (0, _co2.default)( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
         var _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, _ref, question, context, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, o;
 
@@ -1629,7 +1634,7 @@ var CollectResponses = function (_Mixin$mixin) {
 
               case 6:
                 if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-                  _context.next = 40;
+                  _context.next = 41;
                   break;
                 }
 
@@ -1644,96 +1649,98 @@ var CollectResponses = function (_Mixin$mixin) {
 
               case 15:
                 if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
-                  _context.next = 23;
+                  _context.next = 24;
                   break;
                 }
 
                 o = _step2.value;
-                _context.next = 19;
+
+                o.UPLOAD_TIME = answer.createdAt;
+                _context.next = 20;
                 return _this.writeStatsObj(o);
 
-              case 19:
+              case 20:
                 ++statsCount;
 
-              case 20:
+              case 21:
                 _iteratorNormalCompletion2 = true;
                 _context.next = 15;
                 break;
 
-              case 23:
-                _context.next = 29;
+              case 24:
+                _context.next = 30;
                 break;
 
-              case 25:
-                _context.prev = 25;
+              case 26:
+                _context.prev = 26;
                 _context.t0 = _context['catch'](13);
                 _didIteratorError2 = true;
                 _iteratorError2 = _context.t0;
 
-              case 29:
-                _context.prev = 29;
+              case 30:
                 _context.prev = 30;
+                _context.prev = 31;
 
                 if (!_iteratorNormalCompletion2 && _iterator2.return) {
                   _iterator2.return();
                 }
 
-              case 32:
-                _context.prev = 32;
+              case 33:
+                _context.prev = 33;
 
                 if (!_didIteratorError2) {
-                  _context.next = 35;
+                  _context.next = 36;
                   break;
                 }
 
                 throw _iteratorError2;
 
-              case 35:
-                return _context.finish(32);
-
               case 36:
-                return _context.finish(29);
+                return _context.finish(33);
 
               case 37:
+                return _context.finish(30);
+
+              case 38:
                 _iteratorNormalCompletion = true;
                 _context.next = 6;
                 break;
 
-              case 40:
-                _context.next = 46;
+              case 41:
+                _context.next = 47;
                 break;
 
-              case 42:
-                _context.prev = 42;
+              case 43:
+                _context.prev = 43;
                 _context.t1 = _context['catch'](4);
                 _didIteratorError = true;
                 _iteratorError = _context.t1;
 
-              case 46:
-                _context.prev = 46;
+              case 47:
                 _context.prev = 47;
+                _context.prev = 48;
 
                 if (!_iteratorNormalCompletion && _iterator.return) {
                   _iterator.return();
                 }
 
-              case 49:
-                _context.prev = 49;
+              case 50:
+                _context.prev = 50;
 
                 if (!_didIteratorError) {
-                  _context.next = 52;
+                  _context.next = 53;
                   break;
                 }
 
                 throw _iteratorError;
 
-              case 52:
-                return _context.finish(49);
-
               case 53:
-                return _context.finish(46);
+                return _context.finish(50);
 
               case 54:
+                return _context.finish(47);
+
+              case 55:
                 answer.set('lastExport', new Date());
                 return _context.abrupt('return', answer.save().then(function () {
                   return _this.totalStatsCount = _this.totalStatsCount + statsCount;
@@ -1743,19 +1750,19 @@ var CollectResponses = function (_Mixin$mixin) {
                   return { status: 'DONE', statsCount: statsCount, _id: answer._id };
                 }));
 
-              case 58:
-                _context.prev = 58;
+              case 59:
+                _context.prev = 59;
                 _context.t2 = _context['catch'](0);
 
                 console.log('Error processing ' + answer._id + ':\n' + _context.t2.message);
                 return _context.abrupt('return', Promise.resolve({ status: 'ERROR', _id: answer._id }));
 
-              case 62:
+              case 63:
               case 'end':
                 return _context.stop();
             }
           }
-        }, _callee, this, [[0, 58], [4, 42, 46, 54], [13, 25, 29, 37], [30,, 32, 36], [47,, 49, 53]]);
+        }, _callee, this, [[0, 59], [4, 43, 47, 55], [13, 26, 30, 38], [31,, 33, 37], [48,, 50, 54]]);
       }));
     }
   }, {
@@ -1831,7 +1838,9 @@ var CollectResponses = function (_Mixin$mixin) {
         if (agg.key) {
           key = _this7._parseExpression(agg.key);
         }
-        if (!key) return 'continue';
+        if (!key) {
+          console.error('Error parsing key: ' + key);
+        };
         key = key || null;
 
         if (agg.type) {
