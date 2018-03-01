@@ -975,7 +975,6 @@ var AnsweredQuestion = function (_Question) {
   }, {
     key: '_accumulateValue',
     value: function _accumulateValue(ans, ansKey, refQ) {
-      refQ = refQ || this;
       if (!ans.logged_options) return {};
       var ret = {};
       if (refQ.type === 'ROOT' || refQ.type == 'DUMMY' || !this.number) {
@@ -1074,7 +1073,7 @@ var AnsweredQuestion = function (_Question) {
           idx = _ref2.idx,
           refQ = _ref2.refQ;
 
-      var number, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, ans, respChild, childQ, newAcc;
+      var number, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, ans, _respChild, childQ, newAcc;
 
       return regeneratorRuntime.wrap(function findRespondents$(_context2) {
         while (1) {
@@ -1103,40 +1102,39 @@ var AnsweredQuestion = function (_Question) {
               prefix = prefix || 'Q';
               keys = keys || [];
               prefix = '' + prefix + (this.position || '');
-              refQ = refQ || this;
 
               if (!(this.number === number)) {
-                _context2.next = 14;
+                _context2.next = 13;
                 break;
               }
 
-              _context2.next = 13;
+              _context2.next = 12;
               return { question: this, context: { acc: acc, keys: keys, prefix: prefix, refQ: refQ } };
 
-            case 13:
+            case 12:
               return _context2.abrupt('return');
 
-            case 14:
+            case 13:
               _iteratorNormalCompletion3 = true;
               _didIteratorError3 = false;
               _iteratorError3 = undefined;
-              _context2.prev = 17;
+              _context2.prev = 16;
               _iterator3 = this.answers[Symbol.iterator]();
 
-            case 19:
+            case 18:
               if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
-                _context2.next = 31;
+                _context2.next = 32;
                 break;
               }
 
               ans = _step3.value;
 
               if (!ans.children) {
-                _context2.next = 28;
+                _context2.next = 29;
                 break;
               }
 
-              respChild = ans.children.find(function (child, idx) {
+              _respChild = ans.children.find(function (child, idx) {
                 child = AnsweredQuestion.fromChild(child);
                 if (child.isParent(number)) {
                   return child;
@@ -1145,13 +1143,13 @@ var AnsweredQuestion = function (_Question) {
                 }
               });
 
-              if (!respChild) {
-                _context2.next = 28;
+              if (!_respChild) {
+                _context2.next = 29;
                 break;
               }
 
-              respChild = AnsweredQuestion.fromChild(respChild);
-              childQ = refQ.findChildByPosition(respChild.position);
+              _respChild = AnsweredQuestion.fromChild(_respChild);
+              childQ = refQ.findChildByPosition(_respChild.position);
               newAcc = this.collectAnswer({
                 ans: ans, keys: keys, refQ: refQ,
                 ansKey: prefix,
@@ -1159,61 +1157,70 @@ var AnsweredQuestion = function (_Question) {
                 ignore: respondents,
                 acc: Object.assign({}, acc)
               });
-              return _context2.delegateYield(respChild.findRespondents({
+
+              if (childQ) {
+                _context2.next = 28;
+                break;
+              }
+
+              throw new Error('Child question ' + _respChild.position + ' not found in ' + (refQ.number || refQ.type));
+
+            case 28:
+              return _context2.delegateYield(_respChild.findRespondents({
                 acc: newAcc,
                 prefix: prefix + '_',
                 refQ: childQ,
                 keys: keys, respondents: respondents, idx: idx
-              }), 't0', 28);
+              }), 't0', 29);
 
-            case 28:
+            case 29:
               _iteratorNormalCompletion3 = true;
-              _context2.next = 19;
+              _context2.next = 18;
               break;
 
-            case 31:
-              _context2.next = 37;
+            case 32:
+              _context2.next = 38;
               break;
 
-            case 33:
-              _context2.prev = 33;
-              _context2.t1 = _context2['catch'](17);
+            case 34:
+              _context2.prev = 34;
+              _context2.t1 = _context2['catch'](16);
               _didIteratorError3 = true;
               _iteratorError3 = _context2.t1;
 
-            case 37:
-              _context2.prev = 37;
+            case 38:
               _context2.prev = 38;
+              _context2.prev = 39;
 
               if (!_iteratorNormalCompletion3 && _iterator3.return) {
                 _iterator3.return();
               }
 
-            case 40:
-              _context2.prev = 40;
+            case 41:
+              _context2.prev = 41;
 
               if (!_didIteratorError3) {
-                _context2.next = 43;
+                _context2.next = 44;
                 break;
               }
 
               throw _iteratorError3;
 
-            case 43:
-              return _context2.finish(40);
-
             case 44:
-              return _context2.finish(37);
+              return _context2.finish(41);
 
             case 45:
-              ;
+              return _context2.finish(38);
 
             case 46:
+              ;
+
+            case 47:
             case 'end':
               return _context2.stop();
           }
         }
-      }, findRespondents, this, [[17, 33, 37, 45], [38,, 40, 44]]);
+      }, findRespondents, this, [[16, 34, 38, 46], [39,, 41, 45]]);
     })
   }, {
     key: 'collectAnswer',
@@ -1230,7 +1237,6 @@ var AnsweredQuestion = function (_Question) {
       ansKey = ansKey || 'Q';
       suffix = suffix || '';
       keys = keys || [];
-      refQ = refQ || this;
 
       var valObj = this._accumulateValue(ans, ansKey, refQ);
       Object.keys(valObj).forEach(function (key) {
@@ -1258,6 +1264,10 @@ var AnsweredQuestion = function (_Question) {
             return acc || childAnswer.isParent(ign);
           }, false)) return acc;
 
+          if (!childQ) {
+            throw new Error('Child question ' + respChild.position + ' not found in ' + (refQ.number || refQ.type));
+          }
+
           return childAnswer.collect({
             prefix: ansKey + '_',
             refQ: childQ,
@@ -1283,7 +1293,6 @@ var AnsweredQuestion = function (_Question) {
       prefix = prefix || 'Q';
       suffix = suffix || '';
       keys = keys || [];
-      refQ = refQ || this;
 
       var pos = refQ.position || '';
       pos = pos.replace(/\./g, '_');
@@ -1437,6 +1446,8 @@ function dispatcher(Controller, method) {
 
 "use strict";
 
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -1603,7 +1614,7 @@ var SurveyController = function (_EntityController) {
   }, {
     key: '_parseEntity',
     value: function _parseEntity(obj) {
-      obj.enabled = !!obj.enabled;
+      if (_typeof(obj.enabled) !== undefined) obj.enabled = !!obj.enabled;
       if (typeof obj.respondents === 'string') {
         if (!obj.respondents || obj.respondents == 'none') {
           obj.respondents = null;

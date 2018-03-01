@@ -27,7 +27,6 @@ export default class AnsweredQuestion extends Question {
   }
 
   _accumulateValue(ans, ansKey, refQ) {
-    refQ = refQ || this;
     if (!ans.logged_options) return {};
     const ret = {};
     if (refQ.type === 'ROOT' || refQ.type == 'DUMMY' || !this.number) {
@@ -98,7 +97,6 @@ export default class AnsweredQuestion extends Question {
     prefix = prefix || 'Q';
     keys = keys || [];
     prefix = `${prefix}${this.position || ''}`;
-    refQ = refQ || this;
 
     if (this.number === number) {
       yield {question: this, context: {acc, keys, prefix, refQ}};
@@ -127,6 +125,11 @@ export default class AnsweredQuestion extends Question {
             ignore: respondents,
             acc: Object.assign({}, acc),
           });
+          if (!childQ) {
+            throw new Error(
+              `Child question ${respChild.position} not found in ${refQ.number || refQ.type}`
+            );
+          }
           yield* respChild.findRespondents({
             acc: newAcc,
             prefix: `${prefix}_`,
@@ -144,7 +147,6 @@ export default class AnsweredQuestion extends Question {
     ansKey = ansKey || 'Q';
     suffix = suffix || '';
     keys = keys || [];
-    refQ = refQ || this;
 
     const valObj = this._accumulateValue(ans, ansKey, refQ);
     Object.keys(valObj).forEach((key) => {
@@ -174,6 +176,12 @@ export default class AnsweredQuestion extends Question {
             false,
           )) return acc;
 
+          if (!childQ) {
+            throw new Error(
+              `Child question ${respChild.position} not found in ${refQ.number || refQ.type}`
+            );
+          }
+
           return childAnswer.collect({
             prefix: `${ansKey}_`,
             refQ: childQ,
@@ -191,7 +199,6 @@ export default class AnsweredQuestion extends Question {
     prefix = prefix || 'Q';
     suffix = suffix || '';
     keys = keys || [];
-    refQ = refQ || this;
 
     let pos = refQ.position || '';
     pos = pos.replace(/\./g, '_');
