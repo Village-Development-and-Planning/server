@@ -2,6 +2,7 @@ import Location from '../models/Location';
 import EntityController from './EntitiyController';
 
 import LocationParser from '../lib/csv/location-csv-parser';
+import Statistic from '../models/Statistic';
 
 /**
  * Location document controller.
@@ -16,6 +17,24 @@ export default class LocationController extends EntityController {
       return Promise.resolve(query);
     }
     return super._create(query);
+  }
+
+  _findOne(query) {
+    return super._findOne(query).then(
+      (loc) => {
+        if (loc) {
+          const prefix = ['LocationAggregate', loc.type].join('/');
+          return Statistic.find({
+            type: new RegExp('^' + prefix),
+            key: loc.uid,
+          }).then((stats) => {
+            loc.set('aggregates', stats, {strict: false});
+            return loc;
+          });
+        }
+        return loc;
+      }
+    );
   }
 
   _parseEntity(obj) {

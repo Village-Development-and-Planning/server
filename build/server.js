@@ -193,31 +193,6 @@ module.exports = require("babel-polyfill");
 "use strict";
 
 
-module.exports = {
-  db: {
-    connectionOptions: {
-      poolSize: 5,
-      useMongoClient: true
-    },
-    connectionString: 'mongodb://localhost/test'
-  },
-  jwt: {
-    secret: 'a general string'
-  },
-  admin: {
-    username: 'ptracking',
-    passphrase: 'vaazhvuT'
-  },
-  routeSecurity: [{ prefix: '/cms', roles: 'root content-manager' }, { prefix: '/app', roles: 'root surveyor' }]
-};
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
 var _Schema = __webpack_require__(1);
 
 var _Schema2 = _interopRequireDefault(_Schema);
@@ -237,6 +212,31 @@ var schema = new _Schema2.default({
 schema.index({ key: 1, type: 1 });
 
 module.exports = _mongoose2.default.model('Statistic', schema);
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = {
+  db: {
+    connectionOptions: {
+      poolSize: 5,
+      useMongoClient: true
+    },
+    connectionString: 'mongodb://localhost/test'
+  },
+  jwt: {
+    secret: 'a general string'
+  },
+  admin: {
+    username: 'ptracking',
+    passphrase: 'vaazhvuT'
+  },
+  routeSecurity: [{ prefix: '/cms', roles: 'root content-manager' }, { prefix: '/app', roles: 'root surveyor' }]
+};
 
 /***/ }),
 /* 6 */
@@ -530,7 +530,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _Constants = __webpack_require__(4);
+var _Constants = __webpack_require__(5);
 
 var _Constants2 = _interopRequireDefault(_Constants);
 
@@ -1455,7 +1455,7 @@ var _Answer = __webpack_require__(17);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 
-var _Statistic = __webpack_require__(5);
+var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
@@ -2001,7 +2001,7 @@ var _User = __webpack_require__(18);
 
 var _User2 = _interopRequireDefault(_User);
 
-var _Statistic = __webpack_require__(5);
+var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
@@ -2264,7 +2264,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 var jwt = __webpack_require__(44);
-var constants = __webpack_require__(4);
+var constants = __webpack_require__(5);
 
 var secRouter = new _express2.default.Router();
 
@@ -2321,7 +2321,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var passport = __webpack_require__(40);
 var Digest = __webpack_require__(41).DigestStrategy;
 var jwt = __webpack_require__(42);
-var Constants = __webpack_require__(4);
+var Constants = __webpack_require__(5);
 
 passport.use(new Digest({ qop: 'auth' }, function (username, cb) {
   if (username === Constants.admin.username) {
@@ -2383,7 +2383,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = rolesMiddleware;
-var Constants = __webpack_require__(4);
+var Constants = __webpack_require__(5);
 
 /**
  * Inspects roles based on the route
@@ -4249,6 +4249,10 @@ var _locationCsvParser = __webpack_require__(82);
 
 var _locationCsvParser2 = _interopRequireDefault(_locationCsvParser);
 
+var _Statistic = __webpack_require__(4);
+
+var _Statistic2 = _interopRequireDefault(_Statistic);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -4280,6 +4284,23 @@ var LocationController = function (_EntityController) {
         return Promise.resolve(query);
       }
       return _get(LocationController.prototype.__proto__ || Object.getPrototypeOf(LocationController.prototype), '_create', this).call(this, query);
+    }
+  }, {
+    key: '_findOne',
+    value: function _findOne(query) {
+      return _get(LocationController.prototype.__proto__ || Object.getPrototypeOf(LocationController.prototype), '_findOne', this).call(this, query).then(function (loc) {
+        if (loc) {
+          var prefix = ['LocationAggregate', loc.type].join('/');
+          return _Statistic2.default.find({
+            type: new RegExp('^' + prefix),
+            key: loc.uid
+          }).then(function (stats) {
+            loc.set('aggregates', stats, { strict: false });
+            return loc;
+          });
+        }
+        return loc;
+      });
     }
   }, {
     key: '_parseEntity',

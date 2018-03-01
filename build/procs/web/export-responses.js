@@ -150,7 +150,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _Constants = __webpack_require__(4);
+var _Constants = __webpack_require__(5);
 
 var _Constants2 = _interopRequireDefault(_Constants);
 
@@ -482,7 +482,7 @@ var _Survey = __webpack_require__(13);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
-var _Statistic = __webpack_require__(5);
+var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
@@ -751,32 +751,6 @@ module.exports = require("babel-polyfill");
 "use strict";
 
 
-module.exports = {
-  db: {
-    connectionOptions: {
-      poolSize: 5,
-      useMongoClient: true
-    },
-    connectionString: 'mongodb://localhost/test'
-  },
-  jwt: {
-    secret: 'a general string'
-  },
-  admin: {
-    username: 'ptracking',
-    passphrase: 'vaazhvuT'
-  },
-  routeSecurity: [{ prefix: '/cms', roles: 'root content-manager' }, { prefix: '/app', roles: 'root surveyor' }]
-};
-
-/***/ }),
-
-/***/ 5:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
 var _Schema = __webpack_require__(1);
 
 var _Schema2 = _interopRequireDefault(_Schema);
@@ -796,6 +770,32 @@ var schema = new _Schema2.default({
 schema.index({ key: 1, type: 1 });
 
 module.exports = _mongoose2.default.model('Statistic', schema);
+
+/***/ }),
+
+/***/ 5:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = {
+  db: {
+    connectionOptions: {
+      poolSize: 5,
+      useMongoClient: true
+    },
+    connectionString: 'mongodb://localhost/test'
+  },
+  jwt: {
+    secret: 'a general string'
+  },
+  admin: {
+    username: 'ptracking',
+    passphrase: 'vaazhvuT'
+  },
+  routeSecurity: [{ prefix: '/cms', roles: 'root content-manager' }, { prefix: '/app', roles: 'root surveyor' }]
+};
 
 /***/ }),
 
@@ -951,7 +951,7 @@ var _Cursor = __webpack_require__(23);
 
 var _Cursor2 = _interopRequireDefault(_Cursor);
 
-var _Statistic = __webpack_require__(5);
+var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
