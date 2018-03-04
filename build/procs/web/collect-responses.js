@@ -1589,7 +1589,7 @@ var CollectResponses = function (_Mixin$mixin) {
       return this.iterateCursor(_Answer2.default.find({
         survey: this.surveyId,
         lastExport: null
-      }).limit(1000), 'collectOneAnswer').then(function (answers) {
+      }), 'collectOneAnswer').then(function (answers) {
         return _this4.answers = answers;
       }).then(function () {
         return _this4._saveAllAggregates();
@@ -1825,6 +1825,11 @@ var CollectResponses = function (_Mixin$mixin) {
         if (obj.hasOwnProperty(name)) {
           var val = obj[name];
           done(val);
+        }
+      });
+      this.parser.on('callFunction', function (name, params, done) {
+        if (name === 'TO_DATE') {
+          done(new Date(parseInt(params[0])));
         }
       });
 

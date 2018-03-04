@@ -31,7 +31,7 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
     return this.iterateCursor(Answer.find({
       survey: this.surveyId,
       lastExport: null,
-    }).limit(1000), 'collectOneAnswer')
+    }), 'collectOneAnswer')
     .then((answers) => this.answers = answers)
     .then(() => this._saveAllAggregates())
     .then(() => ({
@@ -127,6 +127,11 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
       if (obj.hasOwnProperty(name)) {
         let val = obj[name];
         done(val);
+      }
+    });
+    this.parser.on('callFunction', (name, params, done) => {
+      if (name === 'TO_DATE') {
+        done(new Date(parseInt(params[0])));
       }
     });
 

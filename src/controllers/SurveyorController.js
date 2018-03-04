@@ -66,7 +66,7 @@ export default class SurveyorController extends EntityController {
         if (surveyor) {
           return Statistic.find({
             type: /^SurveyorAggregate/,
-            key: surveyor.username,
+            key: new RegExp(`^${surveyor.username}`),
           }).then((stats) => {
             surveyor.set('aggregates', stats, {strict: false});
             return surveyor;

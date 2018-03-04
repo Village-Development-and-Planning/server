@@ -2089,7 +2089,7 @@ var SurveyorController = function (_EntityController) {
         if (surveyor) {
           return _Statistic2.default.find({
             type: /^SurveyorAggregate/,
-            key: surveyor.username
+            key: new RegExp('^' + surveyor.username)
           }).then(function (stats) {
             surveyor.set('aggregates', stats, { strict: false });
             return surveyor;
@@ -4293,7 +4293,7 @@ var LocationController = function (_EntityController) {
           var prefix = ['LocationAggregate', loc.type].join('/');
           return _Statistic2.default.find({
             type: new RegExp('^' + prefix),
-            key: loc.uid
+            key: new RegExp('^' + loc.uid)
           }).then(function (stats) {
             loc.set('aggregates', stats, { strict: false });
             return loc;

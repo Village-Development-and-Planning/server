@@ -26,7 +26,7 @@ export default class LocationController extends EntityController {
           const prefix = ['LocationAggregate', loc.type].join('/');
           return Statistic.find({
             type: new RegExp('^' + prefix),
-            key: loc.uid,
+            key: new RegExp(`^${loc.uid}`),
           }).then((stats) => {
             loc.set('aggregates', stats, {strict: false});
             return loc;
