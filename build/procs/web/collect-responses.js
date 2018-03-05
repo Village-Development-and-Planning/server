@@ -1663,6 +1663,10 @@ var CollectResponses = function (_Mixin$mixin) {
         keys.push('UPLOAD_TIME');
         keys.posUPLOAD_TIME = 'Time of upload.';
       }
+      if (!keys.posANSWER_ID) {
+        keys.push('ANSWER_ID');
+        keys.posANSWER_ID = 'Answer _id';
+      }
       return (0, _co2.default)( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
         var _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, _ref, question, context, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, o;
 
@@ -1702,6 +1706,7 @@ var CollectResponses = function (_Mixin$mixin) {
 
                 if (answer.createdAt) {
                   o.UPLOAD_TIME = answer.createdAt.getTime();
+                  o.ANSWER_ID = answer._id;
                 }
                 _context.next = 20;
                 return _this.writeStatsObj(o);

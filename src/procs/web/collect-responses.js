@@ -56,6 +56,10 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
       keys.push('UPLOAD_TIME');
       keys.posUPLOAD_TIME = 'Time of upload.';
     }
+    if (!keys.posANSWER_ID) {
+      keys.push('ANSWER_ID');
+      keys.posANSWER_ID = 'Answer _id';
+    }
     return co(function* () {
       try {
         for (let {question, context} of _this.survey.respondentsIn(
@@ -65,6 +69,7 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
           for (let o of question.collectRespondent(context)) {
             if (answer.createdAt) {
               o.UPLOAD_TIME = answer.createdAt.getTime();
+              o.ANSWER_ID = answer._id;
             }
             yield _this.writeStatsObj(o);
             ++statsCount;
