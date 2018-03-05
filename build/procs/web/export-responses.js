@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 90);
+/******/ 	return __webpack_require__(__webpack_require__.s = 92);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -627,7 +627,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _co = __webpack_require__(8);
+var _co = __webpack_require__(7);
 
 var _co2 = _interopRequireDefault(_co);
 
@@ -765,7 +765,9 @@ var schema = new _Schema2.default({
   type: { type: String, required: true },
   key: { type: String, required: true },
   name: { type: String },
-  data: { type: {} }
+  data: { type: {} },
+  metadata: { type: {} },
+  aggregates: { type: [] }
 });
 schema.index({ key: 1, type: 1 });
 
@@ -902,30 +904,30 @@ module.exports = Question = function (_QuestionM) {
 
 /***/ }),
 
-/***/ 8:
+/***/ 7:
 /***/ (function(module, exports) {
 
 module.exports = require("co");
 
 /***/ }),
 
-/***/ 90:
+/***/ 92:
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(91);
+__webpack_require__(93);
 module.exports = __webpack_require__(24);
 
 
 /***/ }),
 
-/***/ 91:
+/***/ 93:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = global["Proc"] = __webpack_require__(92);
+module.exports = global["Proc"] = __webpack_require__(94);
 
 /***/ }),
 
-/***/ 92:
+/***/ 94:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -955,7 +957,7 @@ var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
-var _csvStringify = __webpack_require__(93);
+var _csvStringify = __webpack_require__(95);
 
 var _csvStringify2 = _interopRequireDefault(_csvStringify);
 
@@ -1056,7 +1058,7 @@ exports.default = ExportResponses;
 
 /***/ }),
 
-/***/ 93:
+/***/ 95:
 /***/ (function(module, exports) {
 
 module.exports = require("csv-stringify");

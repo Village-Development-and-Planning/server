@@ -207,7 +207,9 @@ var schema = new _Schema2.default({
   type: { type: String, required: true },
   key: { type: String, required: true },
   name: { type: String },
-  data: { type: {} }
+  data: { type: {} },
+  metadata: { type: {} },
+  aggregates: { type: [] }
 });
 schema.index({ key: 1, type: 1 });
 
@@ -342,6 +344,12 @@ module.exports = Question = function (_QuestionM) {
 
 /***/ }),
 /* 7 */
+/***/ (function(module, exports) {
+
+module.exports = require("co");
+
+/***/ }),
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -378,12 +386,6 @@ schema.index({ type: 1, code: 1 });
 schema.index({ name: 1, type: 1 });
 
 exports.default = _mongoose2.default.model('Location', schema);
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports) {
-
-module.exports = require("co");
 
 /***/ }),
 /* 9 */
@@ -854,7 +856,7 @@ var _Question2 = __webpack_require__(6);
 
 var _Question3 = _interopRequireDefault(_Question2);
 
-var _Location = __webpack_require__(7);
+var _Location = __webpack_require__(8);
 
 var _Location2 = _interopRequireDefault(_Location);
 
@@ -1463,7 +1465,7 @@ var _fs = __webpack_require__(20);
 
 var _fs2 = _interopRequireDefault(_fs);
 
-var _co = __webpack_require__(8);
+var _co = __webpack_require__(7);
 
 var _co2 = _interopRequireDefault(_co);
 
@@ -4237,7 +4239,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _Location = __webpack_require__(7);
+var _Location = __webpack_require__(8);
 
 var _Location2 = _interopRequireDefault(_Location);
 
@@ -4361,7 +4363,7 @@ var _csvParser = __webpack_require__(21);
 
 var _csvParser2 = _interopRequireDefault(_csvParser);
 
-var _Location = __webpack_require__(7);
+var _Location = __webpack_require__(8);
 
 var _Location2 = _interopRequireDefault(_Location);
 
@@ -4541,7 +4543,7 @@ var _User = __webpack_require__(18);
 
 var _User2 = _interopRequireDefault(_User);
 
-var _Location = __webpack_require__(7);
+var _Location = __webpack_require__(8);
 
 var _Location2 = _interopRequireDefault(_Location);
 

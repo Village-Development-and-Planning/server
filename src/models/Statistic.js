@@ -6,6 +6,8 @@ const schema = new Schema({
   key: {type: String, required: true},
   name: {type: String},
   data: {type: {}},
+  metadata: {type: {}},
+  aggregates: {type: []},
 });
 schema.index({key: 1, type: 1});
 
