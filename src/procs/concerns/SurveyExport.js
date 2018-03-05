@@ -104,8 +104,13 @@ export default class extends Mixin {
     return (arr1.length - arr2.length);
   }
 
-  _ppClassHousehold({surveyorKey='Q_1_1', habitationKey='Q_1_6'}, obj) {
+  _ppClassHousehold({
+    select='Q_1_12',
+    surveyorKey='Q_1_1',
+    habitationKey='Q_1_6',
+  }, obj) {
     if (!obj[surveyorKey]) return;
+    if (!obj[select]) return {_ignore: true};
     const username = obj[surveyorKey];
     return User.findOne({username})
     .then((user) => {

@@ -94,16 +94,23 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
       if (!pp || !pp.length) return;
 
       for (let post of pp) {
-         if (!post.class || !self[`_ppClass${post.class}`]) continue;
-         yield Promise.resolve(self[`_ppClass${post.class}`](post, obj));
+        if (!post.class || !self[`_ppClass${post.class}`]) continue;
+        const ret = yield Promise.resolve(
+          self[`_ppClass${post.class}`](post, obj)
+        );
+        if (ret && ret._ignore) {
+          return true;
+        }
       }
       return;
     }).then(
-      () => Statistic.create({
+      (ignore) => ignore || Statistic.create({
         key: this.surveyId,
         type: 'SurveyResponse',
         data: obj,
-      })
-    ).then((stat) => this.accumulateAggregates(stat, this.survey.aggregates));
+      }).then(
+        (stat) => this.accumulateAggregates(stat, this.survey.aggregates)
+      )
+    );
   }
 }

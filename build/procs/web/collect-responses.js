@@ -1347,12 +1347,15 @@ var _class = function (_Mixin) {
     value: function _ppClassHousehold(_ref3, obj) {
       var _this5 = this;
 
-      var _ref3$surveyorKey = _ref3.surveyorKey,
+      var _ref3$select = _ref3.select,
+          select = _ref3$select === undefined ? 'Q_1_12' : _ref3$select,
+          _ref3$surveyorKey = _ref3.surveyorKey,
           surveyorKey = _ref3$surveyorKey === undefined ? 'Q_1_1' : _ref3$surveyorKey,
           _ref3$habitationKey = _ref3.habitationKey,
           habitationKey = _ref3$habitationKey === undefined ? 'Q_1_6' : _ref3$habitationKey;
 
       if (!obj[surveyorKey]) return;
+      if (!obj[select]) return { _ignore: true };
       var username = obj[surveyorKey];
       return _User2.default.findOne({ username: username }).then(function (user) {
         if (!user || !user.payload) return;
@@ -1864,7 +1867,7 @@ var CollectResponses = function (_Mixin$mixin) {
 
       var self = this;
       return (0, _co2.default)( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
-        var pp, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, post;
+        var pp, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, post, ret;
 
         return regeneratorRuntime.wrap(function _callee2$(_context2) {
           while (1) {
@@ -1893,7 +1896,7 @@ var CollectResponses = function (_Mixin$mixin) {
 
               case 11:
                 if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
-                  _context2.next = 20;
+                  _context2.next = 23;
                   break;
                 }
 
@@ -1904,68 +1907,78 @@ var CollectResponses = function (_Mixin$mixin) {
                   break;
                 }
 
-                return _context2.abrupt('continue', 17);
+                return _context2.abrupt('continue', 20);
 
               case 15:
                 _context2.next = 17;
                 return Promise.resolve(self['_ppClass' + post.class](post, obj));
 
               case 17:
+                ret = _context2.sent;
+
+                if (!(ret && ret._ignore)) {
+                  _context2.next = 20;
+                  break;
+                }
+
+                return _context2.abrupt('return', true);
+
+              case 20:
                 _iteratorNormalCompletion3 = true;
                 _context2.next = 11;
                 break;
 
-              case 20:
-                _context2.next = 26;
+              case 23:
+                _context2.next = 29;
                 break;
 
-              case 22:
-                _context2.prev = 22;
+              case 25:
+                _context2.prev = 25;
                 _context2.t0 = _context2['catch'](9);
                 _didIteratorError3 = true;
                 _iteratorError3 = _context2.t0;
 
-              case 26:
-                _context2.prev = 26;
-                _context2.prev = 27;
+              case 29:
+                _context2.prev = 29;
+                _context2.prev = 30;
 
                 if (!_iteratorNormalCompletion3 && _iterator3.return) {
                   _iterator3.return();
                 }
 
-              case 29:
-                _context2.prev = 29;
+              case 32:
+                _context2.prev = 32;
 
                 if (!_didIteratorError3) {
-                  _context2.next = 32;
+                  _context2.next = 35;
                   break;
                 }
 
                 throw _iteratorError3;
 
-              case 32:
+              case 35:
+                return _context2.finish(32);
+
+              case 36:
                 return _context2.finish(29);
 
-              case 33:
-                return _context2.finish(26);
-
-              case 34:
+              case 37:
                 return _context2.abrupt('return');
 
-              case 35:
+              case 38:
               case 'end':
                 return _context2.stop();
             }
           }
-        }, _callee2, this, [[9, 22, 26, 34], [27,, 29, 33]]);
-      })).then(function () {
-        return _Statistic2.default.create({
+        }, _callee2, this, [[9, 25, 29, 37], [30,, 32, 36]]);
+      })).then(function (ignore) {
+        return ignore || _Statistic2.default.create({
           key: _this5.surveyId,
           type: 'SurveyResponse',
           data: obj
+        }).then(function (stat) {
+          return _this5.accumulateAggregates(stat, _this5.survey.aggregates);
         });
-      }).then(function (stat) {
-        return _this5.accumulateAggregates(stat, _this5.survey.aggregates);
       });
     }
   }]);

@@ -623,12 +623,15 @@ var _class = function (_Mixin) {
     value: function _ppClassHousehold(_ref3, obj) {
       var _this5 = this;
 
-      var _ref3$surveyorKey = _ref3.surveyorKey,
+      var _ref3$select = _ref3.select,
+          select = _ref3$select === undefined ? 'Q_1_12' : _ref3$select,
+          _ref3$surveyorKey = _ref3.surveyorKey,
           surveyorKey = _ref3$surveyorKey === undefined ? 'Q_1_1' : _ref3$surveyorKey,
           _ref3$habitationKey = _ref3.habitationKey,
           habitationKey = _ref3$habitationKey === undefined ? 'Q_1_6' : _ref3$habitationKey;
 
       if (!obj[surveyorKey]) return;
+      if (!obj[select]) return { _ignore: true };
       var username = obj[surveyorKey];
       return _User2.default.findOne({ username: username }).then(function (user) {
         if (!user || !user.payload) return;
