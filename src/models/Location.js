@@ -13,7 +13,7 @@ const schema = new Schema({
   }],
   payload: {type: {}},
 });
-schema.index({type: 1, uid: 1});
+schema.index({uid: 1, type: 1});
 schema.index({type: 1, code: 1});
 schema.index({name: 1, type: 1});
 

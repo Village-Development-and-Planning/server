@@ -87,10 +87,19 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
   }
 
   writeStatsObj(obj) {
+    const self = this;
     return co(function* () {
-      return yield obj;
+      obj = yield obj;
+      const pp = self.survey.postProcessing;
+      if (!pp || !pp.length) return;
+
+      for (let post of pp) {
+         if (!post.class || !self[`_ppClass${post.class}`]) continue;
+         yield Promise.resolve(self[`_ppClass${post.class}`](post, obj));
+      }
+      return;
     }).then(
-      (obj) => Statistic.create({
+      () => Statistic.create({
         key: this.surveyId,
         type: 'SurveyResponse',
         data: obj,

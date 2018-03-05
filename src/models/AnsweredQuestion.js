@@ -1,5 +1,4 @@
 import Question from './Question';
-import Location from './Location';
 
 /**
  * Provides export functionalities
@@ -60,26 +59,26 @@ export default class AnsweredQuestion extends Question {
       ).join(',');
     }
 
-    if (refQ.flow.pre.fill.length) {
-      for (let el of refQ.flow.pre.fill) {
-        let field;
-        let type;
-        let other;
+    // if (refQ.flow.pre.fill.length) {
+    //   for (let el of refQ.flow.pre.fill) {
+    //     let field;
+    //     let type;
+    //     let other;
 
-        if (el.endsWith('_NAME')) {
-          field = 'name'; other = 'code';
-        } else if (el.endsWith('_CODE')) {
-          field = 'code'; other = 'name';
-        }
-        type = el.slice(0, -5);
-        if (type && field) {
-          ret[`${type}_${other.toUpperCase()}`] = Location.findOne({
-            type, [field]: ret[ansKey],
-          }).then((loc) => (loc && loc[other] || 'UNKNOWN'))
-          .catch((err) => console.log(err) || 'UNKNOWN');
-        }
-      }
-    }
+    //     if (el.endsWith('_NAME')) {
+    //       field = 'name'; other = 'code';
+    //     } else if (el.endsWith('_CODE')) {
+    //       field = 'code'; other = 'name';
+    //     }
+    //     type = el.slice(0, -5);
+    //     if (type && field) {
+    //       ret[`${type}_${other.toUpperCase()}`] = Location.findOne({
+    //         type, [field]: ret[ansKey],
+    //       }).then((loc) => (loc && loc[other] || 'UNKNOWN'))
+    //       .catch((err) => console.log(err) || 'UNKNOWN');
+    //     }
+    //   }
+    // }
     return ret;
   }
 

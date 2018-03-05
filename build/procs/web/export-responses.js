@@ -115,7 +115,7 @@ module.exports = Schema;
 
 /***/ }),
 
-/***/ 10:
+/***/ 11:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -140,7 +140,7 @@ module.exports = mongoose.model('Process', processSchema);
 
 /***/ }),
 
-/***/ 11:
+/***/ 12:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -168,7 +168,7 @@ exports.default = _mongoose2.default.connect(options.connectionString, options.c
 
 /***/ }),
 
-/***/ 12:
+/***/ 13:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -185,7 +185,7 @@ module.exports = new Schema({
 
 /***/ }),
 
-/***/ 13:
+/***/ 14:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -193,7 +193,7 @@ module.exports = new Schema({
 
 __webpack_require__(3);
 
-var _Question = __webpack_require__(6);
+var _Question = __webpack_require__(7);
 
 var _Question2 = _interopRequireDefault(_Question);
 
@@ -211,7 +211,8 @@ var surveySchema = new Schema({
       return new _Question2.default(q);
     }, required: true },
   respondents: { type: [] },
-  aggregates: { type: [] }
+  aggregates: { type: [] },
+  postProcessing: { type: [] }
 });
 surveySchema.index({ name: 1 });
 surveySchema.index({ enabled: 1, name: 1 });
@@ -268,7 +269,7 @@ module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
 
-/***/ 14:
+/***/ 15:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -283,7 +284,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Process = __webpack_require__(10);
+var _Process = __webpack_require__(11);
 
 var _Process2 = _interopRequireDefault(_Process);
 
@@ -291,7 +292,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _child_process = __webpack_require__(15);
+var _child_process = __webpack_require__(16);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -378,7 +379,7 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procArgs) {
 
 /***/ }),
 
-/***/ 15:
+/***/ 16:
 /***/ (function(module, exports) {
 
 module.exports = require("child_process");
@@ -478,13 +479,21 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _Survey = __webpack_require__(13);
+var _Survey = __webpack_require__(14);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
 var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
+
+var _Location = __webpack_require__(9);
+
+var _Location2 = _interopRequireDefault(_Location);
+
+var _User = __webpack_require__(6);
+
+var _User2 = _interopRequireDefault(_User);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -517,6 +526,15 @@ var _class = function (_Mixin) {
           return Promise.reject('Survey: ' + _this2.surveyId + ' not found.');
         }
       });
+    }
+  }, {
+    key: '_pushKey',
+    value: function _pushKey(key, description) {
+      var keys = this.collectionKeys;
+      if (!keys['pos' + key]) {
+        keys.push(key);
+        keys['pos' + key] = description;
+      }
     }
   }, {
     key: 'getExportHeader',
@@ -600,6 +618,39 @@ var _class = function (_Mixin) {
       }
       return arr1.length - arr2.length;
     }
+  }, {
+    key: '_ppClassHousehold',
+    value: function _ppClassHousehold(_ref3, obj) {
+      var _this5 = this;
+
+      var _ref3$surveyorKey = _ref3.surveyorKey,
+          surveyorKey = _ref3$surveyorKey === undefined ? 'Q_1_1' : _ref3$surveyorKey,
+          _ref3$habitationKey = _ref3.habitationKey,
+          habitationKey = _ref3$habitationKey === undefined ? 'Q_1_6' : _ref3$habitationKey;
+
+      if (!obj[surveyorKey]) return;
+      var username = obj[surveyorKey];
+      return _User2.default.findOne({ username: username }).then(function (user) {
+        if (!user || !user.payload) return;
+        var locSpec = [];
+        ['DISTRICT', 'BLOCK', 'PANCHAYAT'].forEach(function (loc) {
+          ['NAME', 'CODE'].forEach(function (dat) {
+            _this5._pushKey(loc + '_' + dat, 'Location payload');
+            obj[loc + '_' + dat] = user.payload[loc + '_' + dat];
+          });
+          locSpec.push(obj[loc + '_CODE']);
+        });
+        return _Location2.default.findOne({ type: 'PANCHAYAT', uid: locSpec.join('/') });
+      }).then(function (loc) {
+        if (!loc || !loc.children || !loc.children.length) return;
+        if (!obj[habitationKey]) return;
+        var habitation = loc.children.find(function (child) {
+          return child.name === obj[habitationKey];
+        });
+        _this5._pushKey('HABITATION_CODE', habitationKey);
+        if (habitation) obj['HABITATION_CODE'] = habitation.code;
+      });
+    }
   }]);
 
   return _class;
@@ -627,7 +678,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _co = __webpack_require__(7);
+var _co = __webpack_require__(8);
 
 var _co2 = _interopRequireDefault(_co);
 
@@ -709,7 +760,7 @@ exports.default = _class;
 "use strict";
 
 
-__webpack_require__(11);
+__webpack_require__(12);
 
 var _mongoose = __webpack_require__(0);
 
@@ -807,6 +858,32 @@ module.exports = {
 "use strict";
 
 
+var Schema = __webpack_require__(1);
+var mongoose = __webpack_require__(0);
+
+var userSchema = new Schema({
+  username: { type: String, required: true },
+  name: { type: String },
+
+  passphrase: { type: String },
+  roles: [{ type: String }],
+
+  payload: { type: {} }
+});
+userSchema.index({ username: 1 });
+userSchema.index({ name: 1 });
+userSchema.index({ roles: 1 });
+
+module.exports = mongoose.model('User', userSchema);
+
+/***/ }),
+
+/***/ 7:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 __webpack_require__(3);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -816,7 +893,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var Schema = __webpack_require__(1);
-var Text = __webpack_require__(12);
+var Text = __webpack_require__(13);
 var mongoose = __webpack_require__(0);
 
 var Question = void 0;
@@ -904,10 +981,50 @@ module.exports = Question = function (_QuestionM) {
 
 /***/ }),
 
-/***/ 7:
+/***/ 8:
 /***/ (function(module, exports) {
 
 module.exports = require("co");
+
+/***/ }),
+
+/***/ 9:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _Schema = __webpack_require__(1);
+
+var _Schema2 = _interopRequireDefault(_Schema);
+
+var _mongoose = __webpack_require__(0);
+
+var _mongoose2 = _interopRequireDefault(_mongoose);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var schema = new _Schema2.default({
+  type: { type: String, required: true },
+  code: { type: String, required: true },
+  uid: { type: String, require: true },
+  name: { type: String, required: true },
+  children: [{
+    code: { type: String },
+    name: { type: String },
+    uid: { type: String }
+  }],
+  payload: { type: {} }
+});
+schema.index({ uid: 1, type: 1 });
+schema.index({ type: 1, code: 1 });
+schema.index({ name: 1, type: 1 });
+
+exports.default = _mongoose2.default.model('Location', schema);
 
 /***/ }),
 
@@ -939,7 +1056,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _childProcess = __webpack_require__(14);
+var _childProcess = __webpack_require__(15);
 
 var _Mixin = __webpack_require__(2);
 

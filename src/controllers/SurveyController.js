@@ -121,7 +121,8 @@ class SurveyController extends EntityController {
       obj.question = obj.csv.root;
     }
 
-    let filter = 'name description respondents enabled question aggregates';
+    let filter = 'name description respondents enabled question aggregates'
+      + ' postProcessing';
     if (this.action === 'create') {
       filter = filter + ' _id';
     }
