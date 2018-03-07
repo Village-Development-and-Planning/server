@@ -632,6 +632,31 @@ var _class = function (_Mixin) {
 
       if (!obj[surveyorKey]) return;
       if (!obj[select]) return { _ignore: true };
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = Object.keys(obj)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var key = _step.value;
+
+          if (obj[key] == 'DUMMY') return { _ignore: true };
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
       var username = obj[surveyorKey];
       return _User2.default.findOne({ username: username }).then(function (user) {
         if (!user || !user.payload) return;

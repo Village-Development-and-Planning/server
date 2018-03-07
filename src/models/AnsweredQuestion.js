@@ -31,14 +31,14 @@ export default class AnsweredQuestion extends Question {
     if (refQ.type === 'ROOT' || refQ.type === 'DUMMY' || !this.number) {
       return ret;
     }
-    if (refQ.type == 'MULTIPLE_CHOICE') {
+    if (refQ.type === 'MULTIPLE_CHOICE') {
       ans.logged_options.reduce((acc, opt) => {
         if (opt.position !== null) {
           acc[`${ansKey}_opt${opt.position}`] = 1;
         }
         return acc;
       }, ret);
-    } else if (refQ.type == 'GPS') {
+    } else if (refQ.type === 'GPS') {
       let lat, long, val;
       const opt = ans.logged_options[0];
       val = opt && (opt.value || opt.text.english);
@@ -58,27 +58,6 @@ export default class AnsweredQuestion extends Question {
         (opt) => (opt.position || opt.value || opt.text.english)
       ).join(',');
     }
-
-    // if (refQ.flow.pre.fill.length) {
-    //   for (let el of refQ.flow.pre.fill) {
-    //     let field;
-    //     let type;
-    //     let other;
-
-    //     if (el.endsWith('_NAME')) {
-    //       field = 'name'; other = 'code';
-    //     } else if (el.endsWith('_CODE')) {
-    //       field = 'code'; other = 'name';
-    //     }
-    //     type = el.slice(0, -5);
-    //     if (type && field) {
-    //       ret[`${type}_${other.toUpperCase()}`] = Location.findOne({
-    //         type, [field]: ret[ansKey],
-    //       }).then((loc) => (loc && loc[other] || 'UNKNOWN'))
-    //       .catch((err) => console.log(err) || 'UNKNOWN');
-    //     }
-    //   }
-    // }
     return ret;
   }
 

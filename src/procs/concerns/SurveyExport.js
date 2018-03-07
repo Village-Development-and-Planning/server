@@ -111,6 +111,9 @@ export default class extends Mixin {
   }, obj) {
     if (!obj[surveyorKey]) return;
     if (!obj[select]) return {_ignore: true};
+    for (let key of Object.keys(obj)) {
+      if (obj[key] == 'DUMMY') return {_ignore: true};
+    }
     const username = obj[surveyorKey];
     return User.findOne({username})
     .then((user) => {

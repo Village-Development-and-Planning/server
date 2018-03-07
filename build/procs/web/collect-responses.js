@@ -863,14 +863,14 @@ var AnsweredQuestion = function (_Question) {
       if (refQ.type === 'ROOT' || refQ.type === 'DUMMY' || !this.number) {
         return ret;
       }
-      if (refQ.type == 'MULTIPLE_CHOICE') {
+      if (refQ.type === 'MULTIPLE_CHOICE') {
         ans.logged_options.reduce(function (acc, opt) {
           if (opt.position !== null) {
             acc[ansKey + '_opt' + opt.position] = 1;
           }
           return acc;
         }, ret);
-      } else if (refQ.type == 'GPS') {
+      } else if (refQ.type === 'GPS') {
         var lat = void 0,
             long = void 0,
             val = void 0;
@@ -896,27 +896,6 @@ var AnsweredQuestion = function (_Question) {
           return opt.position || opt.value || opt.text.english;
         }).join(',');
       }
-
-      // if (refQ.flow.pre.fill.length) {
-      //   for (let el of refQ.flow.pre.fill) {
-      //     let field;
-      //     let type;
-      //     let other;
-
-      //     if (el.endsWith('_NAME')) {
-      //       field = 'name'; other = 'code';
-      //     } else if (el.endsWith('_CODE')) {
-      //       field = 'code'; other = 'name';
-      //     }
-      //     type = el.slice(0, -5);
-      //     if (type && field) {
-      //       ret[`${type}_${other.toUpperCase()}`] = Location.findOne({
-      //         type, [field]: ret[ansKey],
-      //       }).then((loc) => (loc && loc[other] || 'UNKNOWN'))
-      //       .catch((err) => console.log(err) || 'UNKNOWN');
-      //     }
-      //   }
-      // }
       return ret;
     }
   }, {
@@ -1356,6 +1335,31 @@ var _class = function (_Mixin) {
 
       if (!obj[surveyorKey]) return;
       if (!obj[select]) return { _ignore: true };
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = Object.keys(obj)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var key = _step.value;
+
+          if (obj[key] == 'DUMMY') return { _ignore: true };
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
       var username = obj[surveyorKey];
       return _User2.default.findOne({ username: username }).then(function (user) {
         if (!user || !user.payload) return;
