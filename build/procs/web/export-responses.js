@@ -640,7 +640,11 @@ var _class = function (_Mixin) {
         for (var _iterator = Object.keys(obj)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var key = _step.value;
 
-          if (obj[key] == 'DUMMY') return { _ignore: true };
+          if (typeof obj[key] === 'string') {
+            if (obj[key].toUpperCase && obj[key].trim().toUpperCase() === 'DUMMY') {
+              return { _ignore: true };
+            }
+          }
         }
       } catch (err) {
         _didIteratorError = true;

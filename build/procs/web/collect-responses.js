@@ -1343,7 +1343,11 @@ var _class = function (_Mixin) {
         for (var _iterator = Object.keys(obj)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var key = _step.value;
 
-          if (obj[key] == 'DUMMY') return { _ignore: true };
+          if (typeof obj[key] === 'string') {
+            if (obj[key].toUpperCase && obj[key].trim().toUpperCase() === 'DUMMY') {
+              return { _ignore: true };
+            }
+          }
         }
       } catch (err) {
         _didIteratorError = true;
@@ -1683,7 +1687,7 @@ var CollectResponses = function (_Mixin$mixin) {
       return this.iterateCursor(_Answer2.default.find({
         survey: this.surveyId,
         lastExport: null
-      }).limit(5000), 'collectOneAnswer').then(function (answers) {
+      }).limit(50000), 'collectOneAnswer').then(function (answers) {
         return _this4.answers = answers;
       }).then(function () {
         return _this4._saveAllAggregates();
