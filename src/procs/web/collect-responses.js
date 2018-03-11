@@ -3,9 +3,12 @@ import co from 'co';
 
 import {ChildTemplate} from '../child-process';
 import Mixin from '../../lib/Mixin';
+
 import SurveyExport from '../concerns/SurveyExport';
 import Cursor from '../concerns/Cursor';
 import Aggregation from '../concerns/Aggregation';
+
+import AnswerCollector from '../concerns/AnswerCollector';
 
 import Statistic from '../../models/Statistic';
 import Answer from '../../models/Answer';
@@ -49,40 +52,32 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
       return {status: 'SKIPPED', reason: 'VERSION0', _id: answer._id};
     }
 
-    const _this = this;
+    const survey = this.survey;
     let statsCount = 0;
-    const keys = this.collectionKeys;
-    if (!keys.posUPLOAD_TIME) {
-      keys.push('UPLOAD_TIME');
-      keys.posUPLOAD_TIME = 'Time of upload.';
+    const collector = new AnswerCollector({
+      survey, answer,
+      keys: this.collectionKeys,
+    });
+
+    const promises = [];
+    for (let ctx of collector.collectRespondents()) {
+      ctx.addValue('UPLOAD_TIME', answer.createdAt.getTime(), 'Upload time');
+      ctx.addValue('ANSWER_ID', answer._id, 'Answer Id');
+      promises.push(
+        this.writeStatsObj(ctx.data).then(() => 1),
+      );
+      ++statsCount;
     }
-    if (!keys.posANSWER_ID) {
-      keys.push('ANSWER_ID');
-      keys.posANSWER_ID = 'Answer _id';
-    }
-    return co(function* () {
-      try {
-        for (let {question, context} of _this.survey.respondentsIn(
-            answer, {keys: _this.collectionKeys}
-          )
-        ) {
-          for (let o of question.collectRespondent(context)) {
-            if (answer.createdAt) {
-              o.UPLOAD_TIME = answer.createdAt.getTime();
-              o.ANSWER_ID = answer._id;
-            }
-            yield _this.writeStatsObj(o);
-            ++statsCount;
-          }
-        }
-        answer.set('lastExport', new Date());
-        return answer.save()
-        .then(() => _this.totalStatsCount = _this.totalStatsCount + statsCount)
-        .then(() => ++_this.answersCount)
-        .then(() => ({status: 'DONE', statsCount, _id: answer._id}));
-      } catch (e) {
-        return Promise.resolve({status: 'ERROR', _id: answer._id});
-      }
+    return Promise.all(promises)
+    .then(() => {
+      answer.set('lastExport', new Date());
+      return answer.save();
+    }).then(() => {
+      this.totalStatsCount = this.totalStatsCount + statsCount;
+      ++this.answersCount;
+      return {status: 'DONE', statsCount, _id: answer._id};
+    }).catch((e) => {
+      return Promise.resolve({status: 'ERROR', _id: answer._id});
     });
   }
 

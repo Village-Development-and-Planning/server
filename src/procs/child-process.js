@@ -45,6 +45,7 @@ export default class ChildProcess {
             proc.status = 'COMPLETED';
             proc.stdout = stdout.join('');
             proc.stderr = stderr.join('');
+            proc.endDate = new Date();
             proc.save().then(res).catch(rej);
           });
           p.stdout.on('data', (data) => {

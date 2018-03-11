@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 33);
+/******/ 	return __webpack_require__(__webpack_require__.s = 35);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -160,6 +160,11 @@ var Mixin = function () {
           target[prop] = src[prop];
         }
       });
+    }
+  }, {
+    key: 'copyTo',
+    value: function copyTo(target) {
+      this._copyMethods(target, this.prototype);
     }
   }, {
     key: 'mixin',
@@ -272,114 +277,6 @@ module.exports = mongoose.model('User', userSchema);
 "use strict";
 
 
-__webpack_require__(3);
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var Schema = __webpack_require__(1);
-var Text = __webpack_require__(13);
-var mongoose = __webpack_require__(0);
-
-var Question = void 0;
-
-var questionSchema = new Schema({
-  type: { type: String },
-  tags: [{ type: String }],
-  text: { type: Text },
-  number: { type: String },
-  position: { type: String },
-  options: [{
-    position: { type: String, required: true },
-    option: { type: {}, required: true }
-  }],
-  children: [{
-    position: { type: String, required: true },
-    question: {
-      type: {},
-      get: function get(q) {
-        return new Question(q);
-      },
-      required: true
-    }
-  }],
-  flow: {
-    pre: { type: Object },
-    question: { type: Object },
-    answer: { type: Object },
-    child: { type: Object },
-    post: { type: Object },
-    exit: { type: Object }
-  }
-});
-
-Object.assign(questionSchema.methods, {
-  isParent: function isParent(number) {
-    if (!this.number) return true;
-    return number === this.number || number.startsWith(this.number + '.');
-  },
-  find: function find(number) {
-    if (!this.isParent(number)) return null;
-
-    if (this.number === number) return this;
-    var child = this.children.find(function (el) {
-      return el.question && el.question.isParent(number);
-    });
-    if (child) {
-      return child.question.find(number);
-    } else {
-      return null;
-    }
-  },
-  findChildByPosition: function findChildByPosition(pos) {
-    var ret = this.children.find(function (el) {
-      return el.position == pos;
-    });
-    if (ret) {
-      return new Question(ret.question, ret.position);
-    }
-    return null;
-  },
-  findOptionByPosition: function findOptionByPosition(pos) {
-    return this.options.find(function (el) {
-      return el.position == pos;
-    });
-  }
-});
-
-var QuestionM = mongoose.model('Question', questionSchema);
-module.exports = Question = function (_QuestionM) {
-  _inherits(Question, _QuestionM);
-
-  function Question(obj, position) {
-    _classCallCheck(this, Question);
-
-    var _this = _possibleConstructorReturn(this, (Question.__proto__ || Object.getPrototypeOf(Question)).call(this, obj));
-
-    Object.assign(_this, obj);
-    if (position) _this.position = position;
-    return _this;
-  }
-
-  return Question;
-}(QuestionM);
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports) {
-
-module.exports = require("co");
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -413,7 +310,7 @@ schema.index({ name: 1, type: 1 });
 exports.default = _mongoose2.default.model('Location', schema);
 
 /***/ }),
-/* 10 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -427,7 +324,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _BaseController = __webpack_require__(50);
+var _BaseController = __webpack_require__(52);
 
 var _BaseController2 = _interopRequireDefault(_BaseController);
 
@@ -435,27 +332,27 @@ var _Mixin = __webpack_require__(2);
 
 var _Mixin2 = _interopRequireDefault(_Mixin);
 
-var _Listing = __webpack_require__(51);
+var _Listing = __webpack_require__(53);
 
 var _Listing2 = _interopRequireDefault(_Listing);
 
-var _Get = __webpack_require__(52);
+var _Get = __webpack_require__(54);
 
 var _Get2 = _interopRequireDefault(_Get);
 
-var _Delete = __webpack_require__(53);
+var _Delete = __webpack_require__(55);
 
 var _Delete2 = _interopRequireDefault(_Delete);
 
-var _Body = __webpack_require__(54);
+var _Body = __webpack_require__(56);
 
 var _Body2 = _interopRequireDefault(_Body);
 
-var _Create = __webpack_require__(57);
+var _Create = __webpack_require__(59);
 
 var _Create2 = _interopRequireDefault(_Create);
 
-var _Update = __webpack_require__(58);
+var _Update = __webpack_require__(60);
 
 var _Update2 = _interopRequireDefault(_Update);
 
@@ -523,7 +420,7 @@ Object.assign(EntityController, {
 exports.default = EntityController;
 
 /***/ }),
-/* 11 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -539,7 +436,9 @@ var processSchema = new Schema({
     status: { type: String },
     exitCode: { type: Number },
     stdout: { type: String },
-    stderr: { type: String }
+    stderr: { type: String },
+    startDate: { type: Date, default: Date.now },
+    endDate: { type: Date }
 });
 processSchema.index({ status: 1, name: 1 });
 processSchema.index({ name: 1 });
@@ -547,7 +446,7 @@ processSchema.index({ name: 1 });
 module.exports = mongoose.model('Process', processSchema);
 
 /***/ }),
-/* 12 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -574,23 +473,7 @@ _mongoose2.default.Promise = global.Promise;
 exports.default = _mongoose2.default.connect(options.connectionString, options.connectionOptions);
 
 /***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var Schema = __webpack_require__(1);
-
-module.exports = new Schema({
-  default: { type: String },
-  english: { type: String },
-  tamil: { type: String },
-  hindi: { type: String }
-});
-
-/***/ }),
-/* 14 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -598,7 +481,7 @@ module.exports = new Schema({
 
 __webpack_require__(3);
 
-var _Question = __webpack_require__(7);
+var _Question = __webpack_require__(12);
 
 var _Question2 = _interopRequireDefault(_Question);
 
@@ -673,7 +556,251 @@ Object.assign(surveySchema.methods, {
 module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
-/* 15 */
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+__webpack_require__(3);
+
+var Schema = __webpack_require__(1);
+var Text = __webpack_require__(13);
+var mongoose = __webpack_require__(0);
+
+var questionSchema = new Schema({
+  type: { type: String },
+  tags: [{ type: String }],
+  text: { type: Text },
+  number: { type: String },
+  position: { type: String },
+  options: [{
+    position: { type: String, required: true },
+    option: { type: {}, required: true }
+  }],
+  children: [{
+    position: { type: String, required: true },
+    question: {
+      type: {},
+      get: function get(q) {
+        return new Question(q);
+      },
+
+      required: true
+    }
+  }],
+  flow: {
+    pre: { type: Object },
+    question: { type: Object },
+    answer: { type: Object },
+    child: { type: Object },
+    post: { type: Object },
+    exit: { type: Object }
+  }
+});
+
+Object.assign(questionSchema.methods, {
+  isParent: function isParent(number) {
+    if (!this.number) return true;
+    return number === this.number || number.startsWith(this.number + '.');
+  },
+  find: function find(number) {
+    if (!this.isParent(number)) return null;
+
+    if (this.number === number) return this;
+    var child = this.children.find(function (el) {
+      return el.question && el.question.isParent(number);
+    });
+    if (child) {
+      return child.question.find(number);
+    } else {
+      return null;
+    }
+  },
+  findChildByPosition: function findChildByPosition(pos) {
+    var ret = this.children.find(function (el) {
+      return el.position == pos;
+    });
+    if (ret) {
+      return ret.question;
+    }
+    return null;
+  },
+  findOptionByPosition: function findOptionByPosition(pos) {
+    return this.options.find(function (el) {
+      return el.position == pos;
+    });
+  },
+  values: /*#__PURE__*/regeneratorRuntime.mark(function values(answer) {
+    var qType, qFlow, qValue, qConcat, opts, valueF, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, o, ansValue, _ansValue$split, _ansValue$split2, lat, long;
+
+    return regeneratorRuntime.wrap(function values$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            qType = this.type, qFlow = this.flow;
+            qValue = void 0, qConcat = void 0;
+
+            if (!(qType === 'ROOT' || qType === 'DUMMY' || qType === 'MESSAGE')) {
+              _context.next = 4;
+              break;
+            }
+
+            return _context.abrupt('return');
+
+          case 4:
+            opts = answer.logged_options;
+
+            if (!(!opts || !opts.length)) {
+              _context.next = 7;
+              break;
+            }
+
+            return _context.abrupt('return');
+
+          case 7:
+
+            if (qFlow && qFlow.pre.fill.length) qValue = 1;
+
+            if (qType === 'MULTIPLE_CHOICE') qConcat = 1;
+            if (qType === 'INPUT' || qType === 'INFO' || qType === 'CONFIRMATION' || qType === 'GPS') qValue = 1;
+
+            valueF = function valueF(el) {
+              return qValue ? (el.value || el.text.english || '').toUpperCase() : el.position || '0';
+            };
+
+            if (!qConcat) {
+              _context.next = 39;
+              break;
+            }
+
+            _iteratorNormalCompletion = true;
+            _didIteratorError = false;
+            _iteratorError = undefined;
+            _context.prev = 15;
+            _iterator = opts[Symbol.iterator]();
+
+          case 17:
+            if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
+              _context.next = 24;
+              break;
+            }
+
+            o = _step.value;
+            _context.next = 21;
+            return { key: '_opt' + valueF(o), value: 1 };
+
+          case 21:
+            _iteratorNormalCompletion = true;
+            _context.next = 17;
+            break;
+
+          case 24:
+            _context.next = 30;
+            break;
+
+          case 26:
+            _context.prev = 26;
+            _context.t0 = _context['catch'](15);
+            _didIteratorError = true;
+            _iteratorError = _context.t0;
+
+          case 30:
+            _context.prev = 30;
+            _context.prev = 31;
+
+            if (!_iteratorNormalCompletion && _iterator.return) {
+              _iterator.return();
+            }
+
+          case 33:
+            _context.prev = 33;
+
+            if (!_didIteratorError) {
+              _context.next = 36;
+              break;
+            }
+
+            throw _iteratorError;
+
+          case 36:
+            return _context.finish(33);
+
+          case 37:
+            return _context.finish(30);
+
+          case 38:
+            return _context.abrupt('return');
+
+          case 39:
+            ansValue = valueF(opts[0]);
+
+            if (!(qType === 'GPS')) {
+              _context.next = 50;
+              break;
+            }
+
+            _ansValue$split = ansValue.split(','), _ansValue$split2 = _slicedToArray(_ansValue$split, 2), lat = _ansValue$split2[0], long = _ansValue$split2[1];
+
+            if (!(!lat || !long)) {
+              _context.next = 44;
+              break;
+            }
+
+            return _context.abrupt('return');
+
+          case 44:
+            _context.next = 46;
+            return { key: '_lat', value: lat };
+
+          case 46:
+            _context.next = 48;
+            return { key: '_long', value: long };
+
+          case 48:
+            _context.next = 52;
+            break;
+
+          case 50:
+            _context.next = 52;
+            return { key: '', value: ansValue };
+
+          case 52:
+          case 'end':
+            return _context.stop();
+        }
+      }
+    }, values, this, [[15, 26, 30, 38], [31,, 33, 37]]);
+  })
+});
+
+var Question = mongoose.model('Question', questionSchema);
+exports.default = Question;
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var Schema = __webpack_require__(1);
+
+module.exports = new Schema({
+  default: { type: String },
+  english: { type: String },
+  tamil: { type: String },
+  hindi: { type: String }
+});
+
+/***/ }),
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -688,7 +815,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Process = __webpack_require__(11);
+var _Process = __webpack_require__(9);
 
 var _Process2 = _interopRequireDefault(_Process);
 
@@ -696,7 +823,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _child_process = __webpack_require__(16);
+var _child_process = __webpack_require__(15);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -739,6 +866,7 @@ var ChildProcess = function () {
             proc.status = 'COMPLETED';
             proc.stdout = stdout.join('');
             proc.stderr = stderr.join('');
+            proc.endDate = new Date();
             proc.save().then(res).catch(rej);
           });
           p.stdout.on('data', function (data) {
@@ -782,19 +910,19 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procArgs) {
 };
 
 /***/ }),
-/* 16 */
+/* 15 */
 /***/ (function(module, exports) {
 
 module.exports = require("child_process");
 
 /***/ }),
-/* 17 */
+/* 16 */
 /***/ (function(module, exports) {
 
 module.exports = require("express");
 
 /***/ }),
-/* 18 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -839,7 +967,59 @@ answerSchema.index({ createdAt: 1, survey: 1 });
 module.exports = _mongoose2.default.model('Answer', answerSchema);
 
 /***/ }),
+/* 18 */
+/***/ (function(module, exports) {
+
+module.exports = require("co");
+
+/***/ }),
 /* 19 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _AnsweredQuestion = __webpack_require__(20);
+
+var _AnsweredQuestion2 = _interopRequireDefault(_AnsweredQuestion);
+
+var _AnswerWalk = __webpack_require__(21);
+
+var _AnswerWalk2 = _interopRequireDefault(_AnswerWalk);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Schema = __webpack_require__(1);
+var mongoose = __webpack_require__(0);
+
+var aqSchema = new Schema({
+  number: { type: String },
+  answers: [{
+    logged_options: { type: [] },
+    children: [{
+      position: { type: String },
+      question: {
+        type: {},
+        get: function get(e) {
+          return new AnsweredQuestionModel(e);
+        }
+      }
+    }]
+  }]
+});
+
+_AnsweredQuestion2.default.copyTo(aqSchema.methods);
+_AnswerWalk2.default.copyTo(aqSchema.methods);
+
+var AnsweredQuestionModel = mongoose.model('AnsweredQuestion', aqSchema);
+exports.default = AnsweredQuestionModel;
+
+/***/ }),
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -853,9 +1033,9 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Question2 = __webpack_require__(7);
+var _Mixin2 = __webpack_require__(2);
 
-var _Question3 = _interopRequireDefault(_Question2);
+var _Mixin3 = _interopRequireDefault(_Mixin2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -865,19 +1045,16 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-/**
- * Provides export functionalities
- */
-var AnsweredQuestion = function (_Question) {
-  _inherits(AnsweredQuestion, _Question);
+var _class = function (_Mixin) {
+  _inherits(_class, _Mixin);
 
-  function AnsweredQuestion() {
-    _classCallCheck(this, AnsweredQuestion);
+  function _class() {
+    _classCallCheck(this, _class);
 
-    return _possibleConstructorReturn(this, (AnsweredQuestion.__proto__ || Object.getPrototypeOf(AnsweredQuestion)).apply(this, arguments));
+    return _possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).apply(this, arguments));
   }
 
-  _createClass(AnsweredQuestion, [{
+  _createClass(_class, [{
     key: 'collectRespondent',
     value: /*#__PURE__*/regeneratorRuntime.mark(function collectRespondent(_ref) {
       var acc = _ref.acc,
@@ -1015,14 +1192,15 @@ var AnsweredQuestion = function (_Question) {
   }, {
     key: 'findRespondents',
     value: /*#__PURE__*/regeneratorRuntime.mark(function findRespondents(_ref2) {
-      var acc = _ref2.acc,
+      var position = _ref2.position,
+          acc = _ref2.acc,
           prefix = _ref2.prefix,
           keys = _ref2.keys,
           respondents = _ref2.respondents,
           idx = _ref2.idx,
           refQ = _ref2.refQ;
 
-      var number, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, ans, _respChild, childQ, newAcc;
+      var number, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, ans, respChild, _position, childQ, newAcc;
 
       return regeneratorRuntime.wrap(function findRespondents$(_context2) {
         while (1) {
@@ -1050,41 +1228,42 @@ var AnsweredQuestion = function (_Question) {
               acc = acc || {};
               prefix = prefix || 'Q';
               keys = keys || [];
-              prefix = '' + prefix + (this.position || '');
+              position = position || '';
+              prefix = '' + prefix + position;
 
               if (!(this.number === number)) {
-                _context2.next = 13;
+                _context2.next = 14;
                 break;
               }
 
-              _context2.next = 12;
+              _context2.next = 13;
               return { question: this, context: { acc: acc, keys: keys, prefix: prefix, refQ: refQ } };
 
-            case 12:
+            case 13:
               return _context2.abrupt('return');
 
-            case 13:
+            case 14:
               _iteratorNormalCompletion2 = true;
               _didIteratorError2 = false;
               _iteratorError2 = undefined;
-              _context2.prev = 16;
+              _context2.prev = 17;
               _iterator2 = this.answers[Symbol.iterator]();
 
-            case 18:
+            case 19:
               if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
-                _context2.next = 32;
+                _context2.next = 34;
                 break;
               }
 
               ans = _step2.value;
 
               if (!ans.children) {
-                _context2.next = 29;
+                _context2.next = 31;
                 break;
               }
 
-              _respChild = ans.children.find(function (child, idx) {
-                child = AnsweredQuestion.fromChild(child);
+              respChild = ans.children.find(function (child, idx) {
+                child = child.question;
                 if (child.isParent(number)) {
                   return child;
                 } else {
@@ -1092,13 +1271,15 @@ var AnsweredQuestion = function (_Question) {
                 }
               });
 
-              if (!_respChild) {
-                _context2.next = 29;
+              if (!respChild) {
+                _context2.next = 31;
                 break;
               }
 
-              _respChild = AnsweredQuestion.fromChild(_respChild);
-              childQ = refQ.findChildByPosition(_respChild.position);
+              _position = respChild.position;
+
+              respChild = respChild.question;
+              childQ = refQ.findChildByPosition(_position);
               newAcc = this.collectAnswer({
                 ans: ans, keys: keys, refQ: refQ,
                 ansKey: prefix,
@@ -1108,68 +1289,69 @@ var AnsweredQuestion = function (_Question) {
               });
 
               if (childQ) {
-                _context2.next = 28;
+                _context2.next = 30;
                 break;
               }
 
-              throw new Error('Child question ' + _respChild.position + ' not found.\n               In Q ' + (refQ.number || refQ.type) + '.');
+              throw new Error('Child question ' + _position + ' not found.\n               In Q ' + (refQ.number || refQ.type) + '.');
 
-            case 28:
-              return _context2.delegateYield(_respChild.findRespondents({
+            case 30:
+              return _context2.delegateYield(respChild.findRespondents({
+                position: _position,
                 acc: newAcc,
                 prefix: prefix + '_',
                 refQ: childQ,
                 keys: keys, respondents: respondents, idx: idx
-              }), 't0', 29);
+              }), 't0', 31);
 
-            case 29:
+            case 31:
               _iteratorNormalCompletion2 = true;
-              _context2.next = 18;
-              break;
-
-            case 32:
-              _context2.next = 38;
+              _context2.next = 19;
               break;
 
             case 34:
-              _context2.prev = 34;
-              _context2.t1 = _context2['catch'](16);
+              _context2.next = 40;
+              break;
+
+            case 36:
+              _context2.prev = 36;
+              _context2.t1 = _context2['catch'](17);
               _didIteratorError2 = true;
               _iteratorError2 = _context2.t1;
 
-            case 38:
-              _context2.prev = 38;
-              _context2.prev = 39;
+            case 40:
+              _context2.prev = 40;
+              _context2.prev = 41;
 
               if (!_iteratorNormalCompletion2 && _iterator2.return) {
                 _iterator2.return();
               }
 
-            case 41:
-              _context2.prev = 41;
+            case 43:
+              _context2.prev = 43;
 
               if (!_didIteratorError2) {
-                _context2.next = 44;
+                _context2.next = 46;
                 break;
               }
 
               throw _iteratorError2;
 
-            case 44:
-              return _context2.finish(41);
-
-            case 45:
-              return _context2.finish(38);
-
             case 46:
-              ;
+              return _context2.finish(43);
 
             case 47:
+              return _context2.finish(40);
+
+            case 48:
+              ;
+
+            case 49:
             case 'end':
               return _context2.stop();
           }
         }
-      }, findRespondents, this, [[16, 34, 38, 46], [39,, 41, 45]]);
+      }, findRespondents, this, [[17, 36, 40, 48], [41,, 43, 47]]);
     })
   }, {
     key: 'collectAnswer',
@@ -1208,16 +1390,16 @@ var AnsweredQuestion = function (_Question) {
       if (ans.children) {
         ans.children.reduce(function (acc, child) {
           var childQ = refQ.findChildByPosition(child.position);
-          var childAnswer = AnsweredQuestion.fromChild(child);
+          if (!childQ) {
+            throw new Error('Child question ' + child.position + ' not found.\n               In Q ' + (refQ.number || refQ.type) + '.');
+          }
+          var childAnswer = child.question;
           if (ignore && ignore.reduce(function (acc, ign) {
-            return acc || childAnswer.isParent(ign);
+            return acc || childQ.isParent(ign);
           }, false)) return acc;
 
-          if (!childQ) {
-            throw new Error('Child question ' + respChild.position + ' not found.\n               In Q ' + (refQ.number || refQ.type) + '.');
-          }
-
           return childAnswer.collect({
+            position: child.position,
             prefix: ansKey + '_',
             refQ: childQ,
             suffix: suffix, keys: keys, acc: acc, ignore: ignore
@@ -1231,7 +1413,8 @@ var AnsweredQuestion = function (_Question) {
     value: function collect(_ref4) {
       var _this2 = this;
 
-      var acc = _ref4.acc,
+      var position = _ref4.position,
+          acc = _ref4.acc,
           prefix = _ref4.prefix,
           suffix = _ref4.suffix,
           keys = _ref4.keys,
@@ -1243,7 +1426,7 @@ var AnsweredQuestion = function (_Question) {
       suffix = suffix || '';
       keys = keys || [];
 
-      var pos = refQ.position || '';
+      var pos = position || '';
       pos = pos.replace(/\./g, '_');
       prefix = '' + prefix + pos;
       return this.answers ? this.answers.reduce(function (acc, ans, idx) {
@@ -1258,33 +1441,703 @@ var AnsweredQuestion = function (_Question) {
         });
       }, acc) : acc;
     }
-  }], [{
-    key: 'fromChild',
-    value: function fromChild(child) {
-      var childAnswer = void 0;
-      if (child.question) {
-        // Version 1
-        childAnswer = new AnsweredQuestion(child.question, child.position);
-      } else {
-        childAnswer = new AnsweredQuestion(child);
+  }]);
+
+  return _class;
+}(_Mixin3.default);
+
+exports.default = _class;
+
+/***/ }),
+/* 21 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+__webpack_require__(3);
+
+var _Mixin2 = __webpack_require__(2);
+
+var _Mixin3 = _interopRequireDefault(_Mixin2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _class = function (_Mixin) {
+  _inherits(_class, _Mixin);
+
+  function _class() {
+    _classCallCheck(this, _class);
+
+    return _possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).apply(this, arguments));
+  }
+
+  _createClass(_class, [{
+    key: 'walkAnswers',
+    value: /*#__PURE__*/regeneratorRuntime.mark(function walkAnswers() {
+      var answerIdx, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, answer;
+
+      return regeneratorRuntime.wrap(function walkAnswers$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              if (!(!this.answers || !this.answers.length)) {
+                _context.next = 2;
+                break;
+              }
+
+              return _context.abrupt('return');
+
+            case 2:
+              answerIdx = 0;
+              _iteratorNormalCompletion = true;
+              _didIteratorError = false;
+              _iteratorError = undefined;
+              _context.prev = 6;
+              _iterator = this.answers[Symbol.iterator]();
+
+            case 8:
+              if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
+                _context.next = 16;
+                break;
+              }
+
+              answer = _step.value;
+              _context.next = 12;
+              return {
+                answer: answer, answerIdx: answerIdx
+              };
+
+            case 12:
+              answerIdx++;
+
+            case 13:
+              _iteratorNormalCompletion = true;
+              _context.next = 8;
+              break;
+
+            case 16:
+              _context.next = 22;
+              break;
+
+            case 18:
+              _context.prev = 18;
+              _context.t0 = _context['catch'](6);
+              _didIteratorError = true;
+              _iteratorError = _context.t0;
+
+            case 22:
+              _context.prev = 22;
+              _context.prev = 23;
+
+              if (!_iteratorNormalCompletion && _iterator.return) {
+                _iterator.return();
+              }
+
+            case 25:
+              _context.prev = 25;
+
+              if (!_didIteratorError) {
+                _context.next = 28;
+                break;
+              }
+
+              throw _iteratorError;
+
+            case 28:
+              return _context.finish(25);
+
+            case 29:
+              return _context.finish(22);
+
+            case 30:
+            case 'end':
+              return _context.stop();
+          }
+        }
+      }, walkAnswers, this, [[6, 18, 22, 30], [23,, 25, 29]]);
+    })
+  }, {
+    key: 'walkChildren',
+    value: /*#__PURE__*/regeneratorRuntime.mark(function walkChildren(_ref) {
+      var answer = _ref.answer,
+          question = _ref.question;
+
+      var answersHash, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, child, ans;
+
+      return regeneratorRuntime.wrap(function walkChildren$(_context2) {
+        while (1) {
+          switch (_context2.prev = _context2.next) {
+            case 0:
+              if (question) {
+                _context2.next = 2;
+                break;
+              }
+
+              throw new Error('Question needed');
+
+            case 2:
+              if (answer) {
+                _context2.next = 4;
+                break;
+              }
+
+              throw new Error('Answer needed');
+
+            case 4:
+              if (!(!question.children || !question.children.length)) {
+                _context2.next = 6;
+                break;
+              }
+
+              return _context2.abrupt('return');
+
+            case 6:
+              if (!(!answer.children || !answer.children.length)) {
+                _context2.next = 8;
+                break;
+              }
+
+              return _context2.abrupt('return');
+
+            case 8:
+              answersHash = answer.children.reduce(function (acc, child) {
+                return Object.assign(acc, _defineProperty({}, child.position, child));
+              }, {});
+              _iteratorNormalCompletion2 = true;
+              _didIteratorError2 = false;
+              _iteratorError2 = undefined;
+              _context2.prev = 12;
+              _iterator2 = question.children[Symbol.iterator]();
+
+            case 14:
+              if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
+                _context2.next = 23;
+                break;
+              }
+
+              child = _step2.value;
+              ans = answersHash[child.position];
+
+              if (!ans) {
+                _context2.next = 20;
+                break;
+              }
+
+              _context2.next = 20;
+              return {
+                position: ans.position,
+                question: child.question,
+                answeredQuestion: ans.question
+              };
+
+            case 20:
+              _iteratorNormalCompletion2 = true;
+              _context2.next = 14;
+              break;
+
+            case 23:
+              _context2.next = 29;
+              break;
+
+            case 25:
+              _context2.prev = 25;
+              _context2.t0 = _context2['catch'](12);
+              _didIteratorError2 = true;
+              _iteratorError2 = _context2.t0;
+
+            case 29:
+              _context2.prev = 29;
+              _context2.prev = 30;
+
+              if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                _iterator2.return();
+              }
+
+            case 32:
+              _context2.prev = 32;
+
+              if (!_didIteratorError2) {
+                _context2.next = 35;
+                break;
+              }
+
+              throw _iteratorError2;
+
+            case 35:
+              return _context2.finish(32);
+
+            case 36:
+              return _context2.finish(29);
+
+            case 37:
+            case 'end':
+              return _context2.stop();
+          }
+        }
+      }, walkChildren, this, [[12, 25, 29, 37], [30,, 32, 36]]);
+    })
+  }, {
+    key: 'walkRespondents',
+    value: /*#__PURE__*/regeneratorRuntime.mark(function walkRespondents(context) {
+      var question, respondent, _context$ignores, ignores, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, ansCtx, respChild, _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _iterator4, _step4, _ansCtx, _iteratorNormalCompletion5, _didIteratorError5, _iteratorError5, _iterator5, _step5, child;
+
+      return regeneratorRuntime.wrap(function walkRespondents$(_context3) {
+        while (1) {
+          switch (_context3.prev = _context3.next) {
+            case 0:
+              question = context.question, respondent = context.respondent, _context$ignores = context.ignores, ignores = _context$ignores === undefined ? [] : _context$ignores;
+
+              if (question) {
+                _context3.next = 3;
+                break;
+              }
+
+              throw new Error('Question needed');
+
+            case 3:
+              if (!(typeof respondent === 'undefined')) {
+                _context3.next = 5;
+                break;
+              }
+
+              throw new Error('Respondent needed');
+
+            case 5:
+              if (!(!respondent && question.type === 'ROOT' || question.number === respondent)) {
+                _context3.next = 34;
+                break;
+              }
+
+              _iteratorNormalCompletion3 = true;
+              _didIteratorError3 = false;
+              _iteratorError3 = undefined;
+              _context3.prev = 9;
+              _iterator3 = this.walkAnswers()[Symbol.iterator]();
+
+            case 11:
+              if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
+                _context3.next = 19;
+                break;
+              }
+
+              ansCtx = _step3.value;
+
+              ansCtx.type = 'respondent';
+              _context3.next = 16;
+              return [ansCtx, context];
+
+            case 16:
+              _iteratorNormalCompletion3 = true;
+              _context3.next = 11;
+              break;
+
+            case 19:
+              _context3.next = 25;
+              break;
+
+            case 21:
+              _context3.prev = 21;
+              _context3.t0 = _context3['catch'](9);
+              _didIteratorError3 = true;
+              _iteratorError3 = _context3.t0;
+
+            case 25:
+              _context3.prev = 25;
+              _context3.prev = 26;
+
+              if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                _iterator3.return();
+              }
+
+            case 28:
+              _context3.prev = 28;
+
+              if (!_didIteratorError3) {
+                _context3.next = 31;
+                break;
+              }
+
+              throw _iteratorError3;
+
+            case 31:
+              return _context3.finish(28);
+
+            case 32:
+              return _context3.finish(25);
+
+            case 33:
+              return _context3.abrupt('return');
+
+            case 34:
+              respChild = void 0;
+              _iteratorNormalCompletion4 = true;
+              _didIteratorError4 = false;
+              _iteratorError4 = undefined;
+              _context3.prev = 38;
+              _iterator4 = this.walkAnswers()[Symbol.iterator]();
+
+            case 40:
+              if (_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done) {
+                _context3.next = 86;
+                break;
+              }
+
+              _ansCtx = _step4.value;
+
+              _ansCtx.type = 'respondentAnswer';
+              _context3.next = 45;
+              return [_ansCtx, context];
+
+            case 45:
+              _iteratorNormalCompletion5 = true;
+              _didIteratorError5 = false;
+              _iteratorError5 = undefined;
+              _context3.prev = 48;
+              _iterator5 = this.walkChildren(_ansCtx)[Symbol.iterator]();
+
+            case 50:
+              if (_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done) {
+                _context3.next = 64;
+                break;
+              }
+
+              child = _step5.value;
+
+              if (!child.question.isParent(respondent)) {
+                _context3.next = 55;
+                break;
+              }
+
+              respChild = child;
+              return _context3.abrupt('continue', 61);
+
+            case 55:
+              if (!this._checkIgnore(child.question, ignores)) {
+                _context3.next = 57;
+                break;
+              }
+
+              return _context3.abrupt('continue', 61);
+
+            case 57:
+              child.type = 'child';
+              _context3.next = 60;
+              return [child, _ansCtx];
+
+            case 60:
+              return _context3.delegateYield(child.answeredQuestion.walk(child), 't1', 61);
+
+            case 61:
+              _iteratorNormalCompletion5 = true;
+              _context3.next = 50;
+              break;
+
+            case 64:
+              _context3.next = 70;
+              break;
+
+            case 66:
+              _context3.prev = 66;
+              _context3.t2 = _context3['catch'](48);
+              _didIteratorError5 = true;
+              _iteratorError5 = _context3.t2;
+
+            case 70:
+              _context3.prev = 70;
+              _context3.prev = 71;
+
+              if (!_iteratorNormalCompletion5 && _iterator5.return) {
+                _iterator5.return();
+              }
+
+            case 73:
+              _context3.prev = 73;
+
+              if (!_didIteratorError5) {
+                _context3.next = 76;
+                break;
+              }
+
+              throw _iteratorError5;
+
+            case 76:
+              return _context3.finish(73);
+
+            case 77:
+              return _context3.finish(70);
+
+            case 78:
+              if (!respChild) {
+                _context3.next = 83;
+                break;
+              }
+
+              respChild.type = 'respondentChild';
+              _context3.next = 82;
+              return [respChild, _ansCtx];
+
+            case 82:
+              return _context3.delegateYield(respChild.answeredQuestion.walkRespondents(respChild), 't3', 83);
+
+            case 83:
+              _iteratorNormalCompletion4 = true;
+              _context3.next = 40;
+              break;
+
+            case 86:
+              _context3.next = 92;
+              break;
+
+            case 88:
+              _context3.prev = 88;
+              _context3.t4 = _context3['catch'](38);
+              _didIteratorError4 = true;
+              _iteratorError4 = _context3.t4;
+
+            case 92:
+              _context3.prev = 92;
+              _context3.prev = 93;
+
+              if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                _iterator4.return();
+              }
+
+            case 95:
+              _context3.prev = 95;
+
+              if (!_didIteratorError4) {
+                _context3.next = 98;
+                break;
+              }
+
+              throw _iteratorError4;
+
+            case 98:
+              return _context3.finish(95);
+
+            case 99:
+              return _context3.finish(92);
+
+            case 100:
+            case 'end':
+              return _context3.stop();
+          }
+        }
+      }, walkRespondents, this, [[9, 21, 25, 33], [26,, 28, 32], [38, 88, 92, 100], [48, 66, 70, 78], [71,, 73, 77], [93,, 95, 99]]);
+    })
+  }, {
+    key: 'walk',
+    value: /*#__PURE__*/regeneratorRuntime.mark(function walk(context) {
+      var _iteratorNormalCompletion6, _didIteratorError6, _iteratorError6, _iterator6, _step6, ansCtx;
+
+      return regeneratorRuntime.wrap(function walk$(_context4) {
+        while (1) {
+          switch (_context4.prev = _context4.next) {
+            case 0:
+              _iteratorNormalCompletion6 = true;
+              _didIteratorError6 = false;
+              _iteratorError6 = undefined;
+              _context4.prev = 3;
+              _iterator6 = this.walkAnswers(context)[Symbol.iterator]();
+
+            case 5:
+              if (_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done) {
+                _context4.next = 15;
+                break;
+              }
+
+              ansCtx = _step6.value;
+
+              ansCtx.type = 'answer';
+              _context4.next = 10;
+              return [ansCtx, context];
+
+            case 10:
+              if (!ansCtx.question) ansCtx.question = context.question;
+              return _context4.delegateYield(this.walkAnswer(ansCtx), 't0', 12);
+
+            case 12:
+              _iteratorNormalCompletion6 = true;
+              _context4.next = 5;
+              break;
+
+            case 15:
+              _context4.next = 21;
+              break;
+
+            case 17:
+              _context4.prev = 17;
+              _context4.t1 = _context4['catch'](3);
+              _didIteratorError6 = true;
+              _iteratorError6 = _context4.t1;
+
+            case 21:
+              _context4.prev = 21;
+              _context4.prev = 22;
+
+              if (!_iteratorNormalCompletion6 && _iterator6.return) {
+                _iterator6.return();
+              }
+
+            case 24:
+              _context4.prev = 24;
+
+              if (!_didIteratorError6) {
+                _context4.next = 27;
+                break;
+              }
+
+              throw _iteratorError6;
+
+            case 27:
+              return _context4.finish(24);
+
+            case 28:
+              return _context4.finish(21);
+
+            case 29:
+            case 'end':
+              return _context4.stop();
+          }
+        }
+      }, walk, this, [[3, 17, 21, 29], [22,, 24, 28]]);
+    })
+  }, {
+    key: 'walkAnswer',
+    value: /*#__PURE__*/regeneratorRuntime.mark(function walkAnswer(ansCtx) {
+      var _iteratorNormalCompletion7, _didIteratorError7, _iteratorError7, _iterator7, _step7, child;
+
+      return regeneratorRuntime.wrap(function walkAnswer$(_context5) {
+        while (1) {
+          switch (_context5.prev = _context5.next) {
+            case 0:
+              _iteratorNormalCompletion7 = true;
+              _didIteratorError7 = false;
+              _iteratorError7 = undefined;
+              _context5.prev = 3;
+              _iterator7 = this.walkChildren(ansCtx)[Symbol.iterator]();
+
+            case 5:
+              if (_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done) {
+                _context5.next = 14;
+                break;
+              }
+
+              child = _step7.value;
+
+              child.type = 'child';
+              _context5.next = 10;
+              return [child, ansCtx];
+
+            case 10:
+              return _context5.delegateYield(child.answeredQuestion.walk(child), 't0', 11);
+
+            case 11:
+              _iteratorNormalCompletion7 = true;
+              _context5.next = 5;
+              break;
+
+            case 14:
+              _context5.next = 20;
+              break;
+
+            case 16:
+              _context5.prev = 16;
+              _context5.t1 = _context5['catch'](3);
+              _didIteratorError7 = true;
+              _iteratorError7 = _context5.t1;
+
+            case 20:
+              _context5.prev = 20;
+              _context5.prev = 21;
+
+              if (!_iteratorNormalCompletion7 && _iterator7.return) {
+                _iterator7.return();
+              }
+
+            case 23:
+              _context5.prev = 23;
+
+              if (!_didIteratorError7) {
+                _context5.next = 26;
+                break;
+              }
+
+              throw _iteratorError7;
+
+            case 26:
+              return _context5.finish(23);
+
+            case 27:
+              return _context5.finish(20);
+
+            case 28:
+            case 'end':
+              return _context5.stop();
+          }
+        }
+      }, walkAnswer, this, [[3, 16, 20, 28], [21,, 23, 27]]);
+    })
+  }, {
+    key: '_checkIgnore',
+    value: function _checkIgnore(question, ignores) {
+      var _iteratorNormalCompletion8 = true;
+      var _didIteratorError8 = false;
+      var _iteratorError8 = undefined;
+
+      try {
+        for (var _iterator8 = ignores[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+          var ign = _step8.value;
+
+          if (question.isParent(ign)) return true;
+        }
+      } catch (err) {
+        _didIteratorError8 = true;
+        _iteratorError8 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion8 && _iterator8.return) {
+            _iterator8.return();
+          }
+        } finally {
+          if (_didIteratorError8) {
+            throw _iteratorError8;
+          }
+        }
       }
-      return childAnswer;
+
+      return false;
     }
   }]);
 
-  return AnsweredQuestion;
-}(_Question3.default);
+  return _class;
+}(_Mixin3.default);
 
-exports.default = AnsweredQuestion;
+exports.default = _class;
 
 /***/ }),
-/* 20 */
+/* 22 */
 /***/ (function(module, exports) {
 
 module.exports = require("fs");
 
 /***/ }),
-/* 21 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1298,7 +2151,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var _require = __webpack_require__(74),
+var _require = __webpack_require__(76),
     Parser = _require.Parser;
 
 /**
@@ -1356,10 +2209,10 @@ var CSVParser = function (_Parser) {
 module.exports = CSVParser;
 
 /***/ }),
-/* 22 */,
-/* 23 */,
 /* 24 */,
-/* 25 */
+/* 25 */,
+/* 26 */,
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1370,7 +2223,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = dispatcher;
 
-var _render = __webpack_require__(49);
+var _render = __webpack_require__(51);
 
 var _render2 = _interopRequireDefault(_render);
 
@@ -1390,7 +2243,7 @@ function dispatcher(Controller, method) {
 }
 
 /***/ }),
-/* 26 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1400,7 +2253,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _Answer = __webpack_require__(18);
+var _Answer = __webpack_require__(17);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 
@@ -1408,15 +2261,15 @@ var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
-var _fs = __webpack_require__(20);
+var _fs = __webpack_require__(22);
 
 var _fs2 = _interopRequireDefault(_fs);
 
-var _co = __webpack_require__(8);
+var _co = __webpack_require__(18);
 
 var _co2 = _interopRequireDefault(_co);
 
-var _EntitiyController = __webpack_require__(10);
+var _EntitiyController = __webpack_require__(8);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
@@ -1430,9 +2283,9 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Survey = __webpack_require__(14);
+var Survey = __webpack_require__(11);
 
-var SurveyCSVParser = __webpack_require__(59);
+var SurveyCSVParser = __webpack_require__(61);
 
 /**
  * Survey document controller.
@@ -1627,7 +2480,7 @@ Object.assign(SurveyController, {
 module.exports = SurveyController;
 
 /***/ }),
-/* 27 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1679,7 +2532,7 @@ module.exports = function (type, parent) {
 };
 
 /***/ }),
-/* 28 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1731,7 +2584,7 @@ exports.default = function (array, tagModules, operator, initialPromise) {
 };
 
 /***/ }),
-/* 29 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1753,7 +2606,7 @@ artifactSchema.index({ type: 1, mimeType: 1 });
 module.exports = mongoose.model('Artifact', artifactSchema);
 
 /***/ }),
-/* 30 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1767,23 +2620,19 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _Answer = __webpack_require__(18);
+var _Answer = __webpack_require__(17);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 
-var _EntitiyController = __webpack_require__(10);
+var _EntitiyController = __webpack_require__(8);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
-var _csvWriteStream = __webpack_require__(75);
-
-var _csvWriteStream2 = _interopRequireDefault(_csvWriteStream);
-
-var _streamToArray = __webpack_require__(31);
+var _streamToArray = __webpack_require__(33);
 
 var _streamToArray2 = _interopRequireDefault(_streamToArray);
 
-var _crypto = __webpack_require__(76);
+var _crypto = __webpack_require__(77);
 
 var _crypto2 = _interopRequireDefault(_crypto);
 
@@ -1877,30 +2726,6 @@ var AnswerController = function (_EntityController) {
     value: function _parseEntity(obj) {
       return this._filterObject(obj, 'name description rootQuestion surveyor survey version checksum');
     }
-  }, {
-    key: 'download',
-    value: function download() {
-      var _this4 = this;
-
-      var query = this._getQuery();
-      Promise.resolve(query && this._findOne(query)).then(function (e) {
-        return e || Promise.reject(new Error('Entity not found.'));
-      }).catch(function (err) {
-        return _this4.renderer.renderPromise(Promise.reject(err));
-      }).then(function (answer) {
-        var res = _this4.renderer.res;
-        res.attachment(answer._id + '.csv');
-
-        var csvWriter = new _csvWriteStream2.default();
-        csvWriter.pipe(res);
-
-        csvWriter.on('end', function () {
-          return res.end();
-        });
-        csvWriter.write(answer.rootQuestion.collect({}));
-        csvWriter.end();
-      }).catch(function (err) {});
-    }
   }]);
 
   return AnswerController;
@@ -1918,13 +2743,13 @@ module.exports = AnswerController;
 exports.default = AnswerController;
 
 /***/ }),
-/* 31 */
+/* 33 */
 /***/ (function(module, exports) {
 
 module.exports = require("stream-to-array");
 
 /***/ }),
-/* 32 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1938,11 +2763,11 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _EntitiyController = __webpack_require__(10);
+var _EntitiyController = __webpack_require__(8);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
-var _surveyorCsvParser = __webpack_require__(83);
+var _surveyorCsvParser = __webpack_require__(84);
 
 var _surveyorCsvParser2 = _interopRequireDefault(_surveyorCsvParser);
 
@@ -2066,16 +2891,16 @@ Object.assign(SurveyorController, {
 module.exports = SurveyorController;
 
 /***/ }),
-/* 33 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-__webpack_require__(34);
+__webpack_require__(36);
 
 /***/ }),
-/* 34 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2083,10 +2908,10 @@ __webpack_require__(34);
 
 __webpack_require__(3);
 
-__webpack_require__(12);
+__webpack_require__(10);
 
-var express = __webpack_require__(17);
-var http = __webpack_require__(35);
+var express = __webpack_require__(16);
+var http = __webpack_require__(37);
 
 
 // Create the server and load the components.
@@ -2096,19 +2921,19 @@ var app = express();
 
 
 // 2.1 Setup cookies
-__webpack_require__(36)(app);
-
-// 2.2. Add security to all end points.
 __webpack_require__(38)(app);
 
-// 2.3. Setup body-parser.
-__webpack_require__(45)(app);
+// 2.2. Add security to all end points.
+__webpack_require__(40)(app);
 
-// 10. Setup the routes:
+// 2.3. Setup body-parser.
 __webpack_require__(47)(app);
 
+// 10. Setup the routes:
+__webpack_require__(49)(app);
+
 // 99. Setup error-handling
-__webpack_require__(85)(app);
+__webpack_require__(86)(app);
 
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
@@ -2168,28 +2993,10 @@ function onError(error) {
 }
 
 /***/ }),
-/* 35 */
-/***/ (function(module, exports) {
-
-module.exports = require("http");
-
-/***/ }),
-/* 36 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var cookieParser = __webpack_require__(37);
-module.exports = function (app) {
-  return app.use(cookieParser());
-};
-
-/***/ }),
 /* 37 */
 /***/ (function(module, exports) {
 
-module.exports = require("cookie-parser");
+module.exports = require("http");
 
 /***/ }),
 /* 38 */
@@ -2198,13 +3005,31 @@ module.exports = require("cookie-parser");
 "use strict";
 
 
-var _express = __webpack_require__(17);
+var cookieParser = __webpack_require__(39);
+module.exports = function (app) {
+  return app.use(cookieParser());
+};
+
+/***/ }),
+/* 39 */
+/***/ (function(module, exports) {
+
+module.exports = require("cookie-parser");
+
+/***/ }),
+/* 40 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _express = __webpack_require__(16);
 
 var _express2 = _interopRequireDefault(_express);
 
-var _authentication = __webpack_require__(39);
+var _authentication = __webpack_require__(41);
 
-var _roles = __webpack_require__(43);
+var _roles = __webpack_require__(45);
 
 var _roles2 = _interopRequireDefault(_roles);
 
@@ -2212,7 +3037,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-var jwt = __webpack_require__(44);
+var jwt = __webpack_require__(46);
 var constants = __webpack_require__(5);
 
 var secRouter = new _express2.default.Router();
@@ -2250,7 +3075,7 @@ module.exports = function (app) {
 };
 
 /***/ }),
-/* 39 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2267,9 +3092,9 @@ var _User2 = _interopRequireDefault(_User);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var passport = __webpack_require__(40);
-var Digest = __webpack_require__(41).DigestStrategy;
-var jwt = __webpack_require__(42);
+var passport = __webpack_require__(42);
+var Digest = __webpack_require__(43).DigestStrategy;
+var jwt = __webpack_require__(44);
 var Constants = __webpack_require__(5);
 
 passport.use(new Digest({ qop: 'auth' }, function (username, cb) {
@@ -2304,25 +3129,25 @@ var signIn = [passportMiddleware, setCookie];
 exports.signIn = signIn;
 
 /***/ }),
-/* 40 */
+/* 42 */
 /***/ (function(module, exports) {
 
 module.exports = require("passport");
 
 /***/ }),
-/* 41 */
+/* 43 */
 /***/ (function(module, exports) {
 
 module.exports = require("passport-http");
 
 /***/ }),
-/* 42 */
+/* 44 */
 /***/ (function(module, exports) {
 
 module.exports = require("jsonwebtoken");
 
 /***/ }),
-/* 43 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2389,19 +3214,19 @@ function rolesMiddleware(req, res, next) {
 }
 
 /***/ }),
-/* 44 */
+/* 46 */
 /***/ (function(module, exports) {
 
 module.exports = require("express-jwt");
 
 /***/ }),
-/* 45 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var bodyParser = __webpack_require__(46);
+var bodyParser = __webpack_require__(48);
 
 module.exports = function (app) {
   // parse application/x-www-form-urlencoded
@@ -2412,21 +3237,21 @@ module.exports = function (app) {
 };
 
 /***/ }),
-/* 46 */
+/* 48 */
 /***/ (function(module, exports) {
 
 module.exports = require("body-parser");
 
 /***/ }),
-/* 47 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 module.exports = function (app) {
-  app.use('/cms', __webpack_require__(48));
-  app.use('/app', __webpack_require__(84));
+  app.use('/cms', __webpack_require__(50));
+  app.use('/app', __webpack_require__(85));
 
   // redirect the home to /cms
   app.get('/', function (req, res) {
@@ -2435,19 +3260,19 @@ module.exports = function (app) {
 };
 
 /***/ }),
-/* 48 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _dispatcher = __webpack_require__(25);
+var _dispatcher = __webpack_require__(27);
 
 var _dispatcher2 = _interopRequireDefault(_dispatcher);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var express = __webpack_require__(17);
+var express = __webpack_require__(16);
 
 
 /**
@@ -2472,20 +3297,20 @@ function registerCmsRoutes(app, Controller, extra) {
 }
 
 var cmsRouter = new express.Router();
-registerCmsRoutes(cmsRouter, __webpack_require__(26), function (app, ctrl) {
+registerCmsRoutes(cmsRouter, __webpack_require__(28), function (app, ctrl) {
   app.get('/:id/download', (0, _dispatcher2.default)(ctrl, 'download'));
   app.get('/:id/answers', (0, _dispatcher2.default)(ctrl, 'answers'));
   app.post('/:id/reset', (0, _dispatcher2.default)(ctrl, 'reset'));
 });
-registerCmsRoutes(cmsRouter, __webpack_require__(30));
-registerCmsRoutes(cmsRouter, __webpack_require__(77));
-registerCmsRoutes(cmsRouter, __webpack_require__(79));
-registerCmsRoutes(cmsRouter, __webpack_require__(81));
 registerCmsRoutes(cmsRouter, __webpack_require__(32));
+registerCmsRoutes(cmsRouter, __webpack_require__(78));
+registerCmsRoutes(cmsRouter, __webpack_require__(80));
+registerCmsRoutes(cmsRouter, __webpack_require__(82));
+registerCmsRoutes(cmsRouter, __webpack_require__(34));
 module.exports = cmsRouter;
 
 /***/ }),
-/* 49 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2567,7 +3392,7 @@ exports.default = Renderer;
 ;
 
 /***/ }),
-/* 50 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2611,7 +3436,7 @@ var BaseController = function () {
 exports.default = BaseController;
 
 /***/ }),
-/* 51 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2672,7 +3497,7 @@ var ListingConcerns = function (_Mixin) {
 exports.default = ListingConcerns;
 
 /***/ }),
-/* 52 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2744,7 +3569,7 @@ var GetConcerns = function (_Mixin) {
 exports.default = GetConcerns;
 
 /***/ }),
-/* 53 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2804,7 +3629,7 @@ var DeleteConcerns = function (_Mixin) {
 exports.default = DeleteConcerns;
 
 /***/ }),
-/* 54 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2820,7 +3645,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _multipartHandler = __webpack_require__(55);
+var _multipartHandler = __webpack_require__(57);
 
 var _multipartHandler2 = _interopRequireDefault(_multipartHandler);
 
@@ -2897,7 +3722,7 @@ var BodyConcerns = function (_Mixin) {
 exports.default = BodyConcerns;
 
 /***/ }),
-/* 55 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2909,7 +3734,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _busboy = __webpack_require__(56);
+var _busboy = __webpack_require__(58);
 
 var _busboy2 = _interopRequireDefault(_busboy);
 
@@ -2976,13 +3801,13 @@ var MPHandler = function (_Busboy) {
 exports.default = MPHandler;
 
 /***/ }),
-/* 56 */
+/* 58 */
 /***/ (function(module, exports) {
 
 module.exports = require("busboy");
 
 /***/ }),
-/* 57 */
+/* 59 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3071,7 +3896,7 @@ var CreateConcerns = function (_Mixin) {
 exports.default = CreateConcerns;
 
 /***/ }),
-/* 58 */
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3154,7 +3979,7 @@ var UpdateConcerns = function (_Mixin) {
 exports.default = UpdateConcerns;
 
 /***/ }),
-/* 59 */
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3164,15 +3989,15 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _tags = __webpack_require__(60);
+var _tags = __webpack_require__(62);
 
 var _tags2 = _interopRequireDefault(_tags);
 
-var _options = __webpack_require__(71);
+var _options = __webpack_require__(73);
 
 var _options2 = _interopRequireDefault(_options);
 
-var _treeCsvParser = __webpack_require__(73);
+var _treeCsvParser = __webpack_require__(75);
 
 var _treeCsvParser2 = _interopRequireDefault(_treeCsvParser);
 
@@ -3464,7 +4289,7 @@ var SurveyCSVParser = function (_TreeParser) {
           type: 'ROOT',
           options: [],
           children: ch,
-          flow: __webpack_require__(27)('NONE', null)
+          flow: __webpack_require__(29)('NONE', null)
         };
       }).then(function (q) {
         _this5.res({ root: q, warnings: _this5.warnings });
@@ -3494,7 +4319,7 @@ var SurveyCSVParser = function (_TreeParser) {
 module.exports = SurveyCSVParser;
 
 /***/ }),
-/* 60 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3504,11 +4329,11 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _questionDefault = __webpack_require__(27);
+var _questionDefault = __webpack_require__(29);
 
 var _questionDefault2 = _interopRequireDefault(_questionDefault);
 
-var _promiseProcess = __webpack_require__(28);
+var _promiseProcess = __webpack_require__(30);
 
 var _promiseProcess2 = _interopRequireDefault(_promiseProcess);
 
@@ -3531,10 +4356,10 @@ exports.default = function (type, tags, parentContext) {
   });
 };
 
-var tagModules = [].concat([__webpack_require__(61), __webpack_require__(62), __webpack_require__(63), __webpack_require__(64), __webpack_require__(65), __webpack_require__(66), __webpack_require__(67), __webpack_require__(68), __webpack_require__(69), __webpack_require__(70)]);
+var tagModules = [].concat([__webpack_require__(63), __webpack_require__(64), __webpack_require__(65), __webpack_require__(66), __webpack_require__(67), __webpack_require__(68), __webpack_require__(69), __webpack_require__(70), __webpack_require__(71), __webpack_require__(72)]);
 
 /***/ }),
-/* 61 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3549,7 +4374,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 62 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3564,7 +4389,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 63 */
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3584,7 +4409,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 64 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3605,7 +4430,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 65 */
+/* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3620,7 +4445,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 66 */
+/* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3634,7 +4459,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 67 */
+/* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3656,7 +4481,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 68 */
+/* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3670,7 +4495,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 69 */
+/* 71 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3695,7 +4520,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 70 */
+/* 72 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3709,7 +4534,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 71 */
+/* 73 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3719,7 +4544,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _promiseProcess = __webpack_require__(28);
+var _promiseProcess = __webpack_require__(30);
 
 var _promiseProcess2 = _interopRequireDefault(_promiseProcess);
 
@@ -3742,16 +4567,16 @@ exports.default = function (tags) {
   });
 };
 
-var optModules = [].concat([__webpack_require__(72)]);
+var optModules = [].concat([__webpack_require__(74)]);
 
 /***/ }),
-/* 72 */
+/* 74 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _Artifact = __webpack_require__(29);
+var _Artifact = __webpack_require__(31);
 
 var _Artifact2 = _interopRequireDefault(_Artifact);
 
@@ -3776,7 +4601,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 73 */
+/* 75 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3790,7 +4615,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var CSVParser = __webpack_require__(21);
+var CSVParser = __webpack_require__(23);
 
 /** 
  * A stack-based parser to parse hierarchical CSVs.
@@ -3938,25 +4763,19 @@ var TreeParser = function (_CSVParser) {
 module.exports = TreeParser;
 
 /***/ }),
-/* 74 */
+/* 76 */
 /***/ (function(module, exports) {
 
 module.exports = require("csv-parse");
 
 /***/ }),
-/* 75 */
-/***/ (function(module, exports) {
-
-module.exports = require("csv-write-stream");
-
-/***/ }),
-/* 76 */
+/* 77 */
 /***/ (function(module, exports) {
 
 module.exports = require("crypto");
 
 /***/ }),
-/* 77 */
+/* 78 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3966,15 +4785,15 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _EntitiyController = __webpack_require__(10);
+var _EntitiyController = __webpack_require__(8);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
-var _streamToArray = __webpack_require__(31);
+var _streamToArray = __webpack_require__(33);
 
 var _streamToArray2 = _interopRequireDefault(_streamToArray);
 
-var _fileType = __webpack_require__(78);
+var _fileType = __webpack_require__(79);
 
 var _fileType2 = _interopRequireDefault(_fileType);
 
@@ -3986,7 +4805,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Artifact = __webpack_require__(29);
+var Artifact = __webpack_require__(31);
 
 /**
  * Artifact document controller.
@@ -4065,13 +4884,13 @@ Object.assign(ArtifactController, {
 module.exports = ArtifactController;
 
 /***/ }),
-/* 78 */
+/* 79 */
 /***/ (function(module, exports) {
 
 module.exports = require("file-type");
 
 /***/ }),
-/* 79 */
+/* 80 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4079,15 +4898,15 @@ module.exports = require("file-type");
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _EntitiyController = __webpack_require__(10);
+var _EntitiyController = __webpack_require__(8);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
-var _procs = __webpack_require__(80);
+var _procs = __webpack_require__(81);
 
 var _procs2 = _interopRequireDefault(_procs);
 
-var _Process = __webpack_require__(11);
+var _Process = __webpack_require__(9);
 
 var _Process2 = _interopRequireDefault(_Process);
 
@@ -4143,7 +4962,7 @@ Object.assign(ProcessController, {
 module.exports = ProcessController;
 
 /***/ }),
-/* 80 */
+/* 81 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4154,7 +4973,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.ExportResponses = exports.CollectResponses = undefined;
 
-var _childProcess = __webpack_require__(15);
+var _childProcess = __webpack_require__(14);
 
 var _childProcess2 = _interopRequireDefault(_childProcess);
 
@@ -4172,7 +4991,7 @@ var ExportResponses = exports.ExportResponses = new _childProcess2.default({
 exports.default = { CollectResponses: CollectResponses, ExportResponses: ExportResponses };
 
 /***/ }),
-/* 81 */
+/* 82 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4186,15 +5005,15 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _Location = __webpack_require__(9);
+var _Location = __webpack_require__(7);
 
 var _Location2 = _interopRequireDefault(_Location);
 
-var _EntitiyController = __webpack_require__(10);
+var _EntitiyController = __webpack_require__(8);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
-var _locationCsvParser = __webpack_require__(82);
+var _locationCsvParser = __webpack_require__(83);
 
 var _locationCsvParser2 = _interopRequireDefault(_locationCsvParser);
 
@@ -4294,7 +5113,7 @@ Object.assign(LocationController, {
 module.exports = LocationController;
 
 /***/ }),
-/* 82 */
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4306,11 +5125,11 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _csvParser = __webpack_require__(21);
+var _csvParser = __webpack_require__(23);
 
 var _csvParser2 = _interopRequireDefault(_csvParser);
 
-var _Location = __webpack_require__(9);
+var _Location = __webpack_require__(7);
 
 var _Location2 = _interopRequireDefault(_Location);
 
@@ -4470,7 +5289,7 @@ var _class = function (_CSVParser) {
 exports.default = _class;
 
 /***/ }),
-/* 83 */
+/* 84 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4482,7 +5301,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _csvParser = __webpack_require__(21);
+var _csvParser = __webpack_require__(23);
 
 var _csvParser2 = _interopRequireDefault(_csvParser);
 
@@ -4490,7 +5309,7 @@ var _User = __webpack_require__(6);
 
 var _User2 = _interopRequireDefault(_User);
 
-var _Location = __webpack_require__(9);
+var _Location = __webpack_require__(7);
 
 var _Location2 = _interopRequireDefault(_Location);
 
@@ -4595,31 +5414,31 @@ var _class = function (_CSVParser) {
 exports.default = _class;
 
 /***/ }),
-/* 84 */
+/* 85 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _dispatcher = __webpack_require__(25);
+var _dispatcher = __webpack_require__(27);
 
 var _dispatcher2 = _interopRequireDefault(_dispatcher);
 
-var _SurveyorController = __webpack_require__(32);
+var _SurveyorController = __webpack_require__(34);
 
 var _SurveyorController2 = _interopRequireDefault(_SurveyorController);
 
-var _AnswerController = __webpack_require__(30);
+var _AnswerController = __webpack_require__(32);
 
 var _AnswerController2 = _interopRequireDefault(_AnswerController);
 
-var _SurveyController = __webpack_require__(26);
+var _SurveyController = __webpack_require__(28);
 
 var _SurveyController2 = _interopRequireDefault(_SurveyController);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var express = __webpack_require__(17);
+var express = __webpack_require__(16);
 var app = new express.Router();
 
 
@@ -4637,7 +5456,7 @@ app.get('/download/:id', (0, _dispatcher2.default)(_SurveyController2.default, '
 module.exports = app;
 
 /***/ }),
-/* 85 */
+/* 86 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

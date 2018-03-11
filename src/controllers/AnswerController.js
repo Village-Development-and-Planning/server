@@ -1,6 +1,5 @@
 import Answer from '../models/Answer';
 import EntityController from './EntitiyController';
-import CSVWriter from 'csv-write-stream';
 
 import streamToArray from 'stream-to-array';
 
@@ -73,29 +72,8 @@ class AnswerController extends EntityController {
       'name description rootQuestion surveyor survey version checksum',
     );
   }
-
-  download() {
-    const query = this._getQuery();
-    Promise.resolve(
-      query && this._findOne(query)
-    )
-    .then((e) => e || Promise.reject(new Error('Entity not found.')))
-    .catch((err) => this.renderer.renderPromise(Promise.reject(err)))
-    .then((answer) => {
-      const res = this.renderer.res;
-      res.attachment(`${answer._id}.csv`);
-
-      const csvWriter = new CSVWriter();
-      csvWriter.pipe(res);
-
-      csvWriter.on('end', () => res.end());
-      csvWriter.write(answer.rootQuestion.collect({}));
-      csvWriter.end();
-    })
-    .catch((err) => {
-    });
-  }
 }
+
 Object.assign(AnswerController, {
   collection: Answer,
   routeName: 'answers',

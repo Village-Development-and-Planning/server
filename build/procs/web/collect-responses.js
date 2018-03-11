@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 86);
+/******/ 	return __webpack_require__(__webpack_require__.s = 87);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -160,6 +160,11 @@ var Mixin = function () {
           target[prop] = src[prop];
         }
       });
+    }
+  }, {
+    key: 'copyTo',
+    value: function copyTo(target) {
+      this._copyMethods(target, this.prototype);
     }
   }, {
     key: 'mixin',
@@ -272,114 +277,6 @@ module.exports = mongoose.model('User', userSchema);
 "use strict";
 
 
-__webpack_require__(3);
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var Schema = __webpack_require__(1);
-var Text = __webpack_require__(13);
-var mongoose = __webpack_require__(0);
-
-var Question = void 0;
-
-var questionSchema = new Schema({
-  type: { type: String },
-  tags: [{ type: String }],
-  text: { type: Text },
-  number: { type: String },
-  position: { type: String },
-  options: [{
-    position: { type: String, required: true },
-    option: { type: {}, required: true }
-  }],
-  children: [{
-    position: { type: String, required: true },
-    question: {
-      type: {},
-      get: function get(q) {
-        return new Question(q);
-      },
-      required: true
-    }
-  }],
-  flow: {
-    pre: { type: Object },
-    question: { type: Object },
-    answer: { type: Object },
-    child: { type: Object },
-    post: { type: Object },
-    exit: { type: Object }
-  }
-});
-
-Object.assign(questionSchema.methods, {
-  isParent: function isParent(number) {
-    if (!this.number) return true;
-    return number === this.number || number.startsWith(this.number + '.');
-  },
-  find: function find(number) {
-    if (!this.isParent(number)) return null;
-
-    if (this.number === number) return this;
-    var child = this.children.find(function (el) {
-      return el.question && el.question.isParent(number);
-    });
-    if (child) {
-      return child.question.find(number);
-    } else {
-      return null;
-    }
-  },
-  findChildByPosition: function findChildByPosition(pos) {
-    var ret = this.children.find(function (el) {
-      return el.position == pos;
-    });
-    if (ret) {
-      return new Question(ret.question, ret.position);
-    }
-    return null;
-  },
-  findOptionByPosition: function findOptionByPosition(pos) {
-    return this.options.find(function (el) {
-      return el.position == pos;
-    });
-  }
-});
-
-var QuestionM = mongoose.model('Question', questionSchema);
-module.exports = Question = function (_QuestionM) {
-  _inherits(Question, _QuestionM);
-
-  function Question(obj, position) {
-    _classCallCheck(this, Question);
-
-    var _this = _possibleConstructorReturn(this, (Question.__proto__ || Object.getPrototypeOf(Question)).call(this, obj));
-
-    Object.assign(_this, obj);
-    if (position) _this.position = position;
-    return _this;
-  }
-
-  return Question;
-}(QuestionM);
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports) {
-
-module.exports = require("co");
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -413,8 +310,8 @@ schema.index({ name: 1, type: 1 });
 exports.default = _mongoose2.default.model('Location', schema);
 
 /***/ }),
-/* 10 */,
-/* 11 */
+/* 8 */,
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -430,7 +327,9 @@ var processSchema = new Schema({
     status: { type: String },
     exitCode: { type: Number },
     stdout: { type: String },
-    stderr: { type: String }
+    stderr: { type: String },
+    startDate: { type: Date, default: Date.now },
+    endDate: { type: Date }
 });
 processSchema.index({ status: 1, name: 1 });
 processSchema.index({ name: 1 });
@@ -438,7 +337,7 @@ processSchema.index({ name: 1 });
 module.exports = mongoose.model('Process', processSchema);
 
 /***/ }),
-/* 12 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -465,23 +364,7 @@ _mongoose2.default.Promise = global.Promise;
 exports.default = _mongoose2.default.connect(options.connectionString, options.connectionOptions);
 
 /***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var Schema = __webpack_require__(1);
-
-module.exports = new Schema({
-  default: { type: String },
-  english: { type: String },
-  tamil: { type: String },
-  hindi: { type: String }
-});
-
-/***/ }),
-/* 14 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -489,7 +372,7 @@ module.exports = new Schema({
 
 __webpack_require__(3);
 
-var _Question = __webpack_require__(7);
+var _Question = __webpack_require__(12);
 
 var _Question2 = _interopRequireDefault(_Question);
 
@@ -564,7 +447,251 @@ Object.assign(surveySchema.methods, {
 module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
-/* 15 */
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+__webpack_require__(3);
+
+var Schema = __webpack_require__(1);
+var Text = __webpack_require__(13);
+var mongoose = __webpack_require__(0);
+
+var questionSchema = new Schema({
+  type: { type: String },
+  tags: [{ type: String }],
+  text: { type: Text },
+  number: { type: String },
+  position: { type: String },
+  options: [{
+    position: { type: String, required: true },
+    option: { type: {}, required: true }
+  }],
+  children: [{
+    position: { type: String, required: true },
+    question: {
+      type: {},
+      get: function get(q) {
+        return new Question(q);
+      },
+
+      required: true
+    }
+  }],
+  flow: {
+    pre: { type: Object },
+    question: { type: Object },
+    answer: { type: Object },
+    child: { type: Object },
+    post: { type: Object },
+    exit: { type: Object }
+  }
+});
+
+Object.assign(questionSchema.methods, {
+  isParent: function isParent(number) {
+    if (!this.number) return true;
+    return number === this.number || number.startsWith(this.number + '.');
+  },
+  find: function find(number) {
+    if (!this.isParent(number)) return null;
+
+    if (this.number === number) return this;
+    var child = this.children.find(function (el) {
+      return el.question && el.question.isParent(number);
+    });
+    if (child) {
+      return child.question.find(number);
+    } else {
+      return null;
+    }
+  },
+  findChildByPosition: function findChildByPosition(pos) {
+    var ret = this.children.find(function (el) {
+      return el.position == pos;
+    });
+    if (ret) {
+      return ret.question;
+    }
+    return null;
+  },
+  findOptionByPosition: function findOptionByPosition(pos) {
+    return this.options.find(function (el) {
+      return el.position == pos;
+    });
+  },
+  values: /*#__PURE__*/regeneratorRuntime.mark(function values(answer) {
+    var qType, qFlow, qValue, qConcat, opts, valueF, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, o, ansValue, _ansValue$split, _ansValue$split2, lat, long;
+
+    return regeneratorRuntime.wrap(function values$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            qType = this.type, qFlow = this.flow;
+            qValue = void 0, qConcat = void 0;
+
+            if (!(qType === 'ROOT' || qType === 'DUMMY' || qType === 'MESSAGE')) {
+              _context.next = 4;
+              break;
+            }
+
+            return _context.abrupt('return');
+
+          case 4:
+            opts = answer.logged_options;
+
+            if (!(!opts || !opts.length)) {
+              _context.next = 7;
+              break;
+            }
+
+            return _context.abrupt('return');
+
+          case 7:
+
+            if (qFlow && qFlow.pre.fill.length) qValue = 1;
+
+            if (qType === 'MULTIPLE_CHOICE') qConcat = 1;
+            if (qType === 'INPUT' || qType === 'INFO' || qType === 'CONFIRMATION' || qType === 'GPS') qValue = 1;
+
+            valueF = function valueF(el) {
+              return qValue ? (el.value || el.text.english || '').toUpperCase() : el.position || '0';
+            };
+
+            if (!qConcat) {
+              _context.next = 39;
+              break;
+            }
+
+            _iteratorNormalCompletion = true;
+            _didIteratorError = false;
+            _iteratorError = undefined;
+            _context.prev = 15;
+            _iterator = opts[Symbol.iterator]();
+
+          case 17:
+            if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
+              _context.next = 24;
+              break;
+            }
+
+            o = _step.value;
+            _context.next = 21;
+            return { key: '_opt' + valueF(o), value: 1 };
+
+          case 21:
+            _iteratorNormalCompletion = true;
+            _context.next = 17;
+            break;
+
+          case 24:
+            _context.next = 30;
+            break;
+
+          case 26:
+            _context.prev = 26;
+            _context.t0 = _context['catch'](15);
+            _didIteratorError = true;
+            _iteratorError = _context.t0;
+
+          case 30:
+            _context.prev = 30;
+            _context.prev = 31;
+
+            if (!_iteratorNormalCompletion && _iterator.return) {
+              _iterator.return();
+            }
+
+          case 33:
+            _context.prev = 33;
+
+            if (!_didIteratorError) {
+              _context.next = 36;
+              break;
+            }
+
+            throw _iteratorError;
+
+          case 36:
+            return _context.finish(33);
+
+          case 37:
+            return _context.finish(30);
+
+          case 38:
+            return _context.abrupt('return');
+
+          case 39:
+            ansValue = valueF(opts[0]);
+
+            if (!(qType === 'GPS')) {
+              _context.next = 50;
+              break;
+            }
+
+            _ansValue$split = ansValue.split(','), _ansValue$split2 = _slicedToArray(_ansValue$split, 2), lat = _ansValue$split2[0], long = _ansValue$split2[1];
+
+            if (!(!lat || !long)) {
+              _context.next = 44;
+              break;
+            }
+
+            return _context.abrupt('return');
+
+          case 44:
+            _context.next = 46;
+            return { key: '_lat', value: lat };
+
+          case 46:
+            _context.next = 48;
+            return { key: '_long', value: long };
+
+          case 48:
+            _context.next = 52;
+            break;
+
+          case 50:
+            _context.next = 52;
+            return { key: '', value: ansValue };
+
+          case 52:
+          case 'end':
+            return _context.stop();
+        }
+      }
+    }, values, this, [[15, 26, 30, 38], [31,, 33, 37]]);
+  })
+});
+
+var Question = mongoose.model('Question', questionSchema);
+exports.default = Question;
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var Schema = __webpack_require__(1);
+
+module.exports = new Schema({
+  default: { type: String },
+  english: { type: String },
+  tamil: { type: String },
+  hindi: { type: String }
+});
+
+/***/ }),
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -579,7 +706,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Process = __webpack_require__(11);
+var _Process = __webpack_require__(9);
 
 var _Process2 = _interopRequireDefault(_Process);
 
@@ -587,7 +714,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _child_process = __webpack_require__(16);
+var _child_process = __webpack_require__(15);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -630,6 +757,7 @@ var ChildProcess = function () {
             proc.status = 'COMPLETED';
             proc.stdout = stdout.join('');
             proc.stderr = stderr.join('');
+            proc.endDate = new Date();
             proc.save().then(res).catch(rej);
           });
           p.stdout.on('data', function (data) {
@@ -673,14 +801,14 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procArgs) {
 };
 
 /***/ }),
-/* 16 */
+/* 15 */
 /***/ (function(module, exports) {
 
 module.exports = require("child_process");
 
 /***/ }),
-/* 17 */,
-/* 18 */
+/* 16 */,
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -725,7 +853,59 @@ answerSchema.index({ createdAt: 1, survey: 1 });
 module.exports = _mongoose2.default.model('Answer', answerSchema);
 
 /***/ }),
+/* 18 */
+/***/ (function(module, exports) {
+
+module.exports = require("co");
+
+/***/ }),
 /* 19 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _AnsweredQuestion = __webpack_require__(20);
+
+var _AnsweredQuestion2 = _interopRequireDefault(_AnsweredQuestion);
+
+var _AnswerWalk = __webpack_require__(21);
+
+var _AnswerWalk2 = _interopRequireDefault(_AnswerWalk);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Schema = __webpack_require__(1);
+var mongoose = __webpack_require__(0);
+
+var aqSchema = new Schema({
+  number: { type: String },
+  answers: [{
+    logged_options: { type: [] },
+    children: [{
+      position: { type: String },
+      question: {
+        type: {},
+        get: function get(e) {
+          return new AnsweredQuestionModel(e);
+        }
+      }
+    }]
+  }]
+});
+
+_AnsweredQuestion2.default.copyTo(aqSchema.methods);
+_AnswerWalk2.default.copyTo(aqSchema.methods);
+
+var AnsweredQuestionModel = mongoose.model('AnsweredQuestion', aqSchema);
+exports.default = AnsweredQuestionModel;
+
+/***/ }),
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -739,9 +919,9 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Question2 = __webpack_require__(7);
+var _Mixin2 = __webpack_require__(2);
 
-var _Question3 = _interopRequireDefault(_Question2);
+var _Mixin3 = _interopRequireDefault(_Mixin2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -751,19 +931,16 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-/**
- * Provides export functionalities
- */
-var AnsweredQuestion = function (_Question) {
-  _inherits(AnsweredQuestion, _Question);
+var _class = function (_Mixin) {
+  _inherits(_class, _Mixin);
 
-  function AnsweredQuestion() {
-    _classCallCheck(this, AnsweredQuestion);
+  function _class() {
+    _classCallCheck(this, _class);
 
-    return _possibleConstructorReturn(this, (AnsweredQuestion.__proto__ || Object.getPrototypeOf(AnsweredQuestion)).apply(this, arguments));
+    return _possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).apply(this, arguments));
   }
 
-  _createClass(AnsweredQuestion, [{
+  _createClass(_class, [{
     key: 'collectRespondent',
     value: /*#__PURE__*/regeneratorRuntime.mark(function collectRespondent(_ref) {
       var acc = _ref.acc,
@@ -901,14 +1078,15 @@ var AnsweredQuestion = function (_Question) {
   }, {
     key: 'findRespondents',
     value: /*#__PURE__*/regeneratorRuntime.mark(function findRespondents(_ref2) {
-      var acc = _ref2.acc,
+      var position = _ref2.position,
+          acc = _ref2.acc,
           prefix = _ref2.prefix,
           keys = _ref2.keys,
           respondents = _ref2.respondents,
           idx = _ref2.idx,
           refQ = _ref2.refQ;
 
-      var number, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, ans, _respChild, childQ, newAcc;
+      var number, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, ans, respChild, _position, childQ, newAcc;
 
       return regeneratorRuntime.wrap(function findRespondents$(_context2) {
         while (1) {
@@ -936,41 +1114,42 @@ var AnsweredQuestion = function (_Question) {
               acc = acc || {};
               prefix = prefix || 'Q';
               keys = keys || [];
-              prefix = '' + prefix + (this.position || '');
+              position = position || '';
+              prefix = '' + prefix + position;
 
               if (!(this.number === number)) {
-                _context2.next = 13;
+                _context2.next = 14;
                 break;
               }
 
-              _context2.next = 12;
+              _context2.next = 13;
               return { question: this, context: { acc: acc, keys: keys, prefix: prefix, refQ: refQ } };
 
-            case 12:
+            case 13:
               return _context2.abrupt('return');
 
-            case 13:
+            case 14:
               _iteratorNormalCompletion2 = true;
               _didIteratorError2 = false;
               _iteratorError2 = undefined;
-              _context2.prev = 16;
+              _context2.prev = 17;
               _iterator2 = this.answers[Symbol.iterator]();
 
-            case 18:
+            case 19:
               if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
-                _context2.next = 32;
+                _context2.next = 34;
                 break;
               }
 
               ans = _step2.value;
 
               if (!ans.children) {
-                _context2.next = 29;
+                _context2.next = 31;
                 break;
               }
 
-              _respChild = ans.children.find(function (child, idx) {
-                child = AnsweredQuestion.fromChild(child);
+              respChild = ans.children.find(function (child, idx) {
+                child = child.question;
                 if (child.isParent(number)) {
                   return child;
                 } else {
@@ -978,13 +1157,15 @@ var AnsweredQuestion = function (_Question) {
                 }
               });
 
-              if (!_respChild) {
-                _context2.next = 29;
+              if (!respChild) {
+                _context2.next = 31;
                 break;
               }
 
-              _respChild = AnsweredQuestion.fromChild(_respChild);
-              childQ = refQ.findChildByPosition(_respChild.position);
+              _position = respChild.position;
+
+              respChild = respChild.question;
+              childQ = refQ.findChildByPosition(_position);
               newAcc = this.collectAnswer({
                 ans: ans, keys: keys, refQ: refQ,
                 ansKey: prefix,
@@ -994,68 +1175,69 @@ var AnsweredQuestion = function (_Question) {
               });
 
               if (childQ) {
-                _context2.next = 28;
+                _context2.next = 30;
                 break;
               }
 
-              throw new Error('Child question ' + _respChild.position + ' not found.\n               In Q ' + (refQ.number || refQ.type) + '.');
+              throw new Error('Child question ' + _position + ' not found.\n               In Q ' + (refQ.number || refQ.type) + '.');
 
-            case 28:
-              return _context2.delegateYield(_respChild.findRespondents({
+            case 30:
+              return _context2.delegateYield(respChild.findRespondents({
+                position: _position,
                 acc: newAcc,
                 prefix: prefix + '_',
                 refQ: childQ,
                 keys: keys, respondents: respondents, idx: idx
-              }), 't0', 29);
+              }), 't0', 31);
 
-            case 29:
+            case 31:
               _iteratorNormalCompletion2 = true;
-              _context2.next = 18;
-              break;
-
-            case 32:
-              _context2.next = 38;
+              _context2.next = 19;
               break;
 
             case 34:
-              _context2.prev = 34;
-              _context2.t1 = _context2['catch'](16);
+              _context2.next = 40;
+              break;
+
+            case 36:
+              _context2.prev = 36;
+              _context2.t1 = _context2['catch'](17);
               _didIteratorError2 = true;
               _iteratorError2 = _context2.t1;
 
-            case 38:
-              _context2.prev = 38;
-              _context2.prev = 39;
+            case 40:
+              _context2.prev = 40;
+              _context2.prev = 41;
 
               if (!_iteratorNormalCompletion2 && _iterator2.return) {
                 _iterator2.return();
               }
 
-            case 41:
-              _context2.prev = 41;
+            case 43:
+              _context2.prev = 43;
 
               if (!_didIteratorError2) {
-                _context2.next = 44;
+                _context2.next = 46;
                 break;
               }
 
               throw _iteratorError2;
 
-            case 44:
-              return _context2.finish(41);
-
-            case 45:
-              return _context2.finish(38);
-
             case 46:
-              ;
+              return _context2.finish(43);
 
             case 47:
+              return _context2.finish(40);
+
+            case 48:
+              ;
+
+            case 49:
             case 'end':
               return _context2.stop();
           }
         }
-      }, findRespondents, this, [[16, 34, 38, 46], [39,, 41, 45]]);
+      }, findRespondents, this, [[17, 36, 40, 48], [41,, 43, 47]]);
     })
   }, {
     key: 'collectAnswer',
@@ -1094,16 +1276,16 @@ var AnsweredQuestion = function (_Question) {
       if (ans.children) {
         ans.children.reduce(function (acc, child) {
           var childQ = refQ.findChildByPosition(child.position);
-          var childAnswer = AnsweredQuestion.fromChild(child);
+          if (!childQ) {
+            throw new Error('Child question ' + child.position + ' not found.\n               In Q ' + (refQ.number || refQ.type) + '.');
+          }
+          var childAnswer = child.question;
           if (ignore && ignore.reduce(function (acc, ign) {
-            return acc || childAnswer.isParent(ign);
+            return acc || childQ.isParent(ign);
           }, false)) return acc;
 
-          if (!childQ) {
-            throw new Error('Child question ' + respChild.position + ' not found.\n               In Q ' + (refQ.number || refQ.type) + '.');
-          }
-
           return childAnswer.collect({
+            position: child.position,
             prefix: ansKey + '_',
             refQ: childQ,
             suffix: suffix, keys: keys, acc: acc, ignore: ignore
@@ -1117,7 +1299,8 @@ var AnsweredQuestion = function (_Question) {
     value: function collect(_ref4) {
       var _this2 = this;
 
-      var acc = _ref4.acc,
+      var position = _ref4.position,
+          acc = _ref4.acc,
           prefix = _ref4.prefix,
           suffix = _ref4.suffix,
           keys = _ref4.keys,
@@ -1129,7 +1312,7 @@ var AnsweredQuestion = function (_Question) {
       suffix = suffix || '';
       keys = keys || [];
 
-      var pos = refQ.position || '';
+      var pos = position || '';
       pos = pos.replace(/\./g, '_');
       prefix = '' + prefix + pos;
       return this.answers ? this.answers.reduce(function (acc, ans, idx) {
@@ -1144,29 +1327,699 @@ var AnsweredQuestion = function (_Question) {
         });
       }, acc) : acc;
     }
-  }], [{
-    key: 'fromChild',
-    value: function fromChild(child) {
-      var childAnswer = void 0;
-      if (child.question) {
-        // Version 1
-        childAnswer = new AnsweredQuestion(child.question, child.position);
-      } else {
-        childAnswer = new AnsweredQuestion(child);
+  }]);
+
+  return _class;
+}(_Mixin3.default);
+
+exports.default = _class;
+
+/***/ }),
+/* 21 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+__webpack_require__(3);
+
+var _Mixin2 = __webpack_require__(2);
+
+var _Mixin3 = _interopRequireDefault(_Mixin2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _class = function (_Mixin) {
+  _inherits(_class, _Mixin);
+
+  function _class() {
+    _classCallCheck(this, _class);
+
+    return _possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).apply(this, arguments));
+  }
+
+  _createClass(_class, [{
+    key: 'walkAnswers',
+    value: /*#__PURE__*/regeneratorRuntime.mark(function walkAnswers() {
+      var answerIdx, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, answer;
+
+      return regeneratorRuntime.wrap(function walkAnswers$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              if (!(!this.answers || !this.answers.length)) {
+                _context.next = 2;
+                break;
+              }
+
+              return _context.abrupt('return');
+
+            case 2:
+              answerIdx = 0;
+              _iteratorNormalCompletion = true;
+              _didIteratorError = false;
+              _iteratorError = undefined;
+              _context.prev = 6;
+              _iterator = this.answers[Symbol.iterator]();
+
+            case 8:
+              if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
+                _context.next = 16;
+                break;
+              }
+
+              answer = _step.value;
+              _context.next = 12;
+              return {
+                answer: answer, answerIdx: answerIdx
+              };
+
+            case 12:
+              answerIdx++;
+
+            case 13:
+              _iteratorNormalCompletion = true;
+              _context.next = 8;
+              break;
+
+            case 16:
+              _context.next = 22;
+              break;
+
+            case 18:
+              _context.prev = 18;
+              _context.t0 = _context['catch'](6);
+              _didIteratorError = true;
+              _iteratorError = _context.t0;
+
+            case 22:
+              _context.prev = 22;
+              _context.prev = 23;
+
+              if (!_iteratorNormalCompletion && _iterator.return) {
+                _iterator.return();
+              }
+
+            case 25:
+              _context.prev = 25;
+
+              if (!_didIteratorError) {
+                _context.next = 28;
+                break;
+              }
+
+              throw _iteratorError;
+
+            case 28:
+              return _context.finish(25);
+
+            case 29:
+              return _context.finish(22);
+
+            case 30:
+            case 'end':
+              return _context.stop();
+          }
+        }
+      }, walkAnswers, this, [[6, 18, 22, 30], [23,, 25, 29]]);
+    })
+  }, {
+    key: 'walkChildren',
+    value: /*#__PURE__*/regeneratorRuntime.mark(function walkChildren(_ref) {
+      var answer = _ref.answer,
+          question = _ref.question;
+
+      var answersHash, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, child, ans;
+
+      return regeneratorRuntime.wrap(function walkChildren$(_context2) {
+        while (1) {
+          switch (_context2.prev = _context2.next) {
+            case 0:
+              if (question) {
+                _context2.next = 2;
+                break;
+              }
+
+              throw new Error('Question needed');
+
+            case 2:
+              if (answer) {
+                _context2.next = 4;
+                break;
+              }
+
+              throw new Error('Answer needed');
+
+            case 4:
+              if (!(!question.children || !question.children.length)) {
+                _context2.next = 6;
+                break;
+              }
+
+              return _context2.abrupt('return');
+
+            case 6:
+              if (!(!answer.children || !answer.children.length)) {
+                _context2.next = 8;
+                break;
+              }
+
+              return _context2.abrupt('return');
+
+            case 8:
+              answersHash = answer.children.reduce(function (acc, child) {
+                return Object.assign(acc, _defineProperty({}, child.position, child));
+              }, {});
+              _iteratorNormalCompletion2 = true;
+              _didIteratorError2 = false;
+              _iteratorError2 = undefined;
+              _context2.prev = 12;
+              _iterator2 = question.children[Symbol.iterator]();
+
+            case 14:
+              if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
+                _context2.next = 23;
+                break;
+              }
+
+              child = _step2.value;
+              ans = answersHash[child.position];
+
+              if (!ans) {
+                _context2.next = 20;
+                break;
+              }
+
+              _context2.next = 20;
+              return {
+                position: ans.position,
+                question: child.question,
+                answeredQuestion: ans.question
+              };
+
+            case 20:
+              _iteratorNormalCompletion2 = true;
+              _context2.next = 14;
+              break;
+
+            case 23:
+              _context2.next = 29;
+              break;
+
+            case 25:
+              _context2.prev = 25;
+              _context2.t0 = _context2['catch'](12);
+              _didIteratorError2 = true;
+              _iteratorError2 = _context2.t0;
+
+            case 29:
+              _context2.prev = 29;
+              _context2.prev = 30;
+
+              if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                _iterator2.return();
+              }
+
+            case 32:
+              _context2.prev = 32;
+
+              if (!_didIteratorError2) {
+                _context2.next = 35;
+                break;
+              }
+
+              throw _iteratorError2;
+
+            case 35:
+              return _context2.finish(32);
+
+            case 36:
+              return _context2.finish(29);
+
+            case 37:
+            case 'end':
+              return _context2.stop();
+          }
+        }
+      }, walkChildren, this, [[12, 25, 29, 37], [30,, 32, 36]]);
+    })
+  }, {
+    key: 'walkRespondents',
+    value: /*#__PURE__*/regeneratorRuntime.mark(function walkRespondents(context) {
+      var question, respondent, _context$ignores, ignores, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, ansCtx, respChild, _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _iterator4, _step4, _ansCtx, _iteratorNormalCompletion5, _didIteratorError5, _iteratorError5, _iterator5, _step5, child;
+
+      return regeneratorRuntime.wrap(function walkRespondents$(_context3) {
+        while (1) {
+          switch (_context3.prev = _context3.next) {
+            case 0:
+              question = context.question, respondent = context.respondent, _context$ignores = context.ignores, ignores = _context$ignores === undefined ? [] : _context$ignores;
+
+              if (question) {
+                _context3.next = 3;
+                break;
+              }
+
+              throw new Error('Question needed');
+
+            case 3:
+              if (!(typeof respondent === 'undefined')) {
+                _context3.next = 5;
+                break;
+              }
+
+              throw new Error('Respondent needed');
+
+            case 5:
+              if (!(!respondent && question.type === 'ROOT' || question.number === respondent)) {
+                _context3.next = 34;
+                break;
+              }
+
+              _iteratorNormalCompletion3 = true;
+              _didIteratorError3 = false;
+              _iteratorError3 = undefined;
+              _context3.prev = 9;
+              _iterator3 = this.walkAnswers()[Symbol.iterator]();
+
+            case 11:
+              if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
+                _context3.next = 19;
+                break;
+              }
+
+              ansCtx = _step3.value;
+
+              ansCtx.type = 'respondent';
+              _context3.next = 16;
+              return [ansCtx, context];
+
+            case 16:
+              _iteratorNormalCompletion3 = true;
+              _context3.next = 11;
+              break;
+
+            case 19:
+              _context3.next = 25;
+              break;
+
+            case 21:
+              _context3.prev = 21;
+              _context3.t0 = _context3['catch'](9);
+              _didIteratorError3 = true;
+              _iteratorError3 = _context3.t0;
+
+            case 25:
+              _context3.prev = 25;
+              _context3.prev = 26;
+
+              if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                _iterator3.return();
+              }
+
+            case 28:
+              _context3.prev = 28;
+
+              if (!_didIteratorError3) {
+                _context3.next = 31;
+                break;
+              }
+
+              throw _iteratorError3;
+
+            case 31:
+              return _context3.finish(28);
+
+            case 32:
+              return _context3.finish(25);
+
+            case 33:
+              return _context3.abrupt('return');
+
+            case 34:
+              respChild = void 0;
+              _iteratorNormalCompletion4 = true;
+              _didIteratorError4 = false;
+              _iteratorError4 = undefined;
+              _context3.prev = 38;
+              _iterator4 = this.walkAnswers()[Symbol.iterator]();
+
+            case 40:
+              if (_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done) {
+                _context3.next = 86;
+                break;
+              }
+
+              _ansCtx = _step4.value;
+
+              _ansCtx.type = 'respondentAnswer';
+              _context3.next = 45;
+              return [_ansCtx, context];
+
+            case 45:
+              _iteratorNormalCompletion5 = true;
+              _didIteratorError5 = false;
+              _iteratorError5 = undefined;
+              _context3.prev = 48;
+              _iterator5 = this.walkChildren(_ansCtx)[Symbol.iterator]();
+
+            case 50:
+              if (_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done) {
+                _context3.next = 64;
+                break;
+              }
+
+              child = _step5.value;
+
+              if (!child.question.isParent(respondent)) {
+                _context3.next = 55;
+                break;
+              }
+
+              respChild = child;
+              return _context3.abrupt('continue', 61);
+
+            case 55:
+              if (!this._checkIgnore(child.question, ignores)) {
+                _context3.next = 57;
+                break;
+              }
+
+              return _context3.abrupt('continue', 61);
+
+            case 57:
+              child.type = 'child';
+              _context3.next = 60;
+              return [child, _ansCtx];
+
+            case 60:
+              return _context3.delegateYield(child.answeredQuestion.walk(child), 't1', 61);
+
+            case 61:
+              _iteratorNormalCompletion5 = true;
+              _context3.next = 50;
+              break;
+
+            case 64:
+              _context3.next = 70;
+              break;
+
+            case 66:
+              _context3.prev = 66;
+              _context3.t2 = _context3['catch'](48);
+              _didIteratorError5 = true;
+              _iteratorError5 = _context3.t2;
+
+            case 70:
+              _context3.prev = 70;
+              _context3.prev = 71;
+
+              if (!_iteratorNormalCompletion5 && _iterator5.return) {
+                _iterator5.return();
+              }
+
+            case 73:
+              _context3.prev = 73;
+
+              if (!_didIteratorError5) {
+                _context3.next = 76;
+                break;
+              }
+
+              throw _iteratorError5;
+
+            case 76:
+              return _context3.finish(73);
+
+            case 77:
+              return _context3.finish(70);
+
+            case 78:
+              if (!respChild) {
+                _context3.next = 83;
+                break;
+              }
+
+              respChild.type = 'respondentChild';
+              _context3.next = 82;
+              return [respChild, _ansCtx];
+
+            case 82:
+              return _context3.delegateYield(respChild.answeredQuestion.walkRespondents(respChild), 't3', 83);
+
+            case 83:
+              _iteratorNormalCompletion4 = true;
+              _context3.next = 40;
+              break;
+
+            case 86:
+              _context3.next = 92;
+              break;
+
+            case 88:
+              _context3.prev = 88;
+              _context3.t4 = _context3['catch'](38);
+              _didIteratorError4 = true;
+              _iteratorError4 = _context3.t4;
+
+            case 92:
+              _context3.prev = 92;
+              _context3.prev = 93;
+
+              if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                _iterator4.return();
+              }
+
+            case 95:
+              _context3.prev = 95;
+
+              if (!_didIteratorError4) {
+                _context3.next = 98;
+                break;
+              }
+
+              throw _iteratorError4;
+
+            case 98:
+              return _context3.finish(95);
+
+            case 99:
+              return _context3.finish(92);
+
+            case 100:
+            case 'end':
+              return _context3.stop();
+          }
+        }
+      }, walkRespondents, this, [[9, 21, 25, 33], [26,, 28, 32], [38, 88, 92, 100], [48, 66, 70, 78], [71,, 73, 77], [93,, 95, 99]]);
+    })
+  }, {
+    key: 'walk',
+    value: /*#__PURE__*/regeneratorRuntime.mark(function walk(context) {
+      var _iteratorNormalCompletion6, _didIteratorError6, _iteratorError6, _iterator6, _step6, ansCtx;
+
+      return regeneratorRuntime.wrap(function walk$(_context4) {
+        while (1) {
+          switch (_context4.prev = _context4.next) {
+            case 0:
+              _iteratorNormalCompletion6 = true;
+              _didIteratorError6 = false;
+              _iteratorError6 = undefined;
+              _context4.prev = 3;
+              _iterator6 = this.walkAnswers(context)[Symbol.iterator]();
+
+            case 5:
+              if (_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done) {
+                _context4.next = 15;
+                break;
+              }
+
+              ansCtx = _step6.value;
+
+              ansCtx.type = 'answer';
+              _context4.next = 10;
+              return [ansCtx, context];
+
+            case 10:
+              if (!ansCtx.question) ansCtx.question = context.question;
+              return _context4.delegateYield(this.walkAnswer(ansCtx), 't0', 12);
+
+            case 12:
+              _iteratorNormalCompletion6 = true;
+              _context4.next = 5;
+              break;
+
+            case 15:
+              _context4.next = 21;
+              break;
+
+            case 17:
+              _context4.prev = 17;
+              _context4.t1 = _context4['catch'](3);
+              _didIteratorError6 = true;
+              _iteratorError6 = _context4.t1;
+
+            case 21:
+              _context4.prev = 21;
+              _context4.prev = 22;
+
+              if (!_iteratorNormalCompletion6 && _iterator6.return) {
+                _iterator6.return();
+              }
+
+            case 24:
+              _context4.prev = 24;
+
+              if (!_didIteratorError6) {
+                _context4.next = 27;
+                break;
+              }
+
+              throw _iteratorError6;
+
+            case 27:
+              return _context4.finish(24);
+
+            case 28:
+              return _context4.finish(21);
+
+            case 29:
+            case 'end':
+              return _context4.stop();
+          }
+        }
+      }, walk, this, [[3, 17, 21, 29], [22,, 24, 28]]);
+    })
+  }, {
+    key: 'walkAnswer',
+    value: /*#__PURE__*/regeneratorRuntime.mark(function walkAnswer(ansCtx) {
+      var _iteratorNormalCompletion7, _didIteratorError7, _iteratorError7, _iterator7, _step7, child;
+
+      return regeneratorRuntime.wrap(function walkAnswer$(_context5) {
+        while (1) {
+          switch (_context5.prev = _context5.next) {
+            case 0:
+              _iteratorNormalCompletion7 = true;
+              _didIteratorError7 = false;
+              _iteratorError7 = undefined;
+              _context5.prev = 3;
+              _iterator7 = this.walkChildren(ansCtx)[Symbol.iterator]();
+
+            case 5:
+              if (_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done) {
+                _context5.next = 14;
+                break;
+              }
+
+              child = _step7.value;
+
+              child.type = 'child';
+              _context5.next = 10;
+              return [child, ansCtx];
+
+            case 10:
+              return _context5.delegateYield(child.answeredQuestion.walk(child), 't0', 11);
+
+            case 11:
+              _iteratorNormalCompletion7 = true;
+              _context5.next = 5;
+              break;
+
+            case 14:
+              _context5.next = 20;
+              break;
+
+            case 16:
+              _context5.prev = 16;
+              _context5.t1 = _context5['catch'](3);
+              _didIteratorError7 = true;
+              _iteratorError7 = _context5.t1;
+
+            case 20:
+              _context5.prev = 20;
+              _context5.prev = 21;
+
+              if (!_iteratorNormalCompletion7 && _iterator7.return) {
+                _iterator7.return();
+              }
+
+            case 23:
+              _context5.prev = 23;
+
+              if (!_didIteratorError7) {
+                _context5.next = 26;
+                break;
+              }
+
+              throw _iteratorError7;
+
+            case 26:
+              return _context5.finish(23);
+
+            case 27:
+              return _context5.finish(20);
+
+            case 28:
+            case 'end':
+              return _context5.stop();
+          }
+        }
+      }, walkAnswer, this, [[3, 16, 20, 28], [21,, 23, 27]]);
+    })
+  }, {
+    key: '_checkIgnore',
+    value: function _checkIgnore(question, ignores) {
+      var _iteratorNormalCompletion8 = true;
+      var _didIteratorError8 = false;
+      var _iteratorError8 = undefined;
+
+      try {
+        for (var _iterator8 = ignores[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+          var ign = _step8.value;
+
+          if (question.isParent(ign)) return true;
+        }
+      } catch (err) {
+        _didIteratorError8 = true;
+        _iteratorError8 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion8 && _iterator8.return) {
+            _iterator8.return();
+          }
+        } finally {
+          if (_didIteratorError8) {
+            throw _iteratorError8;
+          }
+        }
       }
-      return childAnswer;
+
+      return false;
     }
   }]);
 
-  return AnsweredQuestion;
-}(_Question3.default);
+  return _class;
+}(_Mixin3.default);
 
-exports.default = AnsweredQuestion;
+exports.default = _class;
 
 /***/ }),
-/* 20 */,
-/* 21 */,
-/* 22 */
+/* 22 */,
+/* 23 */,
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1182,7 +2035,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _Survey = __webpack_require__(14);
+var _Survey = __webpack_require__(11);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
@@ -1190,7 +2043,7 @@ var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
-var _Location = __webpack_require__(9);
+var _Location = __webpack_require__(7);
 
 var _Location2 = _interopRequireDefault(_Location);
 
@@ -1394,7 +2247,7 @@ var _class = function (_Mixin) {
 exports.default = _class;
 
 /***/ }),
-/* 23 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1411,10 +2264,6 @@ __webpack_require__(3);
 var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
-
-var _co = __webpack_require__(8);
-
-var _co2 = _interopRequireDefault(_co);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1439,45 +2288,19 @@ var _class = function (_Mixin) {
   _createClass(_class, [{
     key: 'iterateCursor',
     value: function iterateCursor(query) {
+      var _this2 = this;
+
       var iterProc = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'iteration';
 
-      var cursor = query.cursor();
-      var _this = this;
-      return (0, _co2.default)( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
-        var doc, remarks;
-        return regeneratorRuntime.wrap(function _callee$(_context) {
-          while (1) {
-            switch (_context.prev = _context.next) {
-              case 0:
-                doc = void 0;
-                remarks = [];
-
-              case 2:
-                _context.next = 4;
-                return cursor.next().then(function (doc) {
-                  return doc && _this[iterProc](doc);
-                });
-
-              case 4:
-                if (!(doc = _context.sent)) {
-                  _context.next = 8;
-                  break;
-                }
-
-                remarks.push(doc);
-                _context.next = 2;
-                break;
-
-              case 8:
-                return _context.abrupt('return', remarks);
-
-              case 9:
-              case 'end':
-                return _context.stop();
-            }
-          }
-        }, _callee, this);
-      }));
+      return new Promise(function (res, rej) {
+        var promises = [];
+        var cursor = query.cursor();
+        cursor.on('data', function (doc) {
+          return doc && promises.push(_this2[iterProc](doc));
+        }).on('end', function () {
+          return res(Promise.all(promises));
+        });
+      });
     }
   }]);
 
@@ -1487,13 +2310,13 @@ var _class = function (_Mixin) {
 exports.default = _class;
 
 /***/ }),
-/* 24 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-__webpack_require__(12);
+__webpack_require__(10);
 
 var _mongoose = __webpack_require__(0);
 
@@ -1521,8 +2344,6 @@ proc.promise.then(function () {
 process.exitCode = 0;
 
 /***/ }),
-/* 25 */,
-/* 26 */,
 /* 27 */,
 /* 28 */,
 /* 29 */,
@@ -1582,21 +2403,22 @@ process.exitCode = 0;
 /* 83 */,
 /* 84 */,
 /* 85 */,
-/* 86 */
-/***/ (function(module, exports, __webpack_require__) {
-
-__webpack_require__(87);
-module.exports = __webpack_require__(24);
-
-
-/***/ }),
+/* 86 */,
 /* 87 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = global["Proc"] = __webpack_require__(88);
+__webpack_require__(88);
+module.exports = __webpack_require__(26);
+
 
 /***/ }),
 /* 88 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = global["Proc"] = __webpack_require__(89);
+
+/***/ }),
+/* 89 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1610,33 +2432,37 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 __webpack_require__(3);
 
-var _co = __webpack_require__(8);
+var _co = __webpack_require__(18);
 
 var _co2 = _interopRequireDefault(_co);
 
-var _childProcess = __webpack_require__(15);
+var _childProcess = __webpack_require__(14);
 
 var _Mixin = __webpack_require__(2);
 
 var _Mixin2 = _interopRequireDefault(_Mixin);
 
-var _SurveyExport = __webpack_require__(22);
+var _SurveyExport = __webpack_require__(24);
 
 var _SurveyExport2 = _interopRequireDefault(_SurveyExport);
 
-var _Cursor = __webpack_require__(23);
+var _Cursor = __webpack_require__(25);
 
 var _Cursor2 = _interopRequireDefault(_Cursor);
 
-var _Aggregation = __webpack_require__(89);
+var _Aggregation = __webpack_require__(90);
 
 var _Aggregation2 = _interopRequireDefault(_Aggregation);
+
+var _AnswerCollector = __webpack_require__(93);
+
+var _AnswerCollector2 = _interopRequireDefault(_AnswerCollector);
 
 var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
-var _Answer = __webpack_require__(18);
+var _Answer = __webpack_require__(17);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 
@@ -1660,25 +2486,25 @@ var CollectResponses = function (_Mixin$mixin) {
   _createClass(CollectResponses, [{
     key: 'execute',
     value: function execute(proc) {
-      var _this3 = this;
+      var _this2 = this;
 
       this.surveyId = proc.args;
       return this.getSurvey().then(function () {
-        return _this3.getExportHeader();
+        return _this2.getExportHeader();
       }).then(function () {
-        return _this3.collectAnswers();
+        return _this2.collectAnswers();
       }).then(function (response) {
-        return _this3.response = response;
+        return _this2.response = response;
       }).then(function () {
-        return _this3.updateExportHeader();
+        return _this2.updateExportHeader();
       }).then(function () {
-        return _this3.response;
+        return _this2.response;
       });
     }
   }, {
     key: 'collectAnswers',
     value: function collectAnswers() {
-      var _this4 = this;
+      var _this3 = this;
 
       this.answersCount = 0;
       this.totalStatsCount = 0;
@@ -1688,20 +2514,22 @@ var CollectResponses = function (_Mixin$mixin) {
         survey: this.surveyId,
         lastExport: null
       }).limit(50000), 'collectOneAnswer').then(function (answers) {
-        return _this4.answers = answers;
+        return _this3.answers = answers;
       }).then(function () {
-        return _this4._saveAllAggregates();
+        return _this3._saveAllAggregates();
       }).then(function () {
         return {
-          answers: _this4.answers,
-          answersCount: _this4.answersCount,
-          totalStatsCount: _this4.totalStatsCount
+          answers: _this3.answers,
+          answersCount: _this3.answersCount,
+          totalStatsCount: _this3.totalStatsCount
         };
       });
     }
   }, {
     key: 'collectOneAnswer',
     value: function collectOneAnswer(answer) {
+      var _this4 = this;
+
       if (!answer.rootQuestion) {
         return { status: 'SKIPPED', reason: 'EMPTY', _id: answer._id };
       }
@@ -1709,164 +2537,54 @@ var CollectResponses = function (_Mixin$mixin) {
         return { status: 'SKIPPED', reason: 'VERSION0', _id: answer._id };
       }
 
-      var _this = this;
+      var survey = this.survey;
       var statsCount = 0;
-      var keys = this.collectionKeys;
-      if (!keys.posUPLOAD_TIME) {
-        keys.push('UPLOAD_TIME');
-        keys.posUPLOAD_TIME = 'Time of upload.';
-      }
-      if (!keys.posANSWER_ID) {
-        keys.push('ANSWER_ID');
-        keys.posANSWER_ID = 'Answer _id';
-      }
-      return (0, _co2.default)( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
-        var _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, _ref, question, context, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, o;
+      var collector = new _AnswerCollector2.default({
+        survey: survey, answer: answer,
+        keys: this.collectionKeys
+      });
 
-        return regeneratorRuntime.wrap(function _callee$(_context) {
-          while (1) {
-            switch (_context.prev = _context.next) {
-              case 0:
-                _context.prev = 0;
-                _iteratorNormalCompletion = true;
-                _didIteratorError = false;
-                _iteratorError = undefined;
-                _context.prev = 4;
-                _iterator = _this.survey.respondentsIn(answer, { keys: _this.collectionKeys })[Symbol.iterator]();
+      var promises = [];
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
 
-              case 6:
-                if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-                  _context.next = 41;
-                  break;
-                }
+      try {
+        for (var _iterator = collector.collectRespondents()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var ctx = _step.value;
 
-                _ref = _step.value;
-                question = _ref.question;
-                context = _ref.context;
-                _iteratorNormalCompletion2 = true;
-                _didIteratorError2 = false;
-                _iteratorError2 = undefined;
-                _context.prev = 13;
-                _iterator2 = question.collectRespondent(context)[Symbol.iterator]();
-
-              case 15:
-                if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
-                  _context.next = 24;
-                  break;
-                }
-
-                o = _step2.value;
-
-                if (answer.createdAt) {
-                  o.UPLOAD_TIME = answer.createdAt.getTime();
-                  o.ANSWER_ID = answer._id;
-                }
-                _context.next = 20;
-                return _this.writeStatsObj(o);
-
-              case 20:
-                ++statsCount;
-
-              case 21:
-                _iteratorNormalCompletion2 = true;
-                _context.next = 15;
-                break;
-
-              case 24:
-                _context.next = 30;
-                break;
-
-              case 26:
-                _context.prev = 26;
-                _context.t0 = _context['catch'](13);
-                _didIteratorError2 = true;
-                _iteratorError2 = _context.t0;
-
-              case 30:
-                _context.prev = 30;
-                _context.prev = 31;
-
-                if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                  _iterator2.return();
-                }
-
-              case 33:
-                _context.prev = 33;
-
-                if (!_didIteratorError2) {
-                  _context.next = 36;
-                  break;
-                }
-
-                throw _iteratorError2;
-
-              case 36:
-                return _context.finish(33);
-
-              case 37:
-                return _context.finish(30);
-
-              case 38:
-                _iteratorNormalCompletion = true;
-                _context.next = 6;
-                break;
-
-              case 41:
-                _context.next = 47;
-                break;
-
-              case 43:
-                _context.prev = 43;
-                _context.t1 = _context['catch'](4);
-                _didIteratorError = true;
-                _iteratorError = _context.t1;
-
-              case 47:
-                _context.prev = 47;
-                _context.prev = 48;
-
-                if (!_iteratorNormalCompletion && _iterator.return) {
-                  _iterator.return();
-                }
-
-              case 50:
-                _context.prev = 50;
-
-                if (!_didIteratorError) {
-                  _context.next = 53;
-                  break;
-                }
-
-                throw _iteratorError;
-
-              case 53:
-                return _context.finish(50);
-
-              case 54:
-                return _context.finish(47);
-
-              case 55:
-                answer.set('lastExport', new Date());
-                return _context.abrupt('return', answer.save().then(function () {
-                  return _this.totalStatsCount = _this.totalStatsCount + statsCount;
-                }).then(function () {
-                  return ++_this.answersCount;
-                }).then(function () {
-                  return { status: 'DONE', statsCount: statsCount, _id: answer._id };
-                }));
-
-              case 59:
-                _context.prev = 59;
-                _context.t2 = _context['catch'](0);
-                return _context.abrupt('return', Promise.resolve({ status: 'ERROR', _id: answer._id }));
-
-              case 62:
-              case 'end':
-                return _context.stop();
-            }
+          ctx.addValue('UPLOAD_TIME', answer.createdAt.getTime(), 'Upload time');
+          ctx.addValue('ANSWER_ID', answer._id, 'Answer Id');
+          promises.push(this.writeStatsObj(ctx.data).then(function () {
+            return 1;
+          }));
+          ++statsCount;
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
           }
-        }, _callee, this, [[0, 59], [4, 43, 47, 55], [13, 26, 30, 38], [31,, 33, 37], [48,, 50, 54]]);
-      }));
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
+      return Promise.all(promises).then(function () {
+        answer.set('lastExport', new Date());
+        return answer.save();
+      }).then(function () {
+        _this4.totalStatsCount = _this4.totalStatsCount + statsCount;
+        ++_this4.answersCount;
+        return { status: 'DONE', statsCount: statsCount, _id: answer._id };
+      }).catch(function (e) {
+        return Promise.resolve({ status: 'ERROR', _id: answer._id });
+      });
     }
   }, {
     key: 'writeStatsObj',
@@ -1874,111 +2592,111 @@ var CollectResponses = function (_Mixin$mixin) {
       var _this5 = this;
 
       var self = this;
-      return (0, _co2.default)( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
-        var pp, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, post, ret;
+      return (0, _co2.default)( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+        var pp, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, post, ret;
 
-        return regeneratorRuntime.wrap(function _callee2$(_context2) {
+        return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
-            switch (_context2.prev = _context2.next) {
+            switch (_context.prev = _context.next) {
               case 0:
-                _context2.next = 2;
+                _context.next = 2;
                 return obj;
 
               case 2:
-                obj = _context2.sent;
+                obj = _context.sent;
                 pp = self.survey.postProcessing;
 
                 if (!(!pp || !pp.length)) {
-                  _context2.next = 6;
+                  _context.next = 6;
                   break;
                 }
 
-                return _context2.abrupt('return');
+                return _context.abrupt('return');
 
               case 6:
-                _iteratorNormalCompletion3 = true;
-                _didIteratorError3 = false;
-                _iteratorError3 = undefined;
-                _context2.prev = 9;
-                _iterator3 = pp[Symbol.iterator]();
+                _iteratorNormalCompletion2 = true;
+                _didIteratorError2 = false;
+                _iteratorError2 = undefined;
+                _context.prev = 9;
+                _iterator2 = pp[Symbol.iterator]();
 
               case 11:
-                if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
-                  _context2.next = 23;
+                if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
+                  _context.next = 23;
                   break;
                 }
 
-                post = _step3.value;
+                post = _step2.value;
 
                 if (!(!post.class || !self['_ppClass' + post.class])) {
-                  _context2.next = 15;
+                  _context.next = 15;
                   break;
                 }
 
-                return _context2.abrupt('continue', 20);
+                return _context.abrupt('continue', 20);
 
               case 15:
-                _context2.next = 17;
+                _context.next = 17;
                 return Promise.resolve(self['_ppClass' + post.class](post, obj));
 
               case 17:
-                ret = _context2.sent;
+                ret = _context.sent;
 
                 if (!(ret && ret._ignore)) {
-                  _context2.next = 20;
+                  _context.next = 20;
                   break;
                 }
 
-                return _context2.abrupt('return', true);
+                return _context.abrupt('return', true);
 
               case 20:
-                _iteratorNormalCompletion3 = true;
-                _context2.next = 11;
+                _iteratorNormalCompletion2 = true;
+                _context.next = 11;
                 break;
 
               case 23:
-                _context2.next = 29;
+                _context.next = 29;
                 break;
 
               case 25:
-                _context2.prev = 25;
-                _context2.t0 = _context2['catch'](9);
-                _didIteratorError3 = true;
-                _iteratorError3 = _context2.t0;
+                _context.prev = 25;
+                _context.t0 = _context['catch'](9);
+                _didIteratorError2 = true;
+                _iteratorError2 = _context.t0;
 
               case 29:
-                _context2.prev = 29;
-                _context2.prev = 30;
+                _context.prev = 29;
+                _context.prev = 30;
 
-                if (!_iteratorNormalCompletion3 && _iterator3.return) {
-                  _iterator3.return();
+                if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                  _iterator2.return();
                 }
 
               case 32:
-                _context2.prev = 32;
+                _context.prev = 32;
 
-                if (!_didIteratorError3) {
-                  _context2.next = 35;
+                if (!_didIteratorError2) {
+                  _context.next = 35;
                   break;
                 }
 
-                throw _iteratorError3;
+                throw _iteratorError2;
 
               case 35:
-                return _context2.finish(32);
+                return _context.finish(32);
 
               case 36:
-                return _context2.finish(29);
+                return _context.finish(29);
 
               case 37:
-                return _context2.abrupt('return');
+                return _context.abrupt('return');
 
               case 38:
               case 'end':
-                return _context2.stop();
+                return _context.stop();
             }
           }
-        }, _callee2, this, [[9, 25, 29, 37], [30,, 32, 36]]);
+        }, _callee, this, [[9, 25, 29, 37], [30,, 32, 36]]);
       })).then(function (ignore) {
         return ignore || _Statistic2.default.create({
           key: _this5.surveyId,
@@ -1997,7 +2715,7 @@ var CollectResponses = function (_Mixin$mixin) {
 exports.default = CollectResponses;
 
 /***/ }),
-/* 89 */
+/* 90 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2017,9 +2735,9 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _hotFormulaParser = __webpack_require__(90);
+var _hotFormulaParser = __webpack_require__(91);
 
-var _co = __webpack_require__(8);
+var _co = __webpack_require__(18);
 
 var _co2 = _interopRequireDefault(_co);
 
@@ -2027,7 +2745,7 @@ var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
-var _jsYaml = __webpack_require__(91);
+var _jsYaml = __webpack_require__(92);
 
 var _jsYaml2 = _interopRequireDefault(_jsYaml);
 
@@ -2507,16 +3225,320 @@ var _class = function (_Mixin) {
 exports.default = _class;
 
 /***/ }),
-/* 90 */
+/* 91 */
 /***/ (function(module, exports) {
 
 module.exports = require("hot-formula-parser");
 
 /***/ }),
-/* 91 */
+/* 92 */
 /***/ (function(module, exports) {
 
 module.exports = require("js-yaml");
+
+/***/ }),
+/* 93 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+__webpack_require__(3);
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var _class = function () {
+  function _class(opts) {
+    _classCallCheck(this, _class);
+
+    Object.assign(this, opts);
+    this.data = this.data || {};
+
+    this.suffix = this.suffix || '';
+    this.prefix = this.prefix || 'Q';
+  }
+
+  _createClass(_class, [{
+    key: 'collect',
+    value: function collect() {
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = this.answeredQuestion.walkAnswer(this)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var arg = _step.value;
+
+          this._iterProc(arg);
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+    }
+  }, {
+    key: 'collectRespondents',
+    value: /*#__PURE__*/regeneratorRuntime.mark(function collectRespondents() {
+      var _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, respondent, c, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, _ref, _ref2, ctx, prev;
+
+      return regeneratorRuntime.wrap(function collectRespondents$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              if (this.survey) {
+                _context.next = 2;
+                break;
+              }
+
+              throw new Error('Survey needed');
+
+            case 2:
+              if (this.answer) {
+                _context.next = 4;
+                break;
+              }
+
+              throw new Error('Answer needed');
+
+            case 4:
+
+              this.question = this.survey.question;
+              this.answeredQuestion = this.answer.rootQuestion;
+
+              this.respondents = this.survey.respondents;
+              if (!this.respondents || !this.respondents.length) {
+                this.respondents = [null];
+              }
+
+              this.ignores = this.respondents;
+
+              _iteratorNormalCompletion2 = true;
+              _didIteratorError2 = false;
+              _iteratorError2 = undefined;
+              _context.prev = 12;
+              _iterator2 = this.respondents[Symbol.iterator]();
+
+            case 14:
+              if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
+                _context.next = 52;
+                break;
+              }
+
+              respondent = _step2.value;
+              c = Object.setPrototypeOf({ respondent: respondent }, this);
+              _iteratorNormalCompletion3 = true;
+              _didIteratorError3 = false;
+              _iteratorError3 = undefined;
+              _context.prev = 20;
+              _iterator3 = this.answeredQuestion.walkRespondents(c)[Symbol.iterator]();
+
+            case 22:
+              if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
+                _context.next = 35;
+                break;
+              }
+
+              _ref = _step3.value;
+              _ref2 = _slicedToArray(_ref, 2);
+              ctx = _ref2[0];
+              prev = _ref2[1];
+
+              this._iterProc([ctx, prev]);
+
+              if (!(ctx.type === 'respondent')) {
+                _context.next = 32;
+                break;
+              }
+
+              ctx.collect();
+              _context.next = 32;
+              return ctx;
+
+            case 32:
+              _iteratorNormalCompletion3 = true;
+              _context.next = 22;
+              break;
+
+            case 35:
+              _context.next = 41;
+              break;
+
+            case 37:
+              _context.prev = 37;
+              _context.t0 = _context['catch'](20);
+              _didIteratorError3 = true;
+              _iteratorError3 = _context.t0;
+
+            case 41:
+              _context.prev = 41;
+              _context.prev = 42;
+
+              if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                _iterator3.return();
+              }
+
+            case 44:
+              _context.prev = 44;
+
+              if (!_didIteratorError3) {
+                _context.next = 47;
+                break;
+              }
+
+              throw _iteratorError3;
+
+            case 47:
+              return _context.finish(44);
+
+            case 48:
+              return _context.finish(41);
+
+            case 49:
+              _iteratorNormalCompletion2 = true;
+              _context.next = 14;
+              break;
+
+            case 52:
+              _context.next = 58;
+              break;
+
+            case 54:
+              _context.prev = 54;
+              _context.t1 = _context['catch'](12);
+              _didIteratorError2 = true;
+              _iteratorError2 = _context.t1;
+
+            case 58:
+              _context.prev = 58;
+              _context.prev = 59;
+
+              if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                _iterator2.return();
+              }
+
+            case 61:
+              _context.prev = 61;
+
+              if (!_didIteratorError2) {
+                _context.next = 64;
+                break;
+              }
+
+              throw _iteratorError2;
+
+            case 64:
+              return _context.finish(61);
+
+            case 65:
+              return _context.finish(58);
+
+            case 66:
+            case 'end':
+              return _context.stop();
+          }
+        }
+      }, collectRespondents, this, [[12, 54, 58, 66], [20, 37, 41, 49], [42,, 44, 48], [59,, 61, 65]]);
+    })
+  }, {
+    key: '_iterProc',
+    value: function _iterProc(_ref3) {
+      var _ref4 = _slicedToArray(_ref3, 2),
+          ctx = _ref4[0],
+          prev = _ref4[1];
+
+      if (prev) Object.setPrototypeOf(ctx, prev);
+
+      if (ctx.type === 'answer') {
+        ctx._processAnswer();
+      } else if (ctx.type === 'respondentAnswer') {
+        ctx.answerIdx = null;
+        ctx._cloneStore();
+        ctx._processAnswer();
+      } else if (ctx.type === 'child') {
+        ctx._processChild();
+      } else if (ctx.type === 'respondentChild') {
+        ctx._processChild();
+      }
+    }
+  }, {
+    key: '_cloneStore',
+    value: function _cloneStore() {
+      this.data = Object.assign({}, this.data);
+    }
+  }, {
+    key: '_processChild',
+    value: function _processChild() {
+      var num = this.position.replace('.', '_');
+      this.prefix = this.prefix + '_' + num;
+    }
+  }, {
+    key: '_processAnswer',
+    value: function _processAnswer() {
+      var qFlow = this.question.flow;
+      if (qFlow && qFlow.answer.scope && !this.question.type === 'ROOT') {
+        this.suffix = this.suffix + '_ans' + (this.answerIdx + 1);
+      }
+      var _iteratorNormalCompletion4 = true;
+      var _didIteratorError4 = false;
+      var _iteratorError4 = undefined;
+
+      try {
+        for (var _iterator4 = this.question.values(this.answer)[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+          var _ref5 = _step4.value;
+          var key = _ref5.key;
+          var value = _ref5.value;
+
+          var objKey = '' + this.prefix + this.suffix + key;
+          this.addValue(objKey, value);
+        }
+      } catch (err) {
+        _didIteratorError4 = true;
+        _iteratorError4 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion4 && _iterator4.return) {
+            _iterator4.return();
+          }
+        } finally {
+          if (_didIteratorError4) {
+            throw _iteratorError4;
+          }
+        }
+      }
+    }
+  }, {
+    key: 'addValue',
+    value: function addValue(key, value, description) {
+      if (!this.keys['pos' + key]) {
+        this.keys.push(key);
+        this.keys['pos' + key] = description || (this.question.number || 'N') + ' ' + (this.question.text.value || 'TEXT');
+        this.data[key] = value;
+      }
+    }
+  }]);
+
+  return _class;
+}();
+
+exports.default = _class;
 
 /***/ })
 /******/ ]);

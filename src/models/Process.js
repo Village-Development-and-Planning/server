@@ -9,6 +9,8 @@ const processSchema = new Schema({
     exitCode: {type: Number},
     stdout: {type: String},
     stderr: {type: String},
+    startDate: {type: Date, default: Date.now},
+    endDate: {type: Date},
 });
 processSchema.index({status: 1, name: 1});
 processSchema.index({name: 1});

@@ -3,8 +3,6 @@ const Schema = require('./Schema');
 const Text = require('./Text');
 const mongoose = require('mongoose');
 
-let Question;
-
 const questionSchema = new Schema({
   type: {type: String},
   tags: [{type: String}],
@@ -19,7 +17,9 @@ const questionSchema = new Schema({
     position: {type: String, required: true},
     question: {
       type: {},
-      get: (q) => new Question(q),
+      get(q) {
+        return new Question(q);
+      },
       required: true,
     },
   }],
@@ -59,7 +59,7 @@ Object.assign(questionSchema.methods, {
       (el) => (el.position == pos)
     );
     if (ret) {
-      return new Question(ret.question, ret.position);
+      return ret.question;
     }
     return null;
   },
@@ -69,15 +69,56 @@ Object.assign(questionSchema.methods, {
       (el) => (el.position == pos)
     );
   },
+
+  * values(answer) {
+    const
+      qType = this.type,
+      qFlow = this.flow;
+    let qValue, qConcat;
+
+    if (
+      qType === 'ROOT'
+      || qType === 'DUMMY'
+      || qType === 'MESSAGE'
+    ) return;
+
+    const opts = answer.logged_options;
+    if (!opts || !opts.length) return;
+
+    if (qFlow && qFlow.pre.fill.length) qValue = 1;
+
+    if (qType === 'MULTIPLE_CHOICE') qConcat = 1;
+    if (
+      qType === 'INPUT'
+      || qType === 'INFO'
+      || qType === 'CONFIRMATION'
+      || qType === 'GPS'
+    ) qValue = 1;
+
+    const valueF = (el) => (
+      qValue
+      ? (el.value || el.text.english || '').toUpperCase()
+      : (el.position || '0')
+    );
+
+    if (qConcat) {
+      for (let o of opts) {
+        yield {key: `_opt${valueF(o)}`, value: 1};
+      }
+      return;
+    }
+    const ansValue = valueF(opts[0]);
+    if (qType === 'GPS') {
+      let [lat, long] = ansValue.split(',');
+      if (!lat || !long) return;
+      yield {key: '_lat', value: lat};
+      yield {key: '_long', value: long};
+    } else {
+      yield {key: '', value: ansValue};
+    }
+  },
+
 });
 
-const QuestionM = mongoose.model('Question', questionSchema);
-module.exports = Question = class Question extends QuestionM {
-  constructor(obj, position) {
-    super(obj);
-    Object.assign(this, obj);
-    if (position) this.position = position;
-  }
-};
-
-
+const Question = mongoose.model('Question', questionSchema);
+export default Question;

@@ -16,6 +16,10 @@ export default class Mixin {
     });
   }
 
+  static copyTo(target) {
+    this._copyMethods(target, this.prototype);
+  }
+
   static mixin(klass, ...mixins) {
     return mixins.reduce((klass, Mix) => {
       return new Mix(klass);

@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 92);
+/******/ 	return __webpack_require__(__webpack_require__.s = 94);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -115,32 +115,7 @@ module.exports = Schema;
 
 /***/ }),
 
-/***/ 11:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var Schema = __webpack_require__(1);
-var mongoose = __webpack_require__(0);
-
-var processSchema = new Schema({
-    name: { type: String, required: true },
-    path: { type: String },
-    args: { type: {} },
-    status: { type: String },
-    exitCode: { type: Number },
-    stdout: { type: String },
-    stderr: { type: String }
-});
-processSchema.index({ status: 1, name: 1 });
-processSchema.index({ name: 1 });
-
-module.exports = mongoose.model('Process', processSchema);
-
-/***/ }),
-
-/***/ 12:
+/***/ 10:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -168,24 +143,7 @@ exports.default = _mongoose2.default.connect(options.connectionString, options.c
 
 /***/ }),
 
-/***/ 13:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var Schema = __webpack_require__(1);
-
-module.exports = new Schema({
-  default: { type: String },
-  english: { type: String },
-  tamil: { type: String },
-  hindi: { type: String }
-});
-
-/***/ }),
-
-/***/ 14:
+/***/ 11:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -193,7 +151,7 @@ module.exports = new Schema({
 
 __webpack_require__(3);
 
-var _Question = __webpack_require__(7);
+var _Question = __webpack_require__(12);
 
 var _Question2 = _interopRequireDefault(_Question);
 
@@ -269,7 +227,253 @@ module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
 
-/***/ 15:
+/***/ 12:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+__webpack_require__(3);
+
+var Schema = __webpack_require__(1);
+var Text = __webpack_require__(13);
+var mongoose = __webpack_require__(0);
+
+var questionSchema = new Schema({
+  type: { type: String },
+  tags: [{ type: String }],
+  text: { type: Text },
+  number: { type: String },
+  position: { type: String },
+  options: [{
+    position: { type: String, required: true },
+    option: { type: {}, required: true }
+  }],
+  children: [{
+    position: { type: String, required: true },
+    question: {
+      type: {},
+      get: function get(q) {
+        return new Question(q);
+      },
+
+      required: true
+    }
+  }],
+  flow: {
+    pre: { type: Object },
+    question: { type: Object },
+    answer: { type: Object },
+    child: { type: Object },
+    post: { type: Object },
+    exit: { type: Object }
+  }
+});
+
+Object.assign(questionSchema.methods, {
+  isParent: function isParent(number) {
+    if (!this.number) return true;
+    return number === this.number || number.startsWith(this.number + '.');
+  },
+  find: function find(number) {
+    if (!this.isParent(number)) return null;
+
+    if (this.number === number) return this;
+    var child = this.children.find(function (el) {
+      return el.question && el.question.isParent(number);
+    });
+    if (child) {
+      return child.question.find(number);
+    } else {
+      return null;
+    }
+  },
+  findChildByPosition: function findChildByPosition(pos) {
+    var ret = this.children.find(function (el) {
+      return el.position == pos;
+    });
+    if (ret) {
+      return ret.question;
+    }
+    return null;
+  },
+  findOptionByPosition: function findOptionByPosition(pos) {
+    return this.options.find(function (el) {
+      return el.position == pos;
+    });
+  },
+  values: /*#__PURE__*/regeneratorRuntime.mark(function values(answer) {
+    var qType, qFlow, qValue, qConcat, opts, valueF, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, o, ansValue, _ansValue$split, _ansValue$split2, lat, long;
+
+    return regeneratorRuntime.wrap(function values$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            qType = this.type, qFlow = this.flow;
+            qValue = void 0, qConcat = void 0;
+
+            if (!(qType === 'ROOT' || qType === 'DUMMY' || qType === 'MESSAGE')) {
+              _context.next = 4;
+              break;
+            }
+
+            return _context.abrupt('return');
+
+          case 4:
+            opts = answer.logged_options;
+
+            if (!(!opts || !opts.length)) {
+              _context.next = 7;
+              break;
+            }
+
+            return _context.abrupt('return');
+
+          case 7:
+
+            if (qFlow && qFlow.pre.fill.length) qValue = 1;
+
+            if (qType === 'MULTIPLE_CHOICE') qConcat = 1;
+            if (qType === 'INPUT' || qType === 'INFO' || qType === 'CONFIRMATION' || qType === 'GPS') qValue = 1;
+
+            valueF = function valueF(el) {
+              return qValue ? (el.value || el.text.english || '').toUpperCase() : el.position || '0';
+            };
+
+            if (!qConcat) {
+              _context.next = 39;
+              break;
+            }
+
+            _iteratorNormalCompletion = true;
+            _didIteratorError = false;
+            _iteratorError = undefined;
+            _context.prev = 15;
+            _iterator = opts[Symbol.iterator]();
+
+          case 17:
+            if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
+              _context.next = 24;
+              break;
+            }
+
+            o = _step.value;
+            _context.next = 21;
+            return { key: '_opt' + valueF(o), value: 1 };
+
+          case 21:
+            _iteratorNormalCompletion = true;
+            _context.next = 17;
+            break;
+
+          case 24:
+            _context.next = 30;
+            break;
+
+          case 26:
+            _context.prev = 26;
+            _context.t0 = _context['catch'](15);
+            _didIteratorError = true;
+            _iteratorError = _context.t0;
+
+          case 30:
+            _context.prev = 30;
+            _context.prev = 31;
+
+            if (!_iteratorNormalCompletion && _iterator.return) {
+              _iterator.return();
+            }
+
+          case 33:
+            _context.prev = 33;
+
+            if (!_didIteratorError) {
+              _context.next = 36;
+              break;
+            }
+
+            throw _iteratorError;
+
+          case 36:
+            return _context.finish(33);
+
+          case 37:
+            return _context.finish(30);
+
+          case 38:
+            return _context.abrupt('return');
+
+          case 39:
+            ansValue = valueF(opts[0]);
+
+            if (!(qType === 'GPS')) {
+              _context.next = 50;
+              break;
+            }
+
+            _ansValue$split = ansValue.split(','), _ansValue$split2 = _slicedToArray(_ansValue$split, 2), lat = _ansValue$split2[0], long = _ansValue$split2[1];
+
+            if (!(!lat || !long)) {
+              _context.next = 44;
+              break;
+            }
+
+            return _context.abrupt('return');
+
+          case 44:
+            _context.next = 46;
+            return { key: '_lat', value: lat };
+
+          case 46:
+            _context.next = 48;
+            return { key: '_long', value: long };
+
+          case 48:
+            _context.next = 52;
+            break;
+
+          case 50:
+            _context.next = 52;
+            return { key: '', value: ansValue };
+
+          case 52:
+          case 'end':
+            return _context.stop();
+        }
+      }
+    }, values, this, [[15, 26, 30, 38], [31,, 33, 37]]);
+  })
+});
+
+var Question = mongoose.model('Question', questionSchema);
+exports.default = Question;
+
+/***/ }),
+
+/***/ 13:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var Schema = __webpack_require__(1);
+
+module.exports = new Schema({
+  default: { type: String },
+  english: { type: String },
+  tamil: { type: String },
+  hindi: { type: String }
+});
+
+/***/ }),
+
+/***/ 14:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -284,7 +488,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Process = __webpack_require__(11);
+var _Process = __webpack_require__(9);
 
 var _Process2 = _interopRequireDefault(_Process);
 
@@ -292,7 +496,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _child_process = __webpack_require__(16);
+var _child_process = __webpack_require__(15);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -335,6 +539,7 @@ var ChildProcess = function () {
             proc.status = 'COMPLETED';
             proc.stdout = stdout.join('');
             proc.stderr = stderr.join('');
+            proc.endDate = new Date();
             proc.save().then(res).catch(rej);
           });
           p.stdout.on('data', function (data) {
@@ -379,7 +584,7 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procArgs) {
 
 /***/ }),
 
-/***/ 16:
+/***/ 15:
 /***/ (function(module, exports) {
 
 module.exports = require("child_process");
@@ -436,6 +641,11 @@ var Mixin = function () {
       });
     }
   }, {
+    key: 'copyTo',
+    value: function copyTo(target) {
+      this._copyMethods(target, this.prototype);
+    }
+  }, {
     key: 'mixin',
     value: function mixin(klass) {
       for (var _len = arguments.length, mixins = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
@@ -456,14 +666,14 @@ exports.default = Mixin;
 
 /***/ }),
 
-/***/ 20:
+/***/ 22:
 /***/ (function(module, exports) {
 
 module.exports = require("fs");
 
 /***/ }),
 
-/***/ 22:
+/***/ 24:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -479,7 +689,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _Survey = __webpack_require__(14);
+var _Survey = __webpack_require__(11);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
@@ -487,7 +697,7 @@ var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
-var _Location = __webpack_require__(9);
+var _Location = __webpack_require__(7);
 
 var _Location2 = _interopRequireDefault(_Location);
 
@@ -692,7 +902,7 @@ exports.default = _class;
 
 /***/ }),
 
-/***/ 23:
+/***/ 25:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -709,10 +919,6 @@ __webpack_require__(3);
 var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
-
-var _co = __webpack_require__(8);
-
-var _co2 = _interopRequireDefault(_co);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -737,45 +943,19 @@ var _class = function (_Mixin) {
   _createClass(_class, [{
     key: 'iterateCursor',
     value: function iterateCursor(query) {
+      var _this2 = this;
+
       var iterProc = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'iteration';
 
-      var cursor = query.cursor();
-      var _this = this;
-      return (0, _co2.default)( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
-        var doc, remarks;
-        return regeneratorRuntime.wrap(function _callee$(_context) {
-          while (1) {
-            switch (_context.prev = _context.next) {
-              case 0:
-                doc = void 0;
-                remarks = [];
-
-              case 2:
-                _context.next = 4;
-                return cursor.next().then(function (doc) {
-                  return doc && _this[iterProc](doc);
-                });
-
-              case 4:
-                if (!(doc = _context.sent)) {
-                  _context.next = 8;
-                  break;
-                }
-
-                remarks.push(doc);
-                _context.next = 2;
-                break;
-
-              case 8:
-                return _context.abrupt('return', remarks);
-
-              case 9:
-              case 'end':
-                return _context.stop();
-            }
-          }
-        }, _callee, this);
-      }));
+      return new Promise(function (res, rej) {
+        var promises = [];
+        var cursor = query.cursor();
+        cursor.on('data', function (doc) {
+          return doc && promises.push(_this2[iterProc](doc));
+        }).on('end', function () {
+          return res(Promise.all(promises));
+        });
+      });
     }
   }]);
 
@@ -786,13 +966,13 @@ exports.default = _class;
 
 /***/ }),
 
-/***/ 24:
+/***/ 26:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-__webpack_require__(12);
+__webpack_require__(10);
 
 var _mongoose = __webpack_require__(0);
 
@@ -916,116 +1096,6 @@ module.exports = mongoose.model('User', userSchema);
 "use strict";
 
 
-__webpack_require__(3);
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var Schema = __webpack_require__(1);
-var Text = __webpack_require__(13);
-var mongoose = __webpack_require__(0);
-
-var Question = void 0;
-
-var questionSchema = new Schema({
-  type: { type: String },
-  tags: [{ type: String }],
-  text: { type: Text },
-  number: { type: String },
-  position: { type: String },
-  options: [{
-    position: { type: String, required: true },
-    option: { type: {}, required: true }
-  }],
-  children: [{
-    position: { type: String, required: true },
-    question: {
-      type: {},
-      get: function get(q) {
-        return new Question(q);
-      },
-      required: true
-    }
-  }],
-  flow: {
-    pre: { type: Object },
-    question: { type: Object },
-    answer: { type: Object },
-    child: { type: Object },
-    post: { type: Object },
-    exit: { type: Object }
-  }
-});
-
-Object.assign(questionSchema.methods, {
-  isParent: function isParent(number) {
-    if (!this.number) return true;
-    return number === this.number || number.startsWith(this.number + '.');
-  },
-  find: function find(number) {
-    if (!this.isParent(number)) return null;
-
-    if (this.number === number) return this;
-    var child = this.children.find(function (el) {
-      return el.question && el.question.isParent(number);
-    });
-    if (child) {
-      return child.question.find(number);
-    } else {
-      return null;
-    }
-  },
-  findChildByPosition: function findChildByPosition(pos) {
-    var ret = this.children.find(function (el) {
-      return el.position == pos;
-    });
-    if (ret) {
-      return new Question(ret.question, ret.position);
-    }
-    return null;
-  },
-  findOptionByPosition: function findOptionByPosition(pos) {
-    return this.options.find(function (el) {
-      return el.position == pos;
-    });
-  }
-});
-
-var QuestionM = mongoose.model('Question', questionSchema);
-module.exports = Question = function (_QuestionM) {
-  _inherits(Question, _QuestionM);
-
-  function Question(obj, position) {
-    _classCallCheck(this, Question);
-
-    var _this = _possibleConstructorReturn(this, (Question.__proto__ || Object.getPrototypeOf(Question)).call(this, obj));
-
-    Object.assign(_this, obj);
-    if (position) _this.position = position;
-    return _this;
-  }
-
-  return Question;
-}(QuestionM);
-
-/***/ }),
-
-/***/ 8:
-/***/ (function(module, exports) {
-
-module.exports = require("co");
-
-/***/ }),
-
-/***/ 9:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -1060,23 +1130,50 @@ exports.default = _mongoose2.default.model('Location', schema);
 
 /***/ }),
 
-/***/ 92:
+/***/ 9:
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(93);
-module.exports = __webpack_require__(24);
+"use strict";
 
 
-/***/ }),
+var Schema = __webpack_require__(1);
+var mongoose = __webpack_require__(0);
 
-/***/ 93:
-/***/ (function(module, exports, __webpack_require__) {
+var processSchema = new Schema({
+    name: { type: String, required: true },
+    path: { type: String },
+    args: { type: {} },
+    status: { type: String },
+    exitCode: { type: Number },
+    stdout: { type: String },
+    stderr: { type: String },
+    startDate: { type: Date, default: Date.now },
+    endDate: { type: Date }
+});
+processSchema.index({ status: 1, name: 1 });
+processSchema.index({ name: 1 });
 
-module.exports = global["Proc"] = __webpack_require__(94);
+module.exports = mongoose.model('Process', processSchema);
 
 /***/ }),
 
 /***/ 94:
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(95);
+module.exports = __webpack_require__(26);
+
+
+/***/ }),
+
+/***/ 95:
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = global["Proc"] = __webpack_require__(96);
+
+/***/ }),
+
+/***/ 96:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1088,17 +1185,17 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _childProcess = __webpack_require__(15);
+var _childProcess = __webpack_require__(14);
 
 var _Mixin = __webpack_require__(2);
 
 var _Mixin2 = _interopRequireDefault(_Mixin);
 
-var _SurveyExport = __webpack_require__(22);
+var _SurveyExport = __webpack_require__(24);
 
 var _SurveyExport2 = _interopRequireDefault(_SurveyExport);
 
-var _Cursor = __webpack_require__(23);
+var _Cursor = __webpack_require__(25);
 
 var _Cursor2 = _interopRequireDefault(_Cursor);
 
@@ -1106,11 +1203,11 @@ var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
-var _csvStringify = __webpack_require__(95);
+var _csvStringify = __webpack_require__(97);
 
 var _csvStringify2 = _interopRequireDefault(_csvStringify);
 
-var _fs = __webpack_require__(20);
+var _fs = __webpack_require__(22);
 
 var _fs2 = _interopRequireDefault(_fs);
 
@@ -1207,7 +1304,7 @@ exports.default = ExportResponses;
 
 /***/ }),
 
-/***/ 95:
+/***/ 97:
 /***/ (function(module, exports) {
 
 module.exports = require("csv-stringify");
