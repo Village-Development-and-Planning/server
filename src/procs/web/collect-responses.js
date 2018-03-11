@@ -12,6 +12,8 @@ import AnswerCollector from '../concerns/AnswerCollector';
 
 import Statistic from '../../models/Statistic';
 import Answer from '../../models/Answer';
+import Location from '../../models/Location';
+import User from '../../models/User';
 
 
 export default class CollectResponses
@@ -53,6 +55,7 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
     }
 
     const survey = this.survey;
+    const surveyPP = this.survey.postProcessing || [];
     let statsCount = 0;
     const collector = new AnswerCollector({
       survey, answer,
@@ -60,13 +63,23 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
     });
 
     const promises = [];
+    const self = this;
     for (let ctx of collector.collectRespondents()) {
       ctx.addValue('UPLOAD_TIME', answer.createdAt.getTime(), 'Upload time');
       ctx.addValue('ANSWER_ID', answer._id, 'Answer Id');
       promises.push(
-        this.writeStatsObj(ctx.data).then(() => 1),
+        co(function* () {
+          for (let p of surveyPP) {
+            let func = p.class && self[`_ppClass${p.class}`];
+            let ret;
+            if (func) ret = yield (func(p, ctx) || {});
+            if (ret && ret._ignore) return;
+          }
+          yield ctx.data;
+          return self.writeStatsObj(ctx.data)
+          .then(() => ++statsCount);
+        })
       );
-      ++statsCount;
     }
     return Promise.all(promises)
     .then(() => {
@@ -77,35 +90,67 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
       ++this.answersCount;
       return {status: 'DONE', statsCount, _id: answer._id};
     }).catch((e) => {
+      e = e || {message: 'UNKNOWN'};
+      console.error(e.message || e);
       return Promise.resolve({status: 'ERROR', _id: answer._id});
     });
   }
 
-  writeStatsObj(obj) {
-    const self = this;
-    return co(function* () {
-      obj = yield obj;
-      const pp = self.survey.postProcessing;
-      if (!pp || !pp.length) return;
-
-      for (let post of pp) {
-        if (!post.class || !self[`_ppClass${post.class}`]) continue;
-        const ret = yield Promise.resolve(
-          self[`_ppClass${post.class}`](post, obj)
-        );
-        if (ret && ret._ignore) {
-          return true;
+  _ppClassHousehold({
+    select='Q_1_12',
+    surveyorKey='Q_1_1',
+    habitationKey='Q_1_6',
+  }, ctx) {
+    const obj = ctx.data;
+    if (!obj[surveyorKey]) return;
+    if (!obj[select]) return {_ignore: true};
+    for (let key of Object.keys(obj)) {
+      if (typeof obj[key] === 'string') {
+        if (obj[key].toUpperCase && obj[key].trim().toUpperCase() === 'DUMMY') {
+          return {_ignore: true};
         }
       }
-      return;
+    }
+    const username = obj[surveyorKey];
+    return User.findOne({username})
+    .then((user) => {
+      if (!user || !user.payload) return;
+      let locSpec = [];
+      ['DISTRICT', 'BLOCK', 'PANCHAYAT'].forEach((loc) => {
+        ['NAME', 'CODE'].forEach((dat) => {
+          ctx.addValue(
+            `${loc}_${dat}`,
+            user.payload[`${loc}_${dat}`],
+            `Location payload`
+          );
+        });
+        locSpec.push(obj[`${loc}_CODE`]);
+      });
+      return Location.findOne({type: 'PANCHAYAT', uid: locSpec.join('/')});
+    }).then((loc) => {
+      if (!loc || !loc.children || !loc.children.length) return;
+      if (!obj[habitationKey]) return;
+      let habitation = loc.children.find(
+        (child) => (child.name === obj[habitationKey])
+      );
+      if (habitation) {
+        ctx.addValue(
+          'HABITATION_CODE',
+          habitation.code,
+          'Habitation Code',
+        );
+      }
+    });
+  }
+
+
+  writeStatsObj(obj) {
+    return Statistic.create({
+      key: this.surveyId,
+      type: 'SurveyResponse',
+      data: obj,
     }).then(
-      (ignore) => ignore || Statistic.create({
-        key: this.surveyId,
-        type: 'SurveyResponse',
-        data: obj,
-      }).then(
-        (stat) => this.accumulateAggregates(stat, this.survey.aggregates)
-      )
+      (stat) => this.accumulateAggregates(stat, this.survey.aggregates)
     );
   }
 }

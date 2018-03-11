@@ -1,8 +1,6 @@
 import Mixin from '../../lib/Mixin';
 import Survey from '../../models/Survey';
 import Statistic from '../../models/Statistic';
-import Location from '../../models/Location';
-import User from '../../models/User';
 /**
  * Handles Survey concerns
  */
@@ -102,43 +100,5 @@ export default class extends Mixin {
       if (arr2[i].num < arr1[i].num) return 1;
     }
     return (arr1.length - arr2.length);
-  }
-
-  _ppClassHousehold({
-    select='Q_1_12',
-    surveyorKey='Q_1_1',
-    habitationKey='Q_1_6',
-  }, obj) {
-    if (!obj[surveyorKey]) return;
-    if (!obj[select]) return {_ignore: true};
-    for (let key of Object.keys(obj)) {
-      if (typeof obj[key] === 'string') {
-        if (obj[key].toUpperCase && obj[key].trim().toUpperCase() === 'DUMMY') {
-          return {_ignore: true};
-        }
-      }
-    }
-    const username = obj[surveyorKey];
-    return User.findOne({username})
-    .then((user) => {
-      if (!user || !user.payload) return;
-      let locSpec = [];
-      ['DISTRICT', 'BLOCK', 'PANCHAYAT'].forEach((loc) => {
-        ['NAME', 'CODE'].forEach((dat) => {
-          this._pushKey(`${loc}_${dat}`, `Location payload`);
-          obj[`${loc}_${dat}`] = user.payload[`${loc}_${dat}`];
-        });
-        locSpec.push(obj[`${loc}_CODE`]);
-      });
-      return Location.findOne({type: 'PANCHAYAT', uid: locSpec.join('/')});
-    }).then((loc) => {
-      if (!loc || !loc.children || !loc.children.length) return;
-      if (!obj[habitationKey]) return;
-      let habitation = loc.children.find(
-        (child) => (child.name === obj[habitationKey])
-      );
-      this._pushKey('HABITATION_CODE', habitationKey);
-      if (habitation) obj['HABITATION_CODE'] = habitation.code;
-    });
   }
 }

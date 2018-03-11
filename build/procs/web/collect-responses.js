@@ -246,72 +246,8 @@ module.exports = {
 };
 
 /***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var Schema = __webpack_require__(1);
-var mongoose = __webpack_require__(0);
-
-var userSchema = new Schema({
-  username: { type: String, required: true },
-  name: { type: String },
-
-  passphrase: { type: String },
-  roles: [{ type: String }],
-
-  payload: { type: {} }
-});
-userSchema.index({ username: 1 });
-userSchema.index({ name: 1 });
-userSchema.index({ roles: 1 });
-
-module.exports = mongoose.model('User', userSchema);
-
-/***/ }),
+/* 6 */,
 /* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _Schema = __webpack_require__(1);
-
-var _Schema2 = _interopRequireDefault(_Schema);
-
-var _mongoose = __webpack_require__(0);
-
-var _mongoose2 = _interopRequireDefault(_mongoose);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var schema = new _Schema2.default({
-  type: { type: String, required: true },
-  code: { type: String, required: true },
-  uid: { type: String, require: true },
-  name: { type: String, required: true },
-  children: [{
-    code: { type: String },
-    name: { type: String },
-    uid: { type: String }
-  }],
-  payload: { type: {} }
-});
-schema.index({ uid: 1, type: 1 });
-schema.index({ type: 1, code: 1 });
-schema.index({ name: 1, type: 1 });
-
-exports.default = _mongoose2.default.model('Location', schema);
-
-/***/ }),
-/* 8 */,
-/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -337,7 +273,7 @@ processSchema.index({ name: 1 });
 module.exports = mongoose.model('Process', processSchema);
 
 /***/ }),
-/* 10 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -364,7 +300,32 @@ _mongoose2.default.Promise = global.Promise;
 exports.default = _mongoose2.default.connect(options.connectionString, options.connectionOptions);
 
 /***/ }),
-/* 11 */
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var Schema = __webpack_require__(1);
+var mongoose = __webpack_require__(0);
+
+var userSchema = new Schema({
+  username: { type: String, required: true },
+  name: { type: String },
+
+  passphrase: { type: String },
+  roles: [{ type: String }],
+
+  payload: { type: {} }
+});
+userSchema.index({ username: 1 });
+userSchema.index({ name: 1 });
+userSchema.index({ roles: 1 });
+
+module.exports = mongoose.model('User', userSchema);
+
+/***/ }),
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -372,7 +333,7 @@ exports.default = _mongoose2.default.connect(options.connectionString, options.c
 
 __webpack_require__(3);
 
-var _Question = __webpack_require__(12);
+var _Question = __webpack_require__(11);
 
 var _Question2 = _interopRequireDefault(_Question);
 
@@ -447,7 +408,7 @@ Object.assign(surveySchema.methods, {
 module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
-/* 12 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -462,7 +423,7 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 __webpack_require__(3);
 
 var Schema = __webpack_require__(1);
-var Text = __webpack_require__(13);
+var Text = __webpack_require__(12);
 var mongoose = __webpack_require__(0);
 
 var questionSchema = new Schema({
@@ -675,7 +636,7 @@ var Question = mongoose.model('Question', questionSchema);
 exports.default = Question;
 
 /***/ }),
-/* 13 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -691,7 +652,7 @@ module.exports = new Schema({
 });
 
 /***/ }),
-/* 14 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -706,7 +667,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Process = __webpack_require__(9);
+var _Process = __webpack_require__(7);
 
 var _Process2 = _interopRequireDefault(_Process);
 
@@ -714,7 +675,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _child_process = __webpack_require__(15);
+var _child_process = __webpack_require__(14);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -801,10 +762,49 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procArgs) {
 };
 
 /***/ }),
-/* 15 */
+/* 14 */
 /***/ (function(module, exports) {
 
 module.exports = require("child_process");
+
+/***/ }),
+/* 15 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _Schema = __webpack_require__(1);
+
+var _Schema2 = _interopRequireDefault(_Schema);
+
+var _mongoose = __webpack_require__(0);
+
+var _mongoose2 = _interopRequireDefault(_mongoose);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var schema = new _Schema2.default({
+  type: { type: String, required: true },
+  code: { type: String, required: true },
+  uid: { type: String, require: true },
+  name: { type: String, required: true },
+  children: [{
+    code: { type: String },
+    name: { type: String },
+    uid: { type: String }
+  }],
+  payload: { type: {} }
+});
+schema.index({ uid: 1, type: 1 });
+schema.index({ type: 1, code: 1 });
+schema.index({ name: 1, type: 1 });
+
+exports.default = _mongoose2.default.model('Location', schema);
 
 /***/ }),
 /* 16 */,
@@ -2035,21 +2035,13 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _Survey = __webpack_require__(11);
+var _Survey = __webpack_require__(10);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
 var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
-
-var _Location = __webpack_require__(7);
-
-var _Location2 = _interopRequireDefault(_Location);
-
-var _User = __webpack_require__(6);
-
-var _User2 = _interopRequireDefault(_User);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2174,71 +2166,6 @@ var _class = function (_Mixin) {
       }
       return arr1.length - arr2.length;
     }
-  }, {
-    key: '_ppClassHousehold',
-    value: function _ppClassHousehold(_ref3, obj) {
-      var _this5 = this;
-
-      var _ref3$select = _ref3.select,
-          select = _ref3$select === undefined ? 'Q_1_12' : _ref3$select,
-          _ref3$surveyorKey = _ref3.surveyorKey,
-          surveyorKey = _ref3$surveyorKey === undefined ? 'Q_1_1' : _ref3$surveyorKey,
-          _ref3$habitationKey = _ref3.habitationKey,
-          habitationKey = _ref3$habitationKey === undefined ? 'Q_1_6' : _ref3$habitationKey;
-
-      if (!obj[surveyorKey]) return;
-      if (!obj[select]) return { _ignore: true };
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
-
-      try {
-        for (var _iterator = Object.keys(obj)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var key = _step.value;
-
-          if (typeof obj[key] === 'string') {
-            if (obj[key].toUpperCase && obj[key].trim().toUpperCase() === 'DUMMY') {
-              return { _ignore: true };
-            }
-          }
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return) {
-            _iterator.return();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
-      }
-
-      var username = obj[surveyorKey];
-      return _User2.default.findOne({ username: username }).then(function (user) {
-        if (!user || !user.payload) return;
-        var locSpec = [];
-        ['DISTRICT', 'BLOCK', 'PANCHAYAT'].forEach(function (loc) {
-          ['NAME', 'CODE'].forEach(function (dat) {
-            _this5._pushKey(loc + '_' + dat, 'Location payload');
-            obj[loc + '_' + dat] = user.payload[loc + '_' + dat];
-          });
-          locSpec.push(obj[loc + '_CODE']);
-        });
-        return _Location2.default.findOne({ type: 'PANCHAYAT', uid: locSpec.join('/') });
-      }).then(function (loc) {
-        if (!loc || !loc.children || !loc.children.length) return;
-        if (!obj[habitationKey]) return;
-        var habitation = loc.children.find(function (child) {
-          return child.name === obj[habitationKey];
-        });
-        _this5._pushKey('HABITATION_CODE', habitationKey);
-        if (habitation) obj['HABITATION_CODE'] = habitation.code;
-      });
-    }
   }]);
 
   return _class;
@@ -2316,7 +2243,7 @@ exports.default = _class;
 "use strict";
 
 
-__webpack_require__(10);
+__webpack_require__(8);
 
 var _mongoose = __webpack_require__(0);
 
@@ -2436,7 +2363,7 @@ var _co = __webpack_require__(18);
 
 var _co2 = _interopRequireDefault(_co);
 
-var _childProcess = __webpack_require__(14);
+var _childProcess = __webpack_require__(13);
 
 var _Mixin = __webpack_require__(2);
 
@@ -2465,6 +2392,14 @@ var _Statistic2 = _interopRequireDefault(_Statistic);
 var _Answer = __webpack_require__(17);
 
 var _Answer2 = _interopRequireDefault(_Answer);
+
+var _Location = __webpack_require__(15);
+
+var _Location2 = _interopRequireDefault(_Location);
+
+var _User = __webpack_require__(9);
+
+var _User2 = _interopRequireDefault(_User);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2538,6 +2473,7 @@ var CollectResponses = function (_Mixin$mixin) {
       }
 
       var survey = this.survey;
+      var surveyPP = this.survey.postProcessing || [];
       var statsCount = 0;
       var collector = new _AnswerCollector2.default({
         survey: survey, answer: answer,
@@ -2545,6 +2481,110 @@ var CollectResponses = function (_Mixin$mixin) {
       });
 
       var promises = [];
+      var self = this;
+
+      var _loop = function _loop(ctx) {
+        ctx.addValue('UPLOAD_TIME', answer.createdAt.getTime(), 'Upload time');
+        ctx.addValue('ANSWER_ID', answer._id, 'Answer Id');
+        promises.push((0, _co2.default)( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+          var _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, p, func, ret;
+
+          return regeneratorRuntime.wrap(function _callee$(_context) {
+            while (1) {
+              switch (_context.prev = _context.next) {
+                case 0:
+                  _iteratorNormalCompletion2 = true;
+                  _didIteratorError2 = false;
+                  _iteratorError2 = undefined;
+                  _context.prev = 3;
+                  _iterator2 = surveyPP[Symbol.iterator]();
+
+                case 5:
+                  if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
+                    _context.next = 18;
+                    break;
+                  }
+
+                  p = _step2.value;
+                  func = p.class && self['_ppClass' + p.class];
+                  ret = void 0;
+
+                  if (!func) {
+                    _context.next = 13;
+                    break;
+                  }
+
+                  _context.next = 12;
+                  return func(p, ctx) || {};
+
+                case 12:
+                  ret = _context.sent;
+
+                case 13:
+                  if (!(ret && ret._ignore)) {
+                    _context.next = 15;
+                    break;
+                  }
+
+                  return _context.abrupt('return');
+
+                case 15:
+                  _iteratorNormalCompletion2 = true;
+                  _context.next = 5;
+                  break;
+
+                case 18:
+                  _context.next = 24;
+                  break;
+
+                case 20:
+                  _context.prev = 20;
+                  _context.t0 = _context['catch'](3);
+                  _didIteratorError2 = true;
+                  _iteratorError2 = _context.t0;
+
+                case 24:
+                  _context.prev = 24;
+                  _context.prev = 25;
+
+                  if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                    _iterator2.return();
+                  }
+
+                case 27:
+                  _context.prev = 27;
+
+                  if (!_didIteratorError2) {
+                    _context.next = 30;
+                    break;
+                  }
+
+                  throw _iteratorError2;
+
+                case 30:
+                  return _context.finish(27);
+
+                case 31:
+                  return _context.finish(24);
+
+                case 32:
+                  _context.next = 34;
+                  return ctx.data;
+
+                case 34:
+                  return _context.abrupt('return', self.writeStatsObj(ctx.data).then(function () {
+                    return ++statsCount;
+                  }));
+
+                case 35:
+                case 'end':
+                  return _context.stop();
+              }
+            }
+          }, _callee, this, [[3, 20, 24, 32], [25,, 27, 31]]);
+        })));
+      };
+
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
       var _iteratorError = undefined;
@@ -2553,12 +2593,7 @@ var CollectResponses = function (_Mixin$mixin) {
         for (var _iterator = collector.collectRespondents()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var ctx = _step.value;
 
-          ctx.addValue('UPLOAD_TIME', answer.createdAt.getTime(), 'Upload time');
-          ctx.addValue('ANSWER_ID', answer._id, 'Answer Id');
-          promises.push(this.writeStatsObj(ctx.data).then(function () {
-            return 1;
-          }));
-          ++statsCount;
+          _loop(ctx);
         }
       } catch (err) {
         _didIteratorError = true;
@@ -2583,7 +2618,73 @@ var CollectResponses = function (_Mixin$mixin) {
         ++_this4.answersCount;
         return { status: 'DONE', statsCount: statsCount, _id: answer._id };
       }).catch(function (e) {
+        e = e || { message: 'UNKNOWN' };
+        console.error(e.message || e);
         return Promise.resolve({ status: 'ERROR', _id: answer._id });
+      });
+    }
+  }, {
+    key: '_ppClassHousehold',
+    value: function _ppClassHousehold(_ref, ctx) {
+      var _ref$select = _ref.select,
+          select = _ref$select === undefined ? 'Q_1_12' : _ref$select,
+          _ref$surveyorKey = _ref.surveyorKey,
+          surveyorKey = _ref$surveyorKey === undefined ? 'Q_1_1' : _ref$surveyorKey,
+          _ref$habitationKey = _ref.habitationKey,
+          habitationKey = _ref$habitationKey === undefined ? 'Q_1_6' : _ref$habitationKey;
+
+      var obj = ctx.data;
+      if (!obj[surveyorKey]) return;
+      if (!obj[select]) return { _ignore: true };
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
+
+      try {
+        for (var _iterator3 = Object.keys(obj)[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var key = _step3.value;
+
+          if (typeof obj[key] === 'string') {
+            if (obj[key].toUpperCase && obj[key].trim().toUpperCase() === 'DUMMY') {
+              return { _ignore: true };
+            }
+          }
+        }
+      } catch (err) {
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion3 && _iterator3.return) {
+            _iterator3.return();
+          }
+        } finally {
+          if (_didIteratorError3) {
+            throw _iteratorError3;
+          }
+        }
+      }
+
+      var username = obj[surveyorKey];
+      return _User2.default.findOne({ username: username }).then(function (user) {
+        if (!user || !user.payload) return;
+        var locSpec = [];
+        ['DISTRICT', 'BLOCK', 'PANCHAYAT'].forEach(function (loc) {
+          ['NAME', 'CODE'].forEach(function (dat) {
+            ctx.addValue(loc + '_' + dat, user.payload[loc + '_' + dat], 'Location payload');
+          });
+          locSpec.push(obj[loc + '_CODE']);
+        });
+        return _Location2.default.findOne({ type: 'PANCHAYAT', uid: locSpec.join('/') });
+      }).then(function (loc) {
+        if (!loc || !loc.children || !loc.children.length) return;
+        if (!obj[habitationKey]) return;
+        var habitation = loc.children.find(function (child) {
+          return child.name === obj[habitationKey];
+        });
+        if (habitation) {
+          ctx.addValue('HABITATION_CODE', habitation.code, 'Habitation Code');
+        }
       });
     }
   }, {
@@ -2591,120 +2692,12 @@ var CollectResponses = function (_Mixin$mixin) {
     value: function writeStatsObj(obj) {
       var _this5 = this;
 
-      var self = this;
-      return (0, _co2.default)( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
-        var pp, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, post, ret;
-
-        return regeneratorRuntime.wrap(function _callee$(_context) {
-          while (1) {
-            switch (_context.prev = _context.next) {
-              case 0:
-                _context.next = 2;
-                return obj;
-
-              case 2:
-                obj = _context.sent;
-                pp = self.survey.postProcessing;
-
-                if (!(!pp || !pp.length)) {
-                  _context.next = 6;
-                  break;
-                }
-
-                return _context.abrupt('return');
-
-              case 6:
-                _iteratorNormalCompletion2 = true;
-                _didIteratorError2 = false;
-                _iteratorError2 = undefined;
-                _context.prev = 9;
-                _iterator2 = pp[Symbol.iterator]();
-
-              case 11:
-                if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
-                  _context.next = 23;
-                  break;
-                }
-
-                post = _step2.value;
-
-                if (!(!post.class || !self['_ppClass' + post.class])) {
-                  _context.next = 15;
-                  break;
-                }
-
-                return _context.abrupt('continue', 20);
-
-              case 15:
-                _context.next = 17;
-                return Promise.resolve(self['_ppClass' + post.class](post, obj));
-
-              case 17:
-                ret = _context.sent;
-
-                if (!(ret && ret._ignore)) {
-                  _context.next = 20;
-                  break;
-                }
-
-                return _context.abrupt('return', true);
-
-              case 20:
-                _iteratorNormalCompletion2 = true;
-                _context.next = 11;
-                break;
-
-              case 23:
-                _context.next = 29;
-                break;
-
-              case 25:
-                _context.prev = 25;
-                _context.t0 = _context['catch'](9);
-                _didIteratorError2 = true;
-                _iteratorError2 = _context.t0;
-
-              case 29:
-                _context.prev = 29;
-                _context.prev = 30;
-
-                if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                  _iterator2.return();
-                }
-
-              case 32:
-                _context.prev = 32;
-
-                if (!_didIteratorError2) {
-                  _context.next = 35;
-                  break;
-                }
-
-                throw _iteratorError2;
-
-              case 35:
-                return _context.finish(32);
-
-              case 36:
-                return _context.finish(29);
-
-              case 37:
-                return _context.abrupt('return');
-
-              case 38:
-              case 'end':
-                return _context.stop();
-            }
-          }
-        }, _callee, this, [[9, 25, 29, 37], [30,, 32, 36]]);
-      })).then(function (ignore) {
-        return ignore || _Statistic2.default.create({
-          key: _this5.surveyId,
-          type: 'SurveyResponse',
-          data: obj
-        }).then(function (stat) {
-          return _this5.accumulateAggregates(stat, _this5.survey.aggregates);
-        });
+      return _Statistic2.default.create({
+        key: this.surveyId,
+        type: 'SurveyResponse',
+        data: obj
+      }).then(function (stat) {
+        return _this5.accumulateAggregates(stat, _this5.survey.aggregates);
       });
     }
   }]);
@@ -3529,9 +3522,9 @@ var _class = function () {
     value: function addValue(key, value, description) {
       if (!this.keys['pos' + key]) {
         this.keys.push(key);
-        this.keys['pos' + key] = description || (this.question.number || 'N') + ' ' + (this.question.text.value || 'TEXT');
-        this.data[key] = value;
+        this.keys['pos' + key] = description || (this.question.number || 'N') + '. ' + ('' + (this.question.text.english || 'TEXT'));
       }
+      this.data[key] = value;
     }
   }]);
 

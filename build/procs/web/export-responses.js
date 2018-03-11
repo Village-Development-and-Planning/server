@@ -121,37 +121,9 @@ module.exports = Schema;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _Constants = __webpack_require__(5);
-
-var _Constants2 = _interopRequireDefault(_Constants);
-
-var _mongoose = __webpack_require__(0);
-
-var _mongoose2 = _interopRequireDefault(_mongoose);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-// connect to mongoose
-var options = _Constants2.default.db;
-_mongoose2.default.Promise = global.Promise;
-
-exports.default = _mongoose2.default.connect(options.connectionString, options.connectionOptions);
-
-/***/ }),
-
-/***/ 11:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
 __webpack_require__(3);
 
-var _Question = __webpack_require__(12);
+var _Question = __webpack_require__(11);
 
 var _Question2 = _interopRequireDefault(_Question);
 
@@ -227,7 +199,7 @@ module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
 
-/***/ 12:
+/***/ 11:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -242,7 +214,7 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 __webpack_require__(3);
 
 var Schema = __webpack_require__(1);
-var Text = __webpack_require__(13);
+var Text = __webpack_require__(12);
 var mongoose = __webpack_require__(0);
 
 var questionSchema = new Schema({
@@ -456,7 +428,7 @@ exports.default = Question;
 
 /***/ }),
 
-/***/ 13:
+/***/ 12:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -473,7 +445,7 @@ module.exports = new Schema({
 
 /***/ }),
 
-/***/ 14:
+/***/ 13:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -488,7 +460,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Process = __webpack_require__(9);
+var _Process = __webpack_require__(7);
 
 var _Process2 = _interopRequireDefault(_Process);
 
@@ -496,7 +468,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _child_process = __webpack_require__(15);
+var _child_process = __webpack_require__(14);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -584,7 +556,7 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procArgs) {
 
 /***/ }),
 
-/***/ 15:
+/***/ 14:
 /***/ (function(module, exports) {
 
 module.exports = require("child_process");
@@ -689,21 +661,13 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _Survey = __webpack_require__(11);
+var _Survey = __webpack_require__(10);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
 var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
-
-var _Location = __webpack_require__(7);
-
-var _Location2 = _interopRequireDefault(_Location);
-
-var _User = __webpack_require__(6);
-
-var _User2 = _interopRequireDefault(_User);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -828,71 +792,6 @@ var _class = function (_Mixin) {
       }
       return arr1.length - arr2.length;
     }
-  }, {
-    key: '_ppClassHousehold',
-    value: function _ppClassHousehold(_ref3, obj) {
-      var _this5 = this;
-
-      var _ref3$select = _ref3.select,
-          select = _ref3$select === undefined ? 'Q_1_12' : _ref3$select,
-          _ref3$surveyorKey = _ref3.surveyorKey,
-          surveyorKey = _ref3$surveyorKey === undefined ? 'Q_1_1' : _ref3$surveyorKey,
-          _ref3$habitationKey = _ref3.habitationKey,
-          habitationKey = _ref3$habitationKey === undefined ? 'Q_1_6' : _ref3$habitationKey;
-
-      if (!obj[surveyorKey]) return;
-      if (!obj[select]) return { _ignore: true };
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
-
-      try {
-        for (var _iterator = Object.keys(obj)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var key = _step.value;
-
-          if (typeof obj[key] === 'string') {
-            if (obj[key].toUpperCase && obj[key].trim().toUpperCase() === 'DUMMY') {
-              return { _ignore: true };
-            }
-          }
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return) {
-            _iterator.return();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
-      }
-
-      var username = obj[surveyorKey];
-      return _User2.default.findOne({ username: username }).then(function (user) {
-        if (!user || !user.payload) return;
-        var locSpec = [];
-        ['DISTRICT', 'BLOCK', 'PANCHAYAT'].forEach(function (loc) {
-          ['NAME', 'CODE'].forEach(function (dat) {
-            _this5._pushKey(loc + '_' + dat, 'Location payload');
-            obj[loc + '_' + dat] = user.payload[loc + '_' + dat];
-          });
-          locSpec.push(obj[loc + '_CODE']);
-        });
-        return _Location2.default.findOne({ type: 'PANCHAYAT', uid: locSpec.join('/') });
-      }).then(function (loc) {
-        if (!loc || !loc.children || !loc.children.length) return;
-        if (!obj[habitationKey]) return;
-        var habitation = loc.children.find(function (child) {
-          return child.name === obj[habitationKey];
-        });
-        _this5._pushKey('HABITATION_CODE', habitationKey);
-        if (habitation) obj['HABITATION_CODE'] = habitation.code;
-      });
-    }
   }]);
 
   return _class;
@@ -972,7 +871,7 @@ exports.default = _class;
 "use strict";
 
 
-__webpack_require__(10);
+__webpack_require__(8);
 
 var _mongoose = __webpack_require__(0);
 
@@ -1064,73 +963,7 @@ module.exports = {
 
 /***/ }),
 
-/***/ 6:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var Schema = __webpack_require__(1);
-var mongoose = __webpack_require__(0);
-
-var userSchema = new Schema({
-  username: { type: String, required: true },
-  name: { type: String },
-
-  passphrase: { type: String },
-  roles: [{ type: String }],
-
-  payload: { type: {} }
-});
-userSchema.index({ username: 1 });
-userSchema.index({ name: 1 });
-userSchema.index({ roles: 1 });
-
-module.exports = mongoose.model('User', userSchema);
-
-/***/ }),
-
 /***/ 7:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _Schema = __webpack_require__(1);
-
-var _Schema2 = _interopRequireDefault(_Schema);
-
-var _mongoose = __webpack_require__(0);
-
-var _mongoose2 = _interopRequireDefault(_mongoose);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var schema = new _Schema2.default({
-  type: { type: String, required: true },
-  code: { type: String, required: true },
-  uid: { type: String, require: true },
-  name: { type: String, required: true },
-  children: [{
-    code: { type: String },
-    name: { type: String },
-    uid: { type: String }
-  }],
-  payload: { type: {} }
-});
-schema.index({ uid: 1, type: 1 });
-schema.index({ type: 1, code: 1 });
-schema.index({ name: 1, type: 1 });
-
-exports.default = _mongoose2.default.model('Location', schema);
-
-/***/ }),
-
-/***/ 9:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1154,6 +987,34 @@ processSchema.index({ status: 1, name: 1 });
 processSchema.index({ name: 1 });
 
 module.exports = mongoose.model('Process', processSchema);
+
+/***/ }),
+
+/***/ 8:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _Constants = __webpack_require__(5);
+
+var _Constants2 = _interopRequireDefault(_Constants);
+
+var _mongoose = __webpack_require__(0);
+
+var _mongoose2 = _interopRequireDefault(_mongoose);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// connect to mongoose
+var options = _Constants2.default.db;
+_mongoose2.default.Promise = global.Promise;
+
+exports.default = _mongoose2.default.connect(options.connectionString, options.connectionOptions);
 
 /***/ }),
 
@@ -1185,7 +1046,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _childProcess = __webpack_require__(14);
+var _childProcess = __webpack_require__(13);
 
 var _Mixin = __webpack_require__(2);
 

@@ -82,8 +82,9 @@ export default class {
     if (!this.keys[`pos${key}`]) {
       this.keys.push(key);
       this.keys[`pos${key}`] = description ||
-        `${this.question.number || 'N'} ${this.question.text.value || 'TEXT'}`;
-      this.data[key] = value;
+        `${this.question.number || 'N'}. ` +
+        `${this.question.text.english || 'TEXT'}`;
     }
+    this.data[key] = value;
   }
 }
