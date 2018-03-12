@@ -17,6 +17,8 @@ const aqSchema = new Schema({
         },
       },
     }],
+    startTimestamp: {type: Date},
+    endTimeStamp: {type: Date},
   }],
 });
 

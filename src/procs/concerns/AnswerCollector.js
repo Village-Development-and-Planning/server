@@ -36,8 +36,12 @@ export default class {
         this._iterProc([ctx, prev]);
         if (ctx.type === 'respondent') {
           if (ctx.answer.startTimestamp) {
-            ctx.addValue('START_TIME', ctx.answer.startTimestamp, 'Start time');
-            ctx.addValue('END_TIME', ctx.answer.startTimestamp, 'End time');
+            ctx.addValue(
+              'START_TIME', ctx.answer.startTimestamp.getTime(), 'Start'
+            );
+            ctx.addValue(
+              'END_TIME', ctx.answer.endTimestamp.getTime(), 'End'
+            );
           }
           ctx.collect();
           yield ctx;

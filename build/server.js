@@ -1018,7 +1018,9 @@ var aqSchema = new Schema({
           return new AnsweredQuestionModel(e);
         }
       }
-    }]
+    }],
+    startTimestamp: { type: Date },
+    endTimeStamp: { type: Date }
   }]
 });
 

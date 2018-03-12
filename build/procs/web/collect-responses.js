@@ -904,7 +904,9 @@ var aqSchema = new Schema({
           return new AnsweredQuestionModel(e);
         }
       }
-    }]
+    }],
+    startTimestamp: { type: Date },
+    endTimeStamp: { type: Date }
   }]
 });
 
@@ -2458,7 +2460,7 @@ var CollectResponses = function (_Mixin$mixin) {
       return this.iterateCursor(_Answer2.default.find({
         survey: this.surveyId,
         lastExport: null
-      }).limit(50), 'collectOneAnswer').then(function (answers) {
+      }).limit(50000), 'collectOneAnswer').then(function (answers) {
         return _this3.answers = answers;
       }).then(function () {
         return _this3._saveAllAggregates();
@@ -3472,8 +3474,8 @@ var _class = function () {
               }
 
               if (ctx.answer.startTimestamp) {
-                ctx.addValue('START_TIME', ctx.answer.startTimestamp, 'Start time');
-                ctx.addValue('END_TIME', ctx.answer.startTimestamp, 'End time');
+                ctx.addValue('START_TIME', ctx.answer.startTimestamp.getTime(), 'Start');
+                ctx.addValue('END_TIME', ctx.answer.endTimestamp.getTime(), 'End');
               }
               ctx.collect();
               _context.next = 33;
