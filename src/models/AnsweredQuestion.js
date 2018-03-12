@@ -1,4 +1,3 @@
-import AQConcerns from './concerns/AnsweredQuestion';
 import AQWalk from './concerns/AnswerWalk';
 
 const Schema = require('./Schema');
@@ -22,7 +21,6 @@ const aqSchema = new Schema({
   }],
 });
 
-AQConcerns.copyTo(aqSchema.methods);
 AQWalk.copyTo(aqSchema.methods);
 
 const AnsweredQuestionModel = mongoose.model('AnsweredQuestion', aqSchema);

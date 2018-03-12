@@ -18,13 +18,14 @@ class SurveyController extends EntityController {
     let _id = this.req.params.id;
     this.renderer.renderPromise(
       Statistic.deleteMany({key: _id})
-      .then(() =>
-        Answer.update(
-          {survey: _id, lastExport: {$ne: null}},
-          {lastExport: null},
-          {multi: true}
-        )
-      )
+      .then(() => Answer.update(
+        {survey: _id, lastExport: {$ne: null}},
+        {lastExport: null},
+        {multi: true}
+      )).then(() => this._findOneAndUpdate(
+        this._getQuery(),
+        {answerStats: {processed: 0}},
+      ))
     );
   }
 

@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 94);
+/******/ 	return __webpack_require__(__webpack_require__.s = 93);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -121,9 +121,400 @@ module.exports = Schema;
 "use strict";
 
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Mixin2 = __webpack_require__(2);
+
+var _Mixin3 = _interopRequireDefault(_Mixin2);
+
+var _hotFormulaParser = __webpack_require__(11);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _class = function (_Mixin) {
+  _inherits(_class, _Mixin);
+
+  function _class() {
+    _classCallCheck(this, _class);
+
+    return _possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).apply(this, arguments));
+  }
+
+  _createClass(_class, [{
+    key: 'initialize',
+    value: function initialize(_ref) {
+      var stat = _ref.stat,
+          aggregate = _ref.aggregate;
+
+      if (!aggregate.metadata) return;
+
+      var parser = stat.parser();
+      var metadata = Object.assign({}, this.metadata);
+
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = Object.keys(aggregate.metadata)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var key = _step.value;
+
+          var formula = aggregate.metadata[key] || key;
+          var val = parser.value(formula);
+          if (val === null || val === undefined) continue;
+
+          metadata[key] = val;
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
+      this.metadata = metadata;
+    }
+  }, {
+    key: 'accumulate',
+    value: function accumulate(_ref2) {
+      var stat = _ref2.stat,
+          aggregate = _ref2.aggregate,
+          invert = _ref2.invert;
+
+      if (!aggregate.data) return;
+
+      var parser = stat.parser();
+      var data = Object.assign({}, this.data);
+
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
+
+      try {
+        for (var _iterator2 = Object.keys(aggregate.data)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var key = _step2.value;
+
+          var formula = void 0,
+              type = void 0,
+              select = void 0;
+          formula = aggregate.data[key] || key;
+          if (formula.formula) {
+            type = formula.type;
+            select = formula.select;
+            formula = formula.formula;
+          }
+          if (select && !parser.value(select)) continue;
+          if (!type) type = 'count';
+
+          var val = parser.value(formula);
+          if (val === null || val === undefined) continue;
+
+          data[key] = this._accumulateRegister(data[key], { val: val, type: type, invert: invert });
+        }
+      } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion2 && _iterator2.return) {
+            _iterator2.return();
+          }
+        } finally {
+          if (_didIteratorError2) {
+            throw _iteratorError2;
+          }
+        }
+      }
+
+      this.data = data;
+    }
+  }, {
+    key: '_accumulateRegister',
+    value: function _accumulateRegister(obj, _ref3) {
+      var val = _ref3.val,
+          type = _ref3.type,
+          invert = _ref3.invert;
+
+      obj = obj || {};
+      obj.count = obj.count || 0;
+      if (type === 'count') {
+        obj.value = obj.value || 0;
+        var count = void 0,
+            value = void 0;
+        if ((typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object') {
+          count = val.count || 1;
+          value = val.value || 0;
+        } else {
+          count = 1;
+          value = parseFloat(val);
+          if (value === NaN) value = 0;
+        }
+        if (invert) {
+          obj.value = obj.value - value;
+          obj.count = obj.count - count;
+        } else {
+          obj.value = obj.value + value;
+          obj.count = obj.count + count;
+        }
+        if (obj.count <= 0) {
+          obj.count = 0;
+          obj.value = 0;
+        }
+      } else if (type === 'histogram') {
+        obj.value = obj.value || {};
+        var _count = void 0,
+            _value = void 0;
+        if ((typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object') {
+          _value = val.value || val;
+          _count = Object.keys(_value).count;
+        } else {
+          _value = _defineProperty({}, val, 1);
+          _count = 1;
+        }
+        var _iteratorNormalCompletion3 = true;
+        var _didIteratorError3 = false;
+        var _iteratorError3 = undefined;
+
+        try {
+          for (var _iterator3 = Object.keys(_value)[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+            var k = _step3.value;
+
+            obj[k] = obj[k] || 0;
+            if (invert) {
+              obj[k] = obj[k] - _value[k];
+            } else {
+              obj[k] = obj[k] + _value[k];
+            }
+            if (obj[k] <= 0) delete obj[k];
+          }
+        } catch (err) {
+          _didIteratorError3 = true;
+          _iteratorError3 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion3 && _iterator3.return) {
+              _iterator3.return();
+            }
+          } finally {
+            if (_didIteratorError3) {
+              throw _iteratorError3;
+            }
+          }
+        }
+
+        if (invert) {
+          obj.count = obj.count - _count;
+        } else {
+          obj.count = obj.count + _count;
+        }
+        if (obj.count <= 0) {
+          obj.count = 0;
+          obj.value = {};
+        }
+      }
+      return obj;
+    }
+  }, {
+    key: 'walkAggregates',
+    value: /*#__PURE__*/regeneratorRuntime.mark(function walkAggregates(ctx) {
+      var aggregates, parser, _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _iterator4, _step4, agg, type, key;
+
+      return regeneratorRuntime.wrap(function walkAggregates$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              aggregates = ctx.aggregates;
+
+              aggregates = aggregates || this.aggregates;
+
+              if (aggregates) {
+                _context.next = 4;
+                break;
+              }
+
+              return _context.abrupt('return');
+
+            case 4:
+              if (aggregates.length) {
+                _context.next = 6;
+                break;
+              }
+
+              return _context.abrupt('return');
+
+            case 6:
+              parser = this.parser();
+              _iteratorNormalCompletion4 = true;
+              _didIteratorError4 = false;
+              _iteratorError4 = undefined;
+              _context.prev = 10;
+              _iterator4 = aggregates[Symbol.iterator]();
+
+            case 12:
+              if (_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done) {
+                _context.next = 26;
+                break;
+              }
+
+              agg = _step4.value;
+              type = void 0, key = void 0;
+
+              if (!(agg.select && !parser.value(agg.select))) {
+                _context.next = 17;
+                break;
+              }
+
+              return _context.abrupt('continue', 23);
+
+            case 17:
+              if (!(!agg.key || !(key = parser.value(agg.key)))) {
+                _context.next = 19;
+                break;
+              }
+
+              return _context.abrupt('continue', 23);
+
+            case 19:
+              if (agg.type) {
+                type = parser.value(agg.type);
+              }
+              if (!type) type === 'Aggregate';
+              _context.next = 23;
+              return [{ aggregate: agg, aggregateKey: { key: key, type: type } }, ctx];
+
+            case 23:
+              _iteratorNormalCompletion4 = true;
+              _context.next = 12;
+              break;
+
+            case 26:
+              _context.next = 32;
+              break;
+
+            case 28:
+              _context.prev = 28;
+              _context.t0 = _context['catch'](10);
+              _didIteratorError4 = true;
+              _iteratorError4 = _context.t0;
+
+            case 32:
+              _context.prev = 32;
+              _context.prev = 33;
+
+              if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                _iterator4.return();
+              }
+
+            case 35:
+              _context.prev = 35;
+
+              if (!_didIteratorError4) {
+                _context.next = 38;
+                break;
+              }
+
+              throw _iteratorError4;
+
+            case 38:
+              return _context.finish(35);
+
+            case 39:
+              return _context.finish(32);
+
+            case 40:
+            case 'end':
+              return _context.stop();
+          }
+        }
+      }, walkAggregates, this, [[10, 28, 32, 40], [33,, 35, 39]]);
+    })
+  }, {
+    key: 'parser',
+    value: function parser() {
+      var _this2 = this;
+
+      if (this.parser) return this.parser;
+
+      var parser = new _hotFormulaParser.Parser();
+      parser.on('callVariable', function (name, done) {
+        var data = _this2.metadata;
+        if (data && data.hasOwnProperty(name)) {
+          return done(data[name]);
+        }
+      });
+      parser.on('callVariable', function (name, done) {
+        var data = _this2.data;
+        var suffix = void 0;
+        if (name.endsWith('__value')) {
+          name = name.slice(0, -7);
+          suffix = 'value';
+        } else if (name.endsWith('__count')) {
+          name = name.slice(0, -7);
+          suffix = 'count';
+        }
+        if (data && data.hasOwnProperty(name)) {
+          var obj = data[name];
+          if (!suffix || !obj || !((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object')) return done(obj);
+          return done(obj)[suffix];
+        }
+      });
+      parser.on('callFunction', function (name, params, done) {
+        if (name === 'TO_DATE') {
+          done(new Date(parseInt(params[0])));
+        }
+      });
+      parser.value = function (exp) {
+        return parser.parse(exp).value;
+      };
+      return this.parser = parser;
+    }
+  }]);
+
+  return _class;
+}(_Mixin3.default);
+
+exports.default = _class;
+
+/***/ }),
+
+/***/ 11:
+/***/ (function(module, exports) {
+
+module.exports = require("hot-formula-parser");
+
+/***/ }),
+
+/***/ 12:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 __webpack_require__(3);
 
-var _Question = __webpack_require__(11);
+var _Question = __webpack_require__(13);
 
 var _Question2 = _interopRequireDefault(_Question);
 
@@ -148,59 +539,11 @@ var surveySchema = new Schema({
 surveySchema.index({ name: 1 });
 surveySchema.index({ enabled: 1, name: 1 });
 
-Object.assign(surveySchema.methods, {
-  respondentsIn: /*#__PURE__*/regeneratorRuntime.mark(function respondentsIn(answer, context) {
-    var idx;
-    return regeneratorRuntime.wrap(function respondentsIn$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            context = Object.assign({}, context, { refQ: this.question });
-
-            if (!(!this.respondents || !this.respondents.length)) {
-              _context.next = 6;
-              break;
-            }
-
-            _context.next = 4;
-            return { question: answer.rootQuestion, context: context };
-
-          case 4:
-            _context.next = 14;
-            break;
-
-          case 6:
-            context.respondents = this.respondents;
-            idx = 0;
-
-          case 8:
-            if (!(idx < this.respondents.length)) {
-              _context.next = 14;
-              break;
-            }
-
-            context.idx = idx;
-            return _context.delegateYield(answer.rootQuestion.findRespondents(context), 't0', 11);
-
-          case 11:
-            idx++;
-            _context.next = 8;
-            break;
-
-          case 14:
-          case 'end':
-            return _context.stop();
-        }
-      }
-    }, respondentsIn, this);
-  })
-});
-
 module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
 
-/***/ 11:
+/***/ 13:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -215,7 +558,7 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 __webpack_require__(3);
 
 var Schema = __webpack_require__(1);
-var Text = __webpack_require__(12);
+var Text = __webpack_require__(14);
 var mongoose = __webpack_require__(0);
 
 var questionSchema = new Schema({
@@ -439,7 +782,7 @@ exports.default = Question;
 
 /***/ }),
 
-/***/ 12:
+/***/ 14:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -456,7 +799,7 @@ module.exports = new Schema({
 
 /***/ }),
 
-/***/ 13:
+/***/ 15:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -479,7 +822,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _child_process = __webpack_require__(14);
+var _child_process = __webpack_require__(16);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -567,7 +910,7 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procArgs) {
 
 /***/ }),
 
-/***/ 14:
+/***/ 16:
 /***/ (function(module, exports) {
 
 module.exports = require("child_process");
@@ -649,14 +992,14 @@ exports.default = Mixin;
 
 /***/ }),
 
-/***/ 22:
+/***/ 23:
 /***/ (function(module, exports) {
 
 module.exports = require("fs");
 
 /***/ }),
 
-/***/ 24:
+/***/ 25:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -672,7 +1015,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _Survey = __webpack_require__(10);
+var _Survey = __webpack_require__(12);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
@@ -812,7 +1155,7 @@ exports.default = _class;
 
 /***/ }),
 
-/***/ 25:
+/***/ 26:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -876,7 +1219,7 @@ exports.default = _class;
 
 /***/ }),
 
-/***/ 26:
+/***/ 27:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -932,6 +1275,10 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
+var _Aggregates = __webpack_require__(10);
+
+var _Aggregates2 = _interopRequireDefault(_Aggregates);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var schema = new _Schema2.default({
@@ -939,10 +1286,10 @@ var schema = new _Schema2.default({
   key: { type: String, required: true },
   name: { type: String },
   data: { type: {} },
-  metadata: { type: {} },
-  aggregates: { type: [] }
+  metadata: { type: {} }
 });
 schema.index({ key: 1, type: 1 });
+_Aggregates2.default.copyTo(schema.methods);
 
 module.exports = _mongoose2.default.model('Statistic', schema);
 
@@ -1029,23 +1376,23 @@ exports.default = _mongoose2.default.connect(options.connectionString, options.c
 
 /***/ }),
 
+/***/ 93:
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(94);
+module.exports = __webpack_require__(27);
+
+
+/***/ }),
+
 /***/ 94:
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(95);
-module.exports = __webpack_require__(26);
-
+module.exports = global["Proc"] = __webpack_require__(95);
 
 /***/ }),
 
 /***/ 95:
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = global["Proc"] = __webpack_require__(96);
-
-/***/ }),
-
-/***/ 96:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1057,17 +1404,17 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _childProcess = __webpack_require__(13);
+var _childProcess = __webpack_require__(15);
 
 var _Mixin = __webpack_require__(2);
 
 var _Mixin2 = _interopRequireDefault(_Mixin);
 
-var _SurveyExport = __webpack_require__(24);
+var _SurveyExport = __webpack_require__(25);
 
 var _SurveyExport2 = _interopRequireDefault(_SurveyExport);
 
-var _Cursor = __webpack_require__(25);
+var _Cursor = __webpack_require__(26);
 
 var _Cursor2 = _interopRequireDefault(_Cursor);
 
@@ -1075,11 +1422,11 @@ var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
-var _csvStringify = __webpack_require__(97);
+var _csvStringify = __webpack_require__(96);
 
 var _csvStringify2 = _interopRequireDefault(_csvStringify);
 
-var _fs = __webpack_require__(22);
+var _fs = __webpack_require__(23);
 
 var _fs2 = _interopRequireDefault(_fs);
 
@@ -1176,7 +1523,7 @@ exports.default = ExportResponses;
 
 /***/ }),
 
-/***/ 97:
+/***/ 96:
 /***/ (function(module, exports) {
 
 module.exports = require("csv-stringify");

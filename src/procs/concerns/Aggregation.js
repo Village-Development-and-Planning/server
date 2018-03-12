@@ -1,176 +1,91 @@
 import 'babel-polyfill';
 import Mixin from '../../lib/Mixin';
-import {Parser as FormulaParser} from 'hot-formula-parser';
-import co from 'co';
 import Statistic from '../../models/Statistic';
-import YAML from 'js-yaml';
-
+import co from 'co';
 /**
  * Handles Survey concerns
  */
 export default class extends Mixin {
-  _parseExpression(parser, exp) {
-    const parsed = parser.parse(exp);
-    if (parsed.error) {
-      return;
-    }
-    return parsed.result;
+  saveAggregates() {
+    return co.call(this, function* () {
+      let aKeys;
+      while ((aKeys = Object.keys(this.aggregatesStore)).length) {
+        const aKey = aKeys.find(
+          (key) => {
+            for (let dStat of this.aggregatesStore[key].dependencies) {
+              if (dStat.isModified()) return false;
+            }
+            return true;
+          }
+        );
+        if (!aKey) {
+          console.error('Error: circular dependency!');
+          return;
+        }
+        const agg = this.aggregatesStore[aKey];
+        if (agg.aggregates) {
+          yield Promise.resolve(
+            this.accumulateAggregates({
+              stat: agg,
+              aggregates: agg.aggregates,
+            })
+          );
+        }
+        yield agg.save();
+        delete this.aggregatesStore[aKey];
+      }
+    });
   }
 
-  _findAggregate({type, key}) {
-    let objKey = `${type}/${key}`;
-    let agg;
-    if (agg = this.aggregates[objKey]) {
-      return Promise.resolve(agg);
+  accumulateAggregates(context) {
+    const {stat} = context;
+    if (!stat.data && !stat.metadata) return;
+
+    const promises = [];
+    for (let ctx of stat.walkAggregates(context)) {
+      Object.setPrototypeOf(ctx, context);
+      promises.push(
+        this.findAggregate(ctx).then(
+          (tgStat) => tgStat.accumulate(ctx)
+        )
+      );
     }
-    return this.aggregates[objKey] = Statistic.findOne({type, key})
-    .catch((err) => null)
-    .then((stat) => stat ? stat.toObject({versionKey: false}) : {type, key})
-    .then((stat) => this.aggregates[objKey] = stat)
-    .then((stat) => {
-      if (stat.aggregates) {
-        return Promise.resolve(
-          this.accumulateAggregates(stat, stat.aggregates, true)
-        ).then(() => stat);
+    return Promise.all(promises).then(() => stat);
+  }
+
+  findAggregate(context) {
+    if (!aggregateKey) throw new Error('Aggregate Key needed.');
+    this.aggregatesStore = this.aggregatesStore || {};
+
+    const {type, key} = context.aggregateKey;
+    if (!type || !key) throw new Error('type, key needed in AggregateKey.');
+
+    let cacheKey = `${type}//$$\\${key}`;
+    if (this.aggregatesStore[cacheKey]) {
+      let a = this.aggregatesStore[cacheKey];
+      a.dependencies.push(stat);
+      return Promise.resolve(this.aggregatesStore[cacheKey]);
+    }
+
+    return this.aggregatesStore[cacheKey] = Statistic.findOne({type, key})
+    .then((stat) => stat && this.accumulateAggregates({
+      stat,
+      aggregates: context.aggregate.aggregates,
+      invert: 1,
+    })).then((stat) => {
+      if (!stat) {
+        stat = new Statistic();
+        stat.set({type, key});
+        stat.aggregates = context.aggregate.aggregates;
+        stat.initialize(context);
       }
+      stat.modifiedAt = Date.now();
+      stat.dependencies = [context.stat];
+      this.aggregatesStore[cacheKey] = stat;
       return stat;
     });
   }
 
-  _saveAllAggregates() {
-    const self = this;
-    if (!self.aggregates) return;
-    return co(function* () {
-      let key, agg;
-      while (key = Object.keys(self.aggregates).find(
-        (key) => self.aggregates[key]._modified)
-      ) {
-        agg = self.aggregates[key];
-        yield Promise.resolve(
-          self.accumulateAggregates(agg, agg.aggregates)
-        );
-        agg._modified = false;
-      }
-    })
-    .then(() => Promise.all(
-      Object.keys(this.aggregates)
-      .map((key) => {
-        const agg = this.aggregates[key];
-        return Statistic.findOneAndUpdate(
-          {type: agg.type, key: agg.key},
-          agg,
-          {upsert: true, new: true}
-        ).then(
-          (stat) => console.log(
-            `Stat: ${stat.key} (${stat.type})`
-          ) || console.log(
-            YAML.safeDump(stat.data)
-          )
-        );
-      })
-    ))
-    .catch((err) => console.error('Error saving aggreagtes', err));
-  }
-
-  accumulateAggregates(stat, aggregates, revert=false) {
-    if (!aggregates || !aggregates.length) return;
-    if (!stat.data) return;
-    const parser = new FormulaParser();
-    const parseF = (...a) => this._parseExpression(parser, ...a);
-    parser.on('callVariable', (name, done) => {
-      // Check in metadata
-      let obj = stat.metadata;
-      if (obj && obj.hasOwnProperty(name)) {
-        const val = obj[name];
-        if (val !== undefined) {
-          done(val);
-          return;
-        }
-      }
-
-      // Check in data
-      obj = stat.data;
-      let type;
-      if (name.endsWith('__value')) {
-        name = name.slice(0, -7);
-        type = 'value';
-      } else if (name.endsWith('__count')) {
-        name = name.slice(0, -7);
-        type = 'count';
-      }
-      type = type || 'average';
-      if (obj && obj.hasOwnProperty(name)) {
-        const val = obj[name];
-
-        if (val) {
-          if (val.count) {
-            if (type === 'average') {
-              done(val.value / val.count);
-            } else if (type === 'count') {
-              done(val.count);
-            } else {
-              done(val.value);
-            }
-          } else {
-            done(val);
-          }
-          return;
-        }
-      }
-    });
-    parser.on('callFunction', (name, params, done) => {
-      if (name === 'TO_DATE') {
-        done(new Date(parseInt(params[0])));
-      }
-    });
-
-    const promises = [];
-    for (let agg of aggregates) {
-      let type, key, name;
-      if (agg.select) {
-        if (!parseF(agg.select)) continue;
-      }
-      if (agg.key) {
-        key = parseF(agg.key);
-      }
-      if (!key) {
-        console.error(`Error parsing key: ${agg.key}`);
-        continue;
-      };
-      key = key || null;
-
-      if (agg.type) {
-        type = parseF(agg.type);
-      }
-      type = type || 'Aggregate';
-      if (!revert) {
-        if (agg.name) {
-          name = parseF(agg.name);
-        }
-        name = name || this.survey.name || 'Unnamed';
-        promises.push(
-          this._findAggregate({type, key})
-          .then((stat) => {
-            this._evaluateMetadata(agg, stat, parseF);
-            this._evaluateAggregate(agg, stat, parseF);
-            if (agg.aggregates && !stat.aggregates) {
-              stat.aggregates = agg.aggregates;
-            }
-          })
-        );
-      } else {
-        promises.push(
-          this._findAggregate({type, key})
-          .then((stat) => {
-            if (stat && stat.data) {
-              this._evaluateAggregate(agg, stat, parseF, revert);
-            }
-          })
-        );
-      }
-    }
-    return Promise.all(promises).then((p) => p.length);
-  }
 
   * _iterateObj(obj, parseF) {
     for (let key of Object.keys(obj)) {

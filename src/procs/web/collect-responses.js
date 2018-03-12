@@ -21,6 +21,12 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
   execute(proc) {
     this.surveyId = proc.args;
     return this.getSurvey()
+    .then(() => {
+      if (this.survey.answerStats) {
+        this.surveyProcessed = this.survey.answerStats.processed;
+      }
+      if (!this.surveyProcessed) this.surveyProcessed = 0;
+    })
     .then(() => this.getExportHeader())
     .then(() => this.collectAnswers())
     .then((response) => this.response = response)
@@ -36,7 +42,7 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
     return this.iterateCursor(Answer.find({
       survey: this.surveyId,
       lastExport: null,
-    }).limit(50000), 'collectOneAnswer')
+    }).limit(5), 'collectOneAnswer')
     .then((answers) => this.answers = answers)
     .then(() => this._saveAllAggregates())
     .then(() => this._saveAnswerStats())
@@ -48,10 +54,11 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
   }
 
   _saveAnswerStats() {
-    let aStats = this.survey.answerStats = this.survey.answerStats || {};
-    aStats.processed = aStats.processed || 0;
-    aStats.processed = aStats.processed + this.answersCount;
-    return this.survey.save().then(() => this.answersCount = 0);
+    this.survey.answerStats = {
+      processed: this.surveyProcessed + this.answersCount,
+    };
+    console.log('Saving answer stats...', this.survey.answerStats);
+    return this.survey.save();
   }
 
   collectOneAnswer(answer) {
@@ -101,11 +108,12 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
       e = e || {message: 'UNKNOWN'};
       console.error(e.message || e);
       return Promise.resolve({status: 'ERROR', _id: answer._id});
-    }).then(() => {
+    }).then((remarks) => {
       if (this.answersCount && !(this.answersCount % 500)) {
         return this._saveAnswerStats()
-        .then(() => this.updateExportHeader());
+        .then(() => remarks);
       }
+      return remarks;
     });
   }
 

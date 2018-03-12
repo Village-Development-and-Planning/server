@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 87);
+/******/ 	return __webpack_require__(__webpack_require__.s = 88);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -206,6 +206,10 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
+var _Aggregates = __webpack_require__(10);
+
+var _Aggregates2 = _interopRequireDefault(_Aggregates);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var schema = new _Schema2.default({
@@ -213,10 +217,10 @@ var schema = new _Schema2.default({
   key: { type: String, required: true },
   name: { type: String },
   data: { type: {} },
-  metadata: { type: {} },
-  aggregates: { type: [] }
+  metadata: { type: {} }
 });
 schema.index({ key: 1, type: 1 });
+_Aggregates2.default.copyTo(schema.methods);
 
 module.exports = _mongoose2.default.model('Statistic', schema);
 
@@ -331,9 +335,398 @@ module.exports = mongoose.model('User', userSchema);
 "use strict";
 
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Mixin2 = __webpack_require__(2);
+
+var _Mixin3 = _interopRequireDefault(_Mixin2);
+
+var _hotFormulaParser = __webpack_require__(11);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _class = function (_Mixin) {
+  _inherits(_class, _Mixin);
+
+  function _class() {
+    _classCallCheck(this, _class);
+
+    return _possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).apply(this, arguments));
+  }
+
+  _createClass(_class, [{
+    key: 'initialize',
+    value: function initialize(_ref) {
+      var stat = _ref.stat,
+          aggregate = _ref.aggregate;
+
+      if (!aggregate.metadata) return;
+
+      var parser = stat.parser();
+      var metadata = Object.assign({}, this.metadata);
+
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = Object.keys(aggregate.metadata)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var key = _step.value;
+
+          var formula = aggregate.metadata[key] || key;
+          var val = parser.value(formula);
+          if (val === null || val === undefined) continue;
+
+          metadata[key] = val;
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
+      this.metadata = metadata;
+    }
+  }, {
+    key: 'accumulate',
+    value: function accumulate(_ref2) {
+      var stat = _ref2.stat,
+          aggregate = _ref2.aggregate,
+          invert = _ref2.invert;
+
+      if (!aggregate.data) return;
+
+      var parser = stat.parser();
+      var data = Object.assign({}, this.data);
+
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
+
+      try {
+        for (var _iterator2 = Object.keys(aggregate.data)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var key = _step2.value;
+
+          var formula = void 0,
+              type = void 0,
+              select = void 0;
+          formula = aggregate.data[key] || key;
+          if (formula.formula) {
+            type = formula.type;
+            select = formula.select;
+            formula = formula.formula;
+          }
+          if (select && !parser.value(select)) continue;
+          if (!type) type = 'count';
+
+          var val = parser.value(formula);
+          if (val === null || val === undefined) continue;
+
+          data[key] = this._accumulateRegister(data[key], { val: val, type: type, invert: invert });
+        }
+      } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion2 && _iterator2.return) {
+            _iterator2.return();
+          }
+        } finally {
+          if (_didIteratorError2) {
+            throw _iteratorError2;
+          }
+        }
+      }
+
+      this.data = data;
+    }
+  }, {
+    key: '_accumulateRegister',
+    value: function _accumulateRegister(obj, _ref3) {
+      var val = _ref3.val,
+          type = _ref3.type,
+          invert = _ref3.invert;
+
+      obj = obj || {};
+      obj.count = obj.count || 0;
+      if (type === 'count') {
+        obj.value = obj.value || 0;
+        var count = void 0,
+            value = void 0;
+        if ((typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object') {
+          count = val.count || 1;
+          value = val.value || 0;
+        } else {
+          count = 1;
+          value = parseFloat(val);
+          if (value === NaN) value = 0;
+        }
+        if (invert) {
+          obj.value = obj.value - value;
+          obj.count = obj.count - count;
+        } else {
+          obj.value = obj.value + value;
+          obj.count = obj.count + count;
+        }
+        if (obj.count <= 0) {
+          obj.count = 0;
+          obj.value = 0;
+        }
+      } else if (type === 'histogram') {
+        obj.value = obj.value || {};
+        var _count = void 0,
+            _value = void 0;
+        if ((typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object') {
+          _value = val.value || val;
+          _count = Object.keys(_value).count;
+        } else {
+          _value = _defineProperty({}, val, 1);
+          _count = 1;
+        }
+        var _iteratorNormalCompletion3 = true;
+        var _didIteratorError3 = false;
+        var _iteratorError3 = undefined;
+
+        try {
+          for (var _iterator3 = Object.keys(_value)[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+            var k = _step3.value;
+
+            obj[k] = obj[k] || 0;
+            if (invert) {
+              obj[k] = obj[k] - _value[k];
+            } else {
+              obj[k] = obj[k] + _value[k];
+            }
+            if (obj[k] <= 0) delete obj[k];
+          }
+        } catch (err) {
+          _didIteratorError3 = true;
+          _iteratorError3 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion3 && _iterator3.return) {
+              _iterator3.return();
+            }
+          } finally {
+            if (_didIteratorError3) {
+              throw _iteratorError3;
+            }
+          }
+        }
+
+        if (invert) {
+          obj.count = obj.count - _count;
+        } else {
+          obj.count = obj.count + _count;
+        }
+        if (obj.count <= 0) {
+          obj.count = 0;
+          obj.value = {};
+        }
+      }
+      return obj;
+    }
+  }, {
+    key: 'walkAggregates',
+    value: /*#__PURE__*/regeneratorRuntime.mark(function walkAggregates(ctx) {
+      var aggregates, parser, _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _iterator4, _step4, agg, type, key;
+
+      return regeneratorRuntime.wrap(function walkAggregates$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              aggregates = ctx.aggregates;
+
+              aggregates = aggregates || this.aggregates;
+
+              if (aggregates) {
+                _context.next = 4;
+                break;
+              }
+
+              return _context.abrupt('return');
+
+            case 4:
+              if (aggregates.length) {
+                _context.next = 6;
+                break;
+              }
+
+              return _context.abrupt('return');
+
+            case 6:
+              parser = this.parser();
+              _iteratorNormalCompletion4 = true;
+              _didIteratorError4 = false;
+              _iteratorError4 = undefined;
+              _context.prev = 10;
+              _iterator4 = aggregates[Symbol.iterator]();
+
+            case 12:
+              if (_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done) {
+                _context.next = 26;
+                break;
+              }
+
+              agg = _step4.value;
+              type = void 0, key = void 0;
+
+              if (!(agg.select && !parser.value(agg.select))) {
+                _context.next = 17;
+                break;
+              }
+
+              return _context.abrupt('continue', 23);
+
+            case 17:
+              if (!(!agg.key || !(key = parser.value(agg.key)))) {
+                _context.next = 19;
+                break;
+              }
+
+              return _context.abrupt('continue', 23);
+
+            case 19:
+              if (agg.type) {
+                type = parser.value(agg.type);
+              }
+              if (!type) type === 'Aggregate';
+              _context.next = 23;
+              return [{ aggregate: agg, aggregateKey: { key: key, type: type } }, ctx];
+
+            case 23:
+              _iteratorNormalCompletion4 = true;
+              _context.next = 12;
+              break;
+
+            case 26:
+              _context.next = 32;
+              break;
+
+            case 28:
+              _context.prev = 28;
+              _context.t0 = _context['catch'](10);
+              _didIteratorError4 = true;
+              _iteratorError4 = _context.t0;
+
+            case 32:
+              _context.prev = 32;
+              _context.prev = 33;
+
+              if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                _iterator4.return();
+              }
+
+            case 35:
+              _context.prev = 35;
+
+              if (!_didIteratorError4) {
+                _context.next = 38;
+                break;
+              }
+
+              throw _iteratorError4;
+
+            case 38:
+              return _context.finish(35);
+
+            case 39:
+              return _context.finish(32);
+
+            case 40:
+            case 'end':
+              return _context.stop();
+          }
+        }
+      }, walkAggregates, this, [[10, 28, 32, 40], [33,, 35, 39]]);
+    })
+  }, {
+    key: 'parser',
+    value: function parser() {
+      var _this2 = this;
+
+      if (this.parser) return this.parser;
+
+      var parser = new _hotFormulaParser.Parser();
+      parser.on('callVariable', function (name, done) {
+        var data = _this2.metadata;
+        if (data && data.hasOwnProperty(name)) {
+          return done(data[name]);
+        }
+      });
+      parser.on('callVariable', function (name, done) {
+        var data = _this2.data;
+        var suffix = void 0;
+        if (name.endsWith('__value')) {
+          name = name.slice(0, -7);
+          suffix = 'value';
+        } else if (name.endsWith('__count')) {
+          name = name.slice(0, -7);
+          suffix = 'count';
+        }
+        if (data && data.hasOwnProperty(name)) {
+          var obj = data[name];
+          if (!suffix || !obj || !((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object')) return done(obj);
+          return done(obj)[suffix];
+        }
+      });
+      parser.on('callFunction', function (name, params, done) {
+        if (name === 'TO_DATE') {
+          done(new Date(parseInt(params[0])));
+        }
+      });
+      parser.value = function (exp) {
+        return parser.parse(exp).value;
+      };
+      return this.parser = parser;
+    }
+  }]);
+
+  return _class;
+}(_Mixin3.default);
+
+exports.default = _class;
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports) {
+
+module.exports = require("hot-formula-parser");
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 __webpack_require__(3);
 
-var _Question = __webpack_require__(11);
+var _Question = __webpack_require__(13);
 
 var _Question2 = _interopRequireDefault(_Question);
 
@@ -358,58 +751,10 @@ var surveySchema = new Schema({
 surveySchema.index({ name: 1 });
 surveySchema.index({ enabled: 1, name: 1 });
 
-Object.assign(surveySchema.methods, {
-  respondentsIn: /*#__PURE__*/regeneratorRuntime.mark(function respondentsIn(answer, context) {
-    var idx;
-    return regeneratorRuntime.wrap(function respondentsIn$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            context = Object.assign({}, context, { refQ: this.question });
-
-            if (!(!this.respondents || !this.respondents.length)) {
-              _context.next = 6;
-              break;
-            }
-
-            _context.next = 4;
-            return { question: answer.rootQuestion, context: context };
-
-          case 4:
-            _context.next = 14;
-            break;
-
-          case 6:
-            context.respondents = this.respondents;
-            idx = 0;
-
-          case 8:
-            if (!(idx < this.respondents.length)) {
-              _context.next = 14;
-              break;
-            }
-
-            context.idx = idx;
-            return _context.delegateYield(answer.rootQuestion.findRespondents(context), 't0', 11);
-
-          case 11:
-            idx++;
-            _context.next = 8;
-            break;
-
-          case 14:
-          case 'end':
-            return _context.stop();
-        }
-      }
-    }, respondentsIn, this);
-  })
-});
-
 module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
-/* 11 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -424,7 +769,7 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 __webpack_require__(3);
 
 var Schema = __webpack_require__(1);
-var Text = __webpack_require__(12);
+var Text = __webpack_require__(14);
 var mongoose = __webpack_require__(0);
 
 var questionSchema = new Schema({
@@ -647,7 +992,7 @@ var Question = mongoose.model('Question', questionSchema);
 exports.default = Question;
 
 /***/ }),
-/* 12 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -663,7 +1008,7 @@ module.exports = new Schema({
 });
 
 /***/ }),
-/* 13 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -686,7 +1031,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _child_process = __webpack_require__(14);
+var _child_process = __webpack_require__(16);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -773,13 +1118,13 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procArgs) {
 };
 
 /***/ }),
-/* 14 */
+/* 16 */
 /***/ (function(module, exports) {
 
 module.exports = require("child_process");
 
 /***/ }),
-/* 15 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -818,8 +1163,8 @@ schema.index({ name: 1, type: 1 });
 exports.default = _mongoose2.default.model('Location', schema);
 
 /***/ }),
-/* 16 */,
-/* 17 */
+/* 18 */,
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -833,7 +1178,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _AnsweredQuestion = __webpack_require__(19);
+var _AnsweredQuestion = __webpack_require__(21);
 
 var _AnsweredQuestion2 = _interopRequireDefault(_AnsweredQuestion);
 
@@ -864,13 +1209,13 @@ answerSchema.index({ createdAt: 1, survey: 1 });
 module.exports = _mongoose2.default.model('Answer', answerSchema);
 
 /***/ }),
-/* 18 */
+/* 20 */
 /***/ (function(module, exports) {
 
 module.exports = require("co");
 
 /***/ }),
-/* 19 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -880,11 +1225,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _AnsweredQuestion = __webpack_require__(20);
-
-var _AnsweredQuestion2 = _interopRequireDefault(_AnsweredQuestion);
-
-var _AnswerWalk = __webpack_require__(21);
+var _AnswerWalk = __webpack_require__(22);
 
 var _AnswerWalk2 = _interopRequireDefault(_AnswerWalk);
 
@@ -911,444 +1252,13 @@ var aqSchema = new Schema({
   }]
 });
 
-_AnsweredQuestion2.default.copyTo(aqSchema.methods);
 _AnswerWalk2.default.copyTo(aqSchema.methods);
 
 var AnsweredQuestionModel = mongoose.model('AnsweredQuestion', aqSchema);
 exports.default = AnsweredQuestionModel;
 
 /***/ }),
-/* 20 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _Mixin2 = __webpack_require__(2);
-
-var _Mixin3 = _interopRequireDefault(_Mixin2);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _class = function (_Mixin) {
-  _inherits(_class, _Mixin);
-
-  function _class() {
-    _classCallCheck(this, _class);
-
-    return _possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).apply(this, arguments));
-  }
-
-  _createClass(_class, [{
-    key: 'collectRespondent',
-    value: /*#__PURE__*/regeneratorRuntime.mark(function collectRespondent(_ref) {
-      var acc = _ref.acc,
-          prefix = _ref.prefix,
-          refQ = _ref.refQ,
-          keys = _ref.keys;
-
-      var _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, ans, obj;
-
-      return regeneratorRuntime.wrap(function collectRespondent$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              _iteratorNormalCompletion = true;
-              _didIteratorError = false;
-              _iteratorError = undefined;
-              _context.prev = 3;
-              _iterator = this.answers[Symbol.iterator]();
-
-            case 5:
-              if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-                _context.next = 14;
-                break;
-              }
-
-              ans = _step.value;
-              obj = this.collectAnswer({
-                acc: Object.assign({}, acc),
-                ansKey: prefix,
-                ans: ans, keys: keys, refQ: refQ
-              });
-
-              if (ans.startTimestamp) {
-                obj.START_TIME = ans.startTimestamp;
-                obj.END_TIME = ans.endTimestamp;
-                if (!keys.posSTART_TIME) {
-                  keys.push('START_TIME');
-                  keys.push('END_TIME');
-                  keys.posSTART_TIME = 'Start time of respondent.';
-                  keys.posEND_TIME = 'End time of respondent.';
-                }
-              }
-              _context.next = 11;
-              return obj;
-
-            case 11:
-              _iteratorNormalCompletion = true;
-              _context.next = 5;
-              break;
-
-            case 14:
-              _context.next = 20;
-              break;
-
-            case 16:
-              _context.prev = 16;
-              _context.t0 = _context['catch'](3);
-              _didIteratorError = true;
-              _iteratorError = _context.t0;
-
-            case 20:
-              _context.prev = 20;
-              _context.prev = 21;
-
-              if (!_iteratorNormalCompletion && _iterator.return) {
-                _iterator.return();
-              }
-
-            case 23:
-              _context.prev = 23;
-
-              if (!_didIteratorError) {
-                _context.next = 26;
-                break;
-              }
-
-              throw _iteratorError;
-
-            case 26:
-              return _context.finish(23);
-
-            case 27:
-              return _context.finish(20);
-
-            case 28:
-            case 'end':
-              return _context.stop();
-          }
-        }
-      }, collectRespondent, this, [[3, 16, 20, 28], [21,, 23, 27]]);
-    })
-  }, {
-    key: '_accumulateValue',
-    value: function _accumulateValue(ans, ansKey, refQ) {
-      if (!ans.logged_options) return {};
-      var ret = {};
-      if (refQ.type === 'ROOT' || refQ.type === 'DUMMY' || !this.number) {
-        return ret;
-      }
-      if (refQ.type === 'MULTIPLE_CHOICE') {
-        ans.logged_options.reduce(function (acc, opt) {
-          if (opt.position !== null) {
-            acc[ansKey + '_opt' + opt.position] = 1;
-          }
-          return acc;
-        }, ret);
-      } else if (refQ.type === 'GPS') {
-        var lat = void 0,
-            long = void 0,
-            val = void 0;
-        var opt = ans.logged_options[0];
-        val = opt && (opt.value || opt.text.english);
-        val = val || '';
-
-        var _val$split = val.split(',');
-
-        var _val$split2 = _slicedToArray(_val$split, 2);
-
-        lat = _val$split2[0];
-        long = _val$split2[1];
-
-        ret[ansKey + '_lat'] = lat;
-        ret[ansKey + '_long'] = long;
-      } else if (['INFO', 'INPUT', 'CONFIRMATION'].indexOf(refQ.type) !== -1 || refQ.flow && refQ.flow.pre.fill.length) {
-        ret[ansKey] = ans.logged_options.map(function (opt) {
-          return opt.value || opt.text.english;
-        }).join(',').toUpperCase();
-      } else {
-        ret[ansKey] = ans.logged_options.map(function (opt) {
-          return opt.position || opt.value || opt.text.english;
-        }).join(',');
-      }
-      return ret;
-    }
-  }, {
-    key: 'findRespondents',
-    value: /*#__PURE__*/regeneratorRuntime.mark(function findRespondents(_ref2) {
-      var position = _ref2.position,
-          acc = _ref2.acc,
-          prefix = _ref2.prefix,
-          keys = _ref2.keys,
-          respondents = _ref2.respondents,
-          idx = _ref2.idx,
-          refQ = _ref2.refQ;
-
-      var number, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, ans, respChild, _position, childQ, newAcc;
-
-      return regeneratorRuntime.wrap(function findRespondents$(_context2) {
-        while (1) {
-          switch (_context2.prev = _context2.next) {
-            case 0:
-              number = respondents[idx];
-
-              if (this.isParent(number)) {
-                _context2.next = 3;
-                break;
-              }
-
-              return _context2.abrupt('return');
-
-            case 3:
-              if (this.answers) {
-                _context2.next = 5;
-                break;
-              }
-
-              return _context2.abrupt('return');
-
-            case 5:
-
-              acc = acc || {};
-              prefix = prefix || 'Q';
-              keys = keys || [];
-              position = position || '';
-              prefix = '' + prefix + position;
-
-              if (!(this.number === number)) {
-                _context2.next = 14;
-                break;
-              }
-
-              _context2.next = 13;
-              return { question: this, context: { acc: acc, keys: keys, prefix: prefix, refQ: refQ } };
-
-            case 13:
-              return _context2.abrupt('return');
-
-            case 14:
-              _iteratorNormalCompletion2 = true;
-              _didIteratorError2 = false;
-              _iteratorError2 = undefined;
-              _context2.prev = 17;
-              _iterator2 = this.answers[Symbol.iterator]();
-
-            case 19:
-              if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
-                _context2.next = 34;
-                break;
-              }
-
-              ans = _step2.value;
-
-              if (!ans.children) {
-                _context2.next = 31;
-                break;
-              }
-
-              respChild = ans.children.find(function (child, idx) {
-                child = child.question;
-                if (child.isParent(number)) {
-                  return child;
-                } else {
-                  return false;
-                }
-              });
-
-              if (!respChild) {
-                _context2.next = 31;
-                break;
-              }
-
-              _position = respChild.position;
-
-              respChild = respChild.question;
-              childQ = refQ.findChildByPosition(_position);
-              newAcc = this.collectAnswer({
-                ans: ans, keys: keys, refQ: refQ,
-                ansKey: prefix,
-
-                ignore: respondents,
-                acc: Object.assign({}, acc)
-              });
-
-              if (childQ) {
-                _context2.next = 30;
-                break;
-              }
-
-              throw new Error('Child question ' + _position + ' not found.\n               In Q ' + (refQ.number || refQ.type) + '.');
-
-            case 30:
-              return _context2.delegateYield(respChild.findRespondents({
-                position: _position,
-                acc: newAcc,
-                prefix: prefix + '_',
-                refQ: childQ,
-                keys: keys, respondents: respondents, idx: idx
-              }), 't0', 31);
-
-            case 31:
-              _iteratorNormalCompletion2 = true;
-              _context2.next = 19;
-              break;
-
-            case 34:
-              _context2.next = 40;
-              break;
-
-            case 36:
-              _context2.prev = 36;
-              _context2.t1 = _context2['catch'](17);
-              _didIteratorError2 = true;
-              _iteratorError2 = _context2.t1;
-
-            case 40:
-              _context2.prev = 40;
-              _context2.prev = 41;
-
-              if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                _iterator2.return();
-              }
-
-            case 43:
-              _context2.prev = 43;
-
-              if (!_didIteratorError2) {
-                _context2.next = 46;
-                break;
-              }
-
-              throw _iteratorError2;
-
-            case 46:
-              return _context2.finish(43);
-
-            case 47:
-              return _context2.finish(40);
-
-            case 48:
-              ;
-
-            case 49:
-            case 'end':
-              return _context2.stop();
-          }
-        }
-      }, findRespondents, this, [[17, 36, 40, 48], [41,, 43, 47]]);
-    })
-  }, {
-    key: 'collectAnswer',
-    value: function collectAnswer(_ref3) {
-      var ans = _ref3.ans,
-          acc = _ref3.acc,
-          ansKey = _ref3.ansKey,
-          suffix = _ref3.suffix,
-          keys = _ref3.keys,
-          ignore = _ref3.ignore,
-          refQ = _ref3.refQ;
-
-      acc = acc || {};
-      ansKey = ansKey || 'Q';
-      suffix = suffix || '';
-      keys = keys || [];
-
-      var valObj = this._accumulateValue(ans, ansKey, refQ);
-      Object.keys(valObj).forEach(function (key) {
-        var oKey = key + suffix;
-        acc[oKey] = valObj[key];
-        if (!keys['pos' + oKey]) {
-          keys.push(oKey);
-          var text = valObj['pos' + key];
-          if (!text) {
-            text = '';
-            if (refQ.number) text = text + refQ.number;
-            if (refQ.text && refQ.text.english) {
-              text = text + (' ' + refQ.text.english);
-            }
-          }
-          keys['pos' + oKey] = text || 'UNKNOWN';
-        }
-      });
-
-      if (ans.children) {
-        ans.children.reduce(function (acc, child) {
-          var childQ = refQ.findChildByPosition(child.position);
-          if (!childQ) {
-            throw new Error('Child question ' + child.position + ' not found.\n               In Q ' + (refQ.number || refQ.type) + '.');
-          }
-          var childAnswer = child.question;
-          if (ignore && ignore.reduce(function (acc, ign) {
-            return acc || childQ.isParent(ign);
-          }, false)) return acc;
-
-          return childAnswer.collect({
-            position: child.position,
-            prefix: ansKey + '_',
-            refQ: childQ,
-            suffix: suffix, keys: keys, acc: acc, ignore: ignore
-          });
-        }, acc);
-      }
-      return acc;
-    }
-  }, {
-    key: 'collect',
-    value: function collect(_ref4) {
-      var _this2 = this;
-
-      var position = _ref4.position,
-          acc = _ref4.acc,
-          prefix = _ref4.prefix,
-          suffix = _ref4.suffix,
-          keys = _ref4.keys,
-          ignore = _ref4.ignore,
-          refQ = _ref4.refQ;
-
-      acc = acc || {};
-      prefix = prefix || 'Q';
-      suffix = suffix || '';
-      keys = keys || [];
-
-      var pos = position || '';
-      pos = pos.replace(/\./g, '_');
-      prefix = '' + prefix + pos;
-      return this.answers ? this.answers.reduce(function (acc, ans, idx) {
-        var ansKey = prefix;
-        var newSuffix = suffix;
-        if (refQ.flow && refQ.flow.answer.scope == 'multiple') {
-          newSuffix = suffix + ('_ans' + (idx + 1));
-        }
-        return _this2.collectAnswer({
-          ans: ans, idx: idx, acc: acc, ansKey: ansKey, keys: keys, ignore: ignore, refQ: refQ,
-          suffix: newSuffix
-        });
-      }, acc) : acc;
-    }
-  }]);
-
-  return _class;
-}(_Mixin3.default);
-
-exports.default = _class;
-
-/***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2030,9 +1940,9 @@ var _class = function (_Mixin) {
 exports.default = _class;
 
 /***/ }),
-/* 22 */,
 /* 23 */,
-/* 24 */
+/* 24 */,
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2048,7 +1958,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _Survey = __webpack_require__(10);
+var _Survey = __webpack_require__(12);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
@@ -2187,7 +2097,7 @@ var _class = function (_Mixin) {
 exports.default = _class;
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2250,7 +2160,7 @@ var _class = function (_Mixin) {
 exports.default = _class;
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2284,7 +2194,6 @@ proc.promise.then(function () {
 process.exitCode = 0;
 
 /***/ }),
-/* 27 */,
 /* 28 */,
 /* 29 */,
 /* 30 */,
@@ -2344,21 +2253,22 @@ process.exitCode = 0;
 /* 84 */,
 /* 85 */,
 /* 86 */,
-/* 87 */
-/***/ (function(module, exports, __webpack_require__) {
-
-__webpack_require__(88);
-module.exports = __webpack_require__(26);
-
-
-/***/ }),
+/* 87 */,
 /* 88 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = global["Proc"] = __webpack_require__(89);
+__webpack_require__(89);
+module.exports = __webpack_require__(27);
+
 
 /***/ }),
 /* 89 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = global["Proc"] = __webpack_require__(90);
+
+/***/ }),
+/* 90 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2372,29 +2282,29 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 __webpack_require__(3);
 
-var _co = __webpack_require__(18);
+var _co = __webpack_require__(20);
 
 var _co2 = _interopRequireDefault(_co);
 
-var _childProcess = __webpack_require__(13);
+var _childProcess = __webpack_require__(15);
 
 var _Mixin = __webpack_require__(2);
 
 var _Mixin2 = _interopRequireDefault(_Mixin);
 
-var _SurveyExport = __webpack_require__(24);
+var _SurveyExport = __webpack_require__(25);
 
 var _SurveyExport2 = _interopRequireDefault(_SurveyExport);
 
-var _Cursor = __webpack_require__(25);
+var _Cursor = __webpack_require__(26);
 
 var _Cursor2 = _interopRequireDefault(_Cursor);
 
-var _Aggregation = __webpack_require__(90);
+var _Aggregation = __webpack_require__(91);
 
 var _Aggregation2 = _interopRequireDefault(_Aggregation);
 
-var _AnswerCollector = __webpack_require__(93);
+var _AnswerCollector = __webpack_require__(92);
 
 var _AnswerCollector2 = _interopRequireDefault(_AnswerCollector);
 
@@ -2402,11 +2312,11 @@ var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
-var _Answer = __webpack_require__(17);
+var _Answer = __webpack_require__(19);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 
-var _Location = __webpack_require__(15);
+var _Location = __webpack_require__(17);
 
 var _Location2 = _interopRequireDefault(_Location);
 
@@ -2438,6 +2348,11 @@ var CollectResponses = function (_Mixin$mixin) {
 
       this.surveyId = proc.args;
       return this.getSurvey().then(function () {
+        if (_this2.survey.answerStats) {
+          _this2.surveyProcessed = _this2.survey.answerStats.processed;
+        }
+        if (!_this2.surveyProcessed) _this2.surveyProcessed = 0;
+      }).then(function () {
         return _this2.getExportHeader();
       }).then(function () {
         return _this2.collectAnswers();
@@ -2461,7 +2376,7 @@ var CollectResponses = function (_Mixin$mixin) {
       return this.iterateCursor(_Answer2.default.find({
         survey: this.surveyId,
         lastExport: null
-      }).limit(50000), 'collectOneAnswer').then(function (answers) {
+      }).limit(5), 'collectOneAnswer').then(function (answers) {
         return _this3.answers = answers;
       }).then(function () {
         return _this3._saveAllAggregates();
@@ -2478,19 +2393,16 @@ var CollectResponses = function (_Mixin$mixin) {
   }, {
     key: '_saveAnswerStats',
     value: function _saveAnswerStats() {
-      var _this4 = this;
-
-      var aStats = this.survey.answerStats = this.survey.answerStats || {};
-      aStats.processed = aStats.processed || 0;
-      aStats.processed = aStats.processed + this.answersCount;
-      return this.survey.save().then(function () {
-        return _this4.answersCount = 0;
-      });
+      this.survey.answerStats = {
+        processed: this.surveyProcessed + this.answersCount
+      };
+      console.log('Saving answer stats...', this.survey.answerStats);
+      return this.survey.save();
     }
   }, {
     key: 'collectOneAnswer',
     value: function collectOneAnswer(answer) {
-      var _this5 = this;
+      var _this4 = this;
 
       if (!answer.rootQuestion) {
         return { status: 'SKIPPED', reason: 'EMPTY', _id: answer._id };
@@ -2641,19 +2553,20 @@ var CollectResponses = function (_Mixin$mixin) {
         answer.set('lastExport', new Date());
         return answer.save();
       }).then(function () {
-        _this5.totalStatsCount = _this5.totalStatsCount + statsCount;
-        ++_this5.answersCount;
+        _this4.totalStatsCount = _this4.totalStatsCount + statsCount;
+        ++_this4.answersCount;
         return { status: 'DONE', statsCount: statsCount, _id: answer._id };
       }).catch(function (e) {
         e = e || { message: 'UNKNOWN' };
         console.error(e.message || e);
         return Promise.resolve({ status: 'ERROR', _id: answer._id });
-      }).then(function () {
-        if (_this5.answersCount && !(_this5.answersCount % 500)) {
-          return _this5._saveAnswerStats().then(function () {
-            return _this5.updateExportHeader();
+      }).then(function (remarks) {
+        if (_this4.answersCount && !(_this4.answersCount % 500)) {
+          return _this4._saveAnswerStats().then(function () {
+            return remarks;
           });
         }
+        return remarks;
       });
     }
   }, {
@@ -2759,14 +2672,14 @@ var CollectResponses = function (_Mixin$mixin) {
   }, {
     key: 'writeStatsObj',
     value: function writeStatsObj(obj) {
-      var _this6 = this;
+      var _this5 = this;
 
       return _Statistic2.default.create({
         key: this.surveyId,
         type: 'SurveyResponse',
         data: obj
       }).then(function (stat) {
-        return _this6.accumulateAggregates(stat, _this6.survey.aggregates);
+        return _this5.accumulateAggregates(stat, _this5.survey.aggregates);
       });
     }
   }]);
@@ -2777,7 +2690,7 @@ var CollectResponses = function (_Mixin$mixin) {
 exports.default = CollectResponses;
 
 /***/ }),
-/* 90 */
+/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2797,19 +2710,13 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _hotFormulaParser = __webpack_require__(91);
-
-var _co = __webpack_require__(18);
-
-var _co2 = _interopRequireDefault(_co);
-
 var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
-var _jsYaml = __webpack_require__(92);
+var _co = __webpack_require__(20);
 
-var _jsYaml2 = _interopRequireDefault(_jsYaml);
+var _co2 = _interopRequireDefault(_co);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2832,252 +2739,202 @@ var _class = function (_Mixin) {
   }
 
   _createClass(_class, [{
-    key: '_parseExpression',
-    value: function _parseExpression(parser, exp) {
-      var parsed = parser.parse(exp);
-      if (parsed.error) {
-        return;
-      }
-      return parsed.result;
-    }
-  }, {
-    key: '_findAggregate',
-    value: function _findAggregate(_ref) {
-      var _this2 = this;
+    key: 'saveAggregates',
+    value: function saveAggregates() {
+      return _co2.default.call(this, /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+        var _this2 = this;
 
-      var type = _ref.type,
-          key = _ref.key;
-
-      var objKey = type + '/' + key;
-      var agg = void 0;
-      if (agg = this.aggregates[objKey]) {
-        return Promise.resolve(agg);
-      }
-      return this.aggregates[objKey] = _Statistic2.default.findOne({ type: type, key: key }).catch(function (err) {
-        return null;
-      }).then(function (stat) {
-        return stat ? stat.toObject({ versionKey: false }) : { type: type, key: key };
-      }).then(function (stat) {
-        return _this2.aggregates[objKey] = stat;
-      }).then(function (stat) {
-        if (stat.aggregates) {
-          return Promise.resolve(_this2.accumulateAggregates(stat, stat.aggregates, true)).then(function () {
-            return stat;
-          });
-        }
-        return stat;
-      });
-    }
-  }, {
-    key: '_saveAllAggregates',
-    value: function _saveAllAggregates() {
-      var _this3 = this;
-
-      var self = this;
-      if (!self.aggregates) return;
-      return (0, _co2.default)( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
-        var key, agg;
+        var aKeys, aKey, agg;
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
-                key = void 0, agg = void 0;
+                aKeys = void 0;
 
               case 1:
-                if (!(key = Object.keys(self.aggregates).find(function (key) {
-                  return self.aggregates[key]._modified;
-                }))) {
-                  _context.next = 8;
+                if (!(aKeys = Object.keys(this.aggregatesStore)).length) {
+                  _context.next = 15;
                   break;
                 }
 
-                agg = self.aggregates[key];
-                _context.next = 5;
-                return Promise.resolve(self.accumulateAggregates(agg, agg.aggregates));
+                aKey = aKeys.find(function (key) {
+                  var _iteratorNormalCompletion = true;
+                  var _didIteratorError = false;
+                  var _iteratorError = undefined;
 
-              case 5:
-                agg._modified = false;
+                  try {
+                    for (var _iterator = _this2.aggregatesStore[key].dependencies[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                      var dStat = _step.value;
+
+                      if (dStat.isModified()) return false;
+                    }
+                  } catch (err) {
+                    _didIteratorError = true;
+                    _iteratorError = err;
+                  } finally {
+                    try {
+                      if (!_iteratorNormalCompletion && _iterator.return) {
+                        _iterator.return();
+                      }
+                    } finally {
+                      if (_didIteratorError) {
+                        throw _iteratorError;
+                      }
+                    }
+                  }
+
+                  return true;
+                });
+
+                if (aKey) {
+                  _context.next = 6;
+                  break;
+                }
+
+                console.error('Error: circular dependency!');
+                return _context.abrupt('return');
+
+              case 6:
+                agg = this.aggregatesStore[aKey];
+
+                if (!agg.aggregates) {
+                  _context.next = 10;
+                  break;
+                }
+
+                _context.next = 10;
+                return Promise.resolve(this.accumulateAggregates({
+                  stat: agg,
+                  aggregates: agg.aggregates
+                }));
+
+              case 10:
+                _context.next = 12;
+                return agg.save();
+
+              case 12:
+                delete this.aggregatesStore[aKey];
                 _context.next = 1;
                 break;
 
-              case 8:
+              case 15:
               case 'end':
                 return _context.stop();
             }
           }
         }, _callee, this);
-      })).then(function () {
-        return Promise.all(Object.keys(_this3.aggregates).map(function (key) {
-          var agg = _this3.aggregates[key];
-          return _Statistic2.default.findOneAndUpdate({ type: agg.type, key: agg.key }, agg, { upsert: true, new: true }).then(function (stat) {
-            return console.log('Stat: ' + stat.key + ' (' + stat.type + ')') || console.log(_jsYaml2.default.safeDump(stat.data));
-          });
-        }));
-      }).catch(function (err) {
-        return console.error('Error saving aggreagtes', err);
-      });
+      }));
     }
   }, {
     key: 'accumulateAggregates',
-    value: function accumulateAggregates(stat, aggregates) {
-      var _this4 = this;
+    value: function accumulateAggregates(context) {
+      var _this3 = this;
 
-      var revert = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+      var stat = context.stat;
 
-      if (!aggregates || !aggregates.length) return;
-      if (!stat.data) return;
-      var parser = new _hotFormulaParser.Parser();
-      var parseF = function parseF() {
-        for (var _len = arguments.length, a = Array(_len), _key = 0; _key < _len; _key++) {
-          a[_key] = arguments[_key];
-        }
-
-        return _this4._parseExpression.apply(_this4, [parser].concat(a));
-      };
-      parser.on('callVariable', function (name, done) {
-        // Check in metadata
-        var obj = stat.metadata;
-        if (obj && obj.hasOwnProperty(name)) {
-          var val = obj[name];
-          if (val !== undefined) {
-            done(val);
-            return;
-          }
-        }
-
-        // Check in data
-        obj = stat.data;
-        var type = void 0;
-        if (name.endsWith('__value')) {
-          name = name.slice(0, -7);
-          type = 'value';
-        } else if (name.endsWith('__count')) {
-          name = name.slice(0, -7);
-          type = 'count';
-        }
-        type = type || 'average';
-        if (obj && obj.hasOwnProperty(name)) {
-          var _val = obj[name];
-
-          if (_val) {
-            if (_val.count) {
-              if (type === 'average') {
-                done(_val.value / _val.count);
-              } else if (type === 'count') {
-                done(_val.count);
-              } else {
-                done(_val.value);
-              }
-            } else {
-              done(_val);
-            }
-            return;
-          }
-        }
-      });
-      parser.on('callFunction', function (name, params, done) {
-        if (name === 'TO_DATE') {
-          done(new Date(parseInt(params[0])));
-        }
-      });
+      if (!stat.data && !stat.metadata) return;
 
       var promises = [];
 
-      var _loop = function _loop(agg) {
-        var type = void 0,
-            key = void 0,
-            name = void 0;
-        if (agg.select) {
-          if (!parseF(agg.select)) return 'continue';
-        }
-        if (agg.key) {
-          key = parseF(agg.key);
-        }
-        if (!key) {
-          console.error('Error parsing key: ' + agg.key);
-          return 'continue';
-        };
-        key = key || null;
-
-        if (agg.type) {
-          type = parseF(agg.type);
-        }
-        type = type || 'Aggregate';
-        if (!revert) {
-          if (agg.name) {
-            name = parseF(agg.name);
-          }
-          name = name || _this4.survey.name || 'Unnamed';
-          promises.push(_this4._findAggregate({ type: type, key: key }).then(function (stat) {
-            _this4._evaluateMetadata(agg, stat, parseF);
-            _this4._evaluateAggregate(agg, stat, parseF);
-            if (agg.aggregates && !stat.aggregates) {
-              stat.aggregates = agg.aggregates;
-            }
-          }));
-        } else {
-          promises.push(_this4._findAggregate({ type: type, key: key }).then(function (stat) {
-            if (stat && stat.data) {
-              _this4._evaluateAggregate(agg, stat, parseF, revert);
-            }
-          }));
-        }
+      var _loop = function _loop(ctx) {
+        Object.setPrototypeOf(ctx, context);
+        promises.push(_this3.findAggregate(ctx).then(function (tgStat) {
+          return tgStat.accumulate(ctx);
+        }));
       };
 
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
 
       try {
-        for (var _iterator = aggregates[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var agg = _step.value;
+        for (var _iterator2 = stat.walkAggregates(context)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var ctx = _step2.value;
 
-          var _ret = _loop(agg);
-
-          if (_ret === 'continue') continue;
+          _loop(ctx);
         }
       } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion && _iterator.return) {
-            _iterator.return();
+          if (!_iteratorNormalCompletion2 && _iterator2.return) {
+            _iterator2.return();
           }
         } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
+          if (_didIteratorError2) {
+            throw _iteratorError2;
           }
         }
       }
 
-      return Promise.all(promises).then(function (p) {
-        return p.length;
+      return Promise.all(promises).then(function () {
+        return stat;
+      });
+    }
+  }, {
+    key: 'findAggregate',
+    value: function findAggregate(context) {
+      var _this4 = this;
+
+      if (!aggregateKey) throw new Error('Aggregate Key needed.');
+      this.aggregatesStore = this.aggregatesStore || {};
+
+      var _context$aggregateKey = context.aggregateKey,
+          type = _context$aggregateKey.type,
+          key = _context$aggregateKey.key;
+
+      if (!type || !key) throw new Error('type, key needed in AggregateKey.');
+
+      var cacheKey = type + '//$$\\' + key;
+      if (this.aggregatesStore[cacheKey]) {
+        var a = this.aggregatesStore[cacheKey];
+        a.dependencies.push(stat);
+        return Promise.resolve(this.aggregatesStore[cacheKey]);
+      }
+
+      return this.aggregatesStore[cacheKey] = _Statistic2.default.findOne({ type: type, key: key }).then(function (stat) {
+        return stat && _this4.accumulateAggregates({
+          stat: stat,
+          aggregates: context.aggregate.aggregates,
+          invert: 1
+        });
+      }).then(function (stat) {
+        if (!stat) {
+          stat = new _Statistic2.default();
+          stat.set({ type: type, key: key });
+          stat.aggregates = context.aggregate.aggregates;
+          stat.initialize(context);
+        }
+        stat.modifiedAt = Date.now();
+        stat.dependencies = [context.stat];
+        _this4.aggregatesStore[cacheKey] = stat;
+        return stat;
       });
     }
   }, {
     key: '_iterateObj',
     value: /*#__PURE__*/regeneratorRuntime.mark(function _iterateObj(obj, parseF) {
-      var _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, _key2, valObj, valType, formula, _type, value, count;
+      var _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, key, valObj, valType, formula, type, value, count;
 
       return regeneratorRuntime.wrap(function _iterateObj$(_context2) {
         while (1) {
           switch (_context2.prev = _context2.next) {
             case 0:
-              _iteratorNormalCompletion2 = true;
-              _didIteratorError2 = false;
-              _iteratorError2 = undefined;
+              _iteratorNormalCompletion3 = true;
+              _didIteratorError3 = false;
+              _iteratorError3 = undefined;
               _context2.prev = 3;
-              _iterator2 = Object.keys(obj)[Symbol.iterator]();
+              _iterator3 = Object.keys(obj)[Symbol.iterator]();
 
             case 5:
-              if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
+              if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
                 _context2.next = 24;
                 break;
               }
 
-              _key2 = _step2.value;
-              valObj = obj[_key2];
+              key = _step3.value;
+              valObj = obj[key];
               valType = typeof valObj === 'undefined' ? 'undefined' : _typeof(valObj);
 
               if (!(valType === 'undefined')) {
@@ -3088,22 +2945,22 @@ var _class = function (_Mixin) {
               return _context2.abrupt('continue', 21);
 
             case 11:
-              formula = void 0, _type = void 0;
+              formula = void 0, type = void 0;
 
               if (valType === 'string') {
                 formula = valObj;
               } else if (valType === 'object' && valObj) {
                 formula = valObj.formula;
-                _type = valObj.type;
+                type = valObj.type;
               }
               value = void 0, count = void 0;
 
-              formula = formula || _key2;
-              _type = _type || 'count';
-              if (_type === 'value') {
+              formula = formula || key;
+              type = type || 'count';
+              if (type === 'value') {
                 count = parseF(formula + '__count');
                 if (count) formula = formula + '__value';
-                _type = 'count';
+                type = 'count';
               }
               value = parseF(formula);
 
@@ -3113,10 +2970,10 @@ var _class = function (_Mixin) {
               }
 
               _context2.next = 21;
-              return { key: _key2, value: value, type: _type, count: count };
+              return { key: key, value: value, type: type, count: count };
 
             case 21:
-              _iteratorNormalCompletion2 = true;
+              _iteratorNormalCompletion3 = true;
               _context2.next = 5;
               break;
 
@@ -3127,26 +2984,26 @@ var _class = function (_Mixin) {
             case 26:
               _context2.prev = 26;
               _context2.t0 = _context2['catch'](3);
-              _didIteratorError2 = true;
-              _iteratorError2 = _context2.t0;
+              _didIteratorError3 = true;
+              _iteratorError3 = _context2.t0;
 
             case 30:
               _context2.prev = 30;
               _context2.prev = 31;
 
-              if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                _iterator2.return();
+              if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                _iterator3.return();
               }
 
             case 33:
               _context2.prev = 33;
 
-              if (!_didIteratorError2) {
+              if (!_didIteratorError3) {
                 _context2.next = 36;
                 break;
               }
 
-              throw _iteratorError2;
+              throw _iteratorError3;
 
             case 36:
               return _context2.finish(33);
@@ -3163,11 +3020,11 @@ var _class = function (_Mixin) {
     })
   }, {
     key: '_accumulateObj',
-    value: function _accumulateObj(data, _ref2) {
-      var key = _ref2.key,
-          value = _ref2.value,
-          type = _ref2.type,
-          count = _ref2.count;
+    value: function _accumulateObj(data, _ref) {
+      var key = _ref.key,
+          value = _ref.value,
+          type = _ref.type,
+          count = _ref.count;
 
       var obj = data[key] = data[key] || {};
       count = count || 1;
@@ -3189,11 +3046,11 @@ var _class = function (_Mixin) {
     }
   }, {
     key: '_decumulateObj',
-    value: function _decumulateObj(data, _ref3) {
-      var key = _ref3.key,
-          value = _ref3.value,
-          type = _ref3.type,
-          count = _ref3.count;
+    value: function _decumulateObj(data, _ref2) {
+      var key = _ref2.key,
+          value = _ref2.value,
+          type = _ref2.type,
+          count = _ref2.count;
 
       var obj = data[key];
       if (!obj || !obj.count || !obj.value) return;
@@ -3217,52 +3074,19 @@ var _class = function (_Mixin) {
       if (!_typeof(agg.data) === 'object') return;
       stat.data = stat.data || {};
       stat._modified = true;
-      var _iteratorNormalCompletion3 = true;
-      var _didIteratorError3 = false;
-      var _iteratorError3 = undefined;
+      var _iteratorNormalCompletion4 = true;
+      var _didIteratorError4 = false;
+      var _iteratorError4 = undefined;
 
       try {
-        for (var _iterator3 = this._iterateObj(agg.data, parseF)[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-          var o = _step3.value;
+        for (var _iterator4 = this._iterateObj(agg.data, parseF)[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+          var o = _step4.value;
 
           if (!revert) {
             this._accumulateObj(stat.data, o);
           } else {
             this._decumulateObj(stat.data, o);
           }
-        }
-      } catch (err) {
-        _didIteratorError3 = true;
-        _iteratorError3 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion3 && _iterator3.return) {
-            _iterator3.return();
-          }
-        } finally {
-          if (_didIteratorError3) {
-            throw _iteratorError3;
-          }
-        }
-      }
-    }
-  }, {
-    key: '_evaluateMetadata',
-    value: function _evaluateMetadata(agg, stat, parseF) {
-      if (stat.metadata || !agg.metadata) return;
-      if (_typeof(agg.metadata) !== 'object') return;
-      stat.metadata = stat.metadata || {};
-      var _iteratorNormalCompletion4 = true;
-      var _didIteratorError4 = false;
-      var _iteratorError4 = undefined;
-
-      try {
-        for (var _iterator4 = this._iterateObj(agg.metadata, parseF)[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-          var _ref4 = _step4.value;
-          var _key3 = _ref4.key;
-          var value = _ref4.value;
-
-          stat.metadata[_key3] = value;
         }
       } catch (err) {
         _didIteratorError4 = true;
@@ -3279,6 +3103,39 @@ var _class = function (_Mixin) {
         }
       }
     }
+  }, {
+    key: '_evaluateMetadata',
+    value: function _evaluateMetadata(agg, stat, parseF) {
+      if (stat.metadata || !agg.metadata) return;
+      if (_typeof(agg.metadata) !== 'object') return;
+      stat.metadata = stat.metadata || {};
+      var _iteratorNormalCompletion5 = true;
+      var _didIteratorError5 = false;
+      var _iteratorError5 = undefined;
+
+      try {
+        for (var _iterator5 = this._iterateObj(agg.metadata, parseF)[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+          var _ref3 = _step5.value;
+          var key = _ref3.key;
+          var value = _ref3.value;
+
+          stat.metadata[key] = value;
+        }
+      } catch (err) {
+        _didIteratorError5 = true;
+        _iteratorError5 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion5 && _iterator5.return) {
+            _iterator5.return();
+          }
+        } finally {
+          if (_didIteratorError5) {
+            throw _iteratorError5;
+          }
+        }
+      }
+    }
   }]);
 
   return _class;
@@ -3287,19 +3144,7 @@ var _class = function (_Mixin) {
 exports.default = _class;
 
 /***/ }),
-/* 91 */
-/***/ (function(module, exports) {
-
-module.exports = require("hot-formula-parser");
-
-/***/ }),
 /* 92 */
-/***/ (function(module, exports) {
-
-module.exports = require("js-yaml");
-
-/***/ }),
-/* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
