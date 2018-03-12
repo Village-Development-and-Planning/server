@@ -35,7 +35,7 @@ export default class {
       for (let [ctx, prev] of this.answeredQuestion.walkRespondents(c)) {
         this._iterProc([ctx, prev]);
         if (ctx.type === 'respondent') {
-          if (ctx.answer.startTimestamp) {
+          if (ctx.answer.startTimestamp && ctx.answer.endTimestamp) {
             ctx.addValue(
               'START_TIME', ctx.answer.startTimestamp.getTime(), 'Start'
             );

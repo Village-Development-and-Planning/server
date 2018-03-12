@@ -39,11 +39,19 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
     }).limit(50000), 'collectOneAnswer')
     .then((answers) => this.answers = answers)
     .then(() => this._saveAllAggregates())
+    .then(() => this._saveAnswerStats())
     .then(() => ({
       answers: this.answers,
       answersCount: this.answersCount,
       totalStatsCount: this.totalStatsCount,
     }));
+  }
+
+  _saveAnswerStats() {
+    let aStats = this.survey.answerStats = this.survey.answerStats || {};
+    aStats.processed = aStats.processed || 0;
+    aStats.processed = aStats.processed + this.answersCount;
+    return this.survey.save().then(() => this.answersCount = 0);
   }
 
   collectOneAnswer(answer) {
@@ -93,6 +101,11 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
       e = e || {message: 'UNKNOWN'};
       console.error(e.message || e);
       return Promise.resolve({status: 'ERROR', _id: answer._id});
+    }).then(() => {
+      if (this.answersCount && !(this.answersCount % 500)) {
+        return this._saveAnswerStats()
+        .then(() => this.updateExportHeader());
+      }
     });
   }
 
@@ -153,54 +166,6 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
       }
     }
   }
-
-  _ppClassHousehold({
-    select='Q_1_12',
-    surveyorKey='Q_1_1',
-    habitationKey='Q_1_6',
-  }, ctx) {
-    const obj = ctx.data;
-    if (!obj[surveyorKey]) return;
-    if (!obj[select]) return {_ignore: true};
-    for (let key of Object.keys(obj)) {
-      if (typeof obj[key] === 'string') {
-        if (obj[key].toUpperCase && obj[key].trim().toUpperCase() === 'DUMMY') {
-          return {_ignore: true};
-        }
-      }
-    }
-    const username = obj[surveyorKey];
-    return User.findOne({username})
-    .then((user) => {
-      if (!user || !user.payload) return;
-      let locSpec = [];
-      ['DISTRICT', 'BLOCK', 'PANCHAYAT'].forEach((loc) => {
-        ['NAME', 'CODE'].forEach((dat) => {
-          ctx.addValue(
-            `${loc}_${dat}`,
-            user.payload[`${loc}_${dat}`],
-            `Location payload`
-          );
-        });
-        locSpec.push(obj[`${loc}_CODE`]);
-      });
-      return Location.findOne({type: 'PANCHAYAT', uid: locSpec.join('/')});
-    }).then((loc) => {
-      if (!loc || !loc.children || !loc.children.length) return;
-      if (!obj[habitationKey]) return;
-      let habitation = loc.children.find(
-        (child) => (child.name === obj[habitationKey])
-      );
-      if (habitation) {
-        ctx.addValue(
-          'HABITATION_CODE',
-          habitation.code,
-          'Habitation Code',
-        );
-      }
-    });
-  }
-
 
   writeStatsObj(obj) {
     return Statistic.create({

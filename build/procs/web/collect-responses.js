@@ -352,7 +352,8 @@ var surveySchema = new Schema({
     }, required: true },
   respondents: { type: [] },
   aggregates: { type: [] },
-  postProcessing: { type: [] }
+  postProcessing: { type: [] },
+  answerStats: { type: {} }
 });
 surveySchema.index({ name: 1 });
 surveySchema.index({ enabled: 1, name: 1 });
@@ -2465,6 +2466,8 @@ var CollectResponses = function (_Mixin$mixin) {
       }).then(function () {
         return _this3._saveAllAggregates();
       }).then(function () {
+        return _this3._saveAnswerStats();
+      }).then(function () {
         return {
           answers: _this3.answers,
           answersCount: _this3.answersCount,
@@ -2473,9 +2476,21 @@ var CollectResponses = function (_Mixin$mixin) {
       });
     }
   }, {
+    key: '_saveAnswerStats',
+    value: function _saveAnswerStats() {
+      var _this4 = this;
+
+      var aStats = this.survey.answerStats = this.survey.answerStats || {};
+      aStats.processed = aStats.processed || 0;
+      aStats.processed = aStats.processed + this.answersCount;
+      return this.survey.save().then(function () {
+        return _this4.answersCount = 0;
+      });
+    }
+  }, {
     key: 'collectOneAnswer',
     value: function collectOneAnswer(answer) {
-      var _this4 = this;
+      var _this5 = this;
 
       if (!answer.rootQuestion) {
         return { status: 'SKIPPED', reason: 'EMPTY', _id: answer._id };
@@ -2626,13 +2641,19 @@ var CollectResponses = function (_Mixin$mixin) {
         answer.set('lastExport', new Date());
         return answer.save();
       }).then(function () {
-        _this4.totalStatsCount = _this4.totalStatsCount + statsCount;
-        ++_this4.answersCount;
+        _this5.totalStatsCount = _this5.totalStatsCount + statsCount;
+        ++_this5.answersCount;
         return { status: 'DONE', statsCount: statsCount, _id: answer._id };
       }).catch(function (e) {
         e = e || { message: 'UNKNOWN' };
         console.error(e.message || e);
         return Promise.resolve({ status: 'ERROR', _id: answer._id });
+      }).then(function () {
+        if (_this5.answersCount && !(_this5.answersCount % 500)) {
+          return _this5._saveAnswerStats().then(function () {
+            return _this5.updateExportHeader();
+          });
+        }
       });
     }
   }, {
@@ -2736,80 +2757,16 @@ var CollectResponses = function (_Mixin$mixin) {
       }
     }
   }, {
-    key: '_ppClassHousehold',
-    value: function _ppClassHousehold(_ref4, ctx) {
-      var _ref4$select = _ref4.select,
-          select = _ref4$select === undefined ? 'Q_1_12' : _ref4$select,
-          _ref4$surveyorKey = _ref4.surveyorKey,
-          surveyorKey = _ref4$surveyorKey === undefined ? 'Q_1_1' : _ref4$surveyorKey,
-          _ref4$habitationKey = _ref4.habitationKey,
-          habitationKey = _ref4$habitationKey === undefined ? 'Q_1_6' : _ref4$habitationKey;
-
-      var obj = ctx.data;
-      if (!obj[surveyorKey]) return;
-      if (!obj[select]) return { _ignore: true };
-      var _iteratorNormalCompletion5 = true;
-      var _didIteratorError5 = false;
-      var _iteratorError5 = undefined;
-
-      try {
-        for (var _iterator5 = Object.keys(obj)[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-          var key = _step5.value;
-
-          if (typeof obj[key] === 'string') {
-            if (obj[key].toUpperCase && obj[key].trim().toUpperCase() === 'DUMMY') {
-              return { _ignore: true };
-            }
-          }
-        }
-      } catch (err) {
-        _didIteratorError5 = true;
-        _iteratorError5 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion5 && _iterator5.return) {
-            _iterator5.return();
-          }
-        } finally {
-          if (_didIteratorError5) {
-            throw _iteratorError5;
-          }
-        }
-      }
-
-      var username = obj[surveyorKey];
-      return _User2.default.findOne({ username: username }).then(function (user) {
-        if (!user || !user.payload) return;
-        var locSpec = [];
-        ['DISTRICT', 'BLOCK', 'PANCHAYAT'].forEach(function (loc) {
-          ['NAME', 'CODE'].forEach(function (dat) {
-            ctx.addValue(loc + '_' + dat, user.payload[loc + '_' + dat], 'Location payload');
-          });
-          locSpec.push(obj[loc + '_CODE']);
-        });
-        return _Location2.default.findOne({ type: 'PANCHAYAT', uid: locSpec.join('/') });
-      }).then(function (loc) {
-        if (!loc || !loc.children || !loc.children.length) return;
-        if (!obj[habitationKey]) return;
-        var habitation = loc.children.find(function (child) {
-          return child.name === obj[habitationKey];
-        });
-        if (habitation) {
-          ctx.addValue('HABITATION_CODE', habitation.code, 'Habitation Code');
-        }
-      });
-    }
-  }, {
     key: 'writeStatsObj',
     value: function writeStatsObj(obj) {
-      var _this5 = this;
+      var _this6 = this;
 
       return _Statistic2.default.create({
         key: this.surveyId,
         type: 'SurveyResponse',
         data: obj
       }).then(function (stat) {
-        return _this5.accumulateAggregates(stat, _this5.survey.aggregates);
+        return _this6.accumulateAggregates(stat, _this6.survey.aggregates);
       });
     }
   }]);
@@ -3473,7 +3430,7 @@ var _class = function () {
                 break;
               }
 
-              if (ctx.answer.startTimestamp) {
+              if (ctx.answer.startTimestamp && ctx.answer.endTimestamp) {
                 ctx.addValue('START_TIME', ctx.answer.startTimestamp.getTime(), 'Start');
                 ctx.addValue('END_TIME', ctx.answer.endTimestamp.getTime(), 'End');
               }

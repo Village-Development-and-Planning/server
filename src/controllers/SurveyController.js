@@ -88,17 +88,11 @@ class SurveyController extends EntityController {
     return super._findOne(query)
     .then((survey) => survey.toObject())
     .then((survey) => co(function* () {
-      survey.answerStats = {
-        total: yield Answer.count({
-          survey: survey._id,
-        }),
-        unProcessed: yield Answer.count({
-          survey: survey._id,
-          lastExport: null,
-        }),
-      };
-      survey.answerStats.processed = survey.answerStats.total
-        - survey.answerStats.unProcessed;
+      let aStats = survey.answerStats = survey.answerStats || {};
+      aStats.total = yield Answer.count({
+        survey: survey._id,
+      });
+      aStats.processed = aStats.processed || 0;
       return survey;
     }));
   }

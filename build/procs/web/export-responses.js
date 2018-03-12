@@ -142,7 +142,8 @@ var surveySchema = new Schema({
     }, required: true },
   respondents: { type: [] },
   aggregates: { type: [] },
-  postProcessing: { type: [] }
+  postProcessing: { type: [] },
+  answerStats: { type: {} }
 });
 surveySchema.index({ name: 1 });
 surveySchema.index({ enabled: 1, name: 1 });

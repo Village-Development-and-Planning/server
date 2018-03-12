@@ -461,7 +461,8 @@ var surveySchema = new Schema({
     }, required: true },
   respondents: { type: [] },
   aggregates: { type: [] },
-  postProcessing: { type: [] }
+  postProcessing: { type: [] },
+  answerStats: { type: {} }
 });
 surveySchema.index({ name: 1 });
 surveySchema.index({ enabled: 1, name: 1 });
@@ -2387,34 +2388,24 @@ var SurveyController = function (_EntityController) {
         return survey.toObject();
       }).then(function (survey) {
         return (0, _co2.default)( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+          var aStats;
           return regeneratorRuntime.wrap(function _callee$(_context) {
             while (1) {
               switch (_context.prev = _context.next) {
                 case 0:
-                  _context.next = 2;
+                  aStats = survey.answerStats = survey.answerStats || {};
+                  _context.next = 3;
                   return _Answer2.default.count({
                     survey: survey._id
                   });
 
-                case 2:
-                  _context.t0 = _context.sent;
-                  _context.next = 5;
-                  return _Answer2.default.count({
-                    survey: survey._id,
-                    lastExport: null
-                  });
+                case 3:
+                  aStats.total = _context.sent;
 
-                case 5:
-                  _context.t1 = _context.sent;
-                  survey.answerStats = {
-                    total: _context.t0,
-                    unProcessed: _context.t1
-                  };
-
-                  survey.answerStats.processed = survey.answerStats.total - survey.answerStats.unProcessed;
+                  aStats.processed = aStats.processed || 0;
                   return _context.abrupt('return', survey);
 
-                case 9:
+                case 6:
                 case 'end':
                   return _context.stop();
               }
