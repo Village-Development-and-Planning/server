@@ -35,6 +35,10 @@ export default class {
       for (let [ctx, prev] of this.answeredQuestion.walkRespondents(c)) {
         this._iterProc([ctx, prev]);
         if (ctx.type === 'respondent') {
+          if (ctx.answer.startTimestamp) {
+            ctx.addValue('START_TIME', ctx.answer.startTimestamp, 'Start time');
+            ctx.addValue('END_TIME', ctx.answer.startTimestamp, 'End time');
+          }
           ctx.collect();
           yield ctx;
         }
@@ -69,7 +73,11 @@ export default class {
 
   _processAnswer() {
     const qFlow = this.question.flow;
-    if (qFlow && qFlow.answer.scope && !this.question.type === 'ROOT') {
+    if (
+      (this.type !== 'respondentAnswer')
+      && qFlow
+      && qFlow.answer.scope === 'multiple'
+    ) {
       this.suffix = `${this.suffix}_ans${this.answerIdx+1}`;
     }
     for (let {key, value} of this.question.values(this.answer)) {

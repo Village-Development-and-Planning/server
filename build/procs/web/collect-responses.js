@@ -490,7 +490,7 @@ Object.assign(questionSchema.methods, {
     });
   },
   values: /*#__PURE__*/regeneratorRuntime.mark(function values(answer) {
-    var qType, qFlow, qValue, qConcat, opts, valueF, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, o, ansValue, _ansValue$split, _ansValue$split2, lat, long;
+    var qType, qFlow, qValue, qConcat, opts, valueF, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, o, value, ansValue, _ansValue$split, _ansValue$split2, lat, long;
 
     return regeneratorRuntime.wrap(function values$(_context) {
       while (1) {
@@ -524,11 +524,11 @@ Object.assign(questionSchema.methods, {
             if (qType === 'INPUT' || qType === 'INFO' || qType === 'CONFIRMATION' || qType === 'GPS') qValue = 1;
 
             valueF = function valueF(el) {
-              return qValue ? (el.value || el.text.english || '').toUpperCase() : el.position || '0';
+              return qValue ? (el.value || el.text.english || '').toUpperCase() : el.position;
             };
 
             if (!qConcat) {
-              _context.next = 39;
+              _context.next = 42;
               break;
             }
 
@@ -540,95 +540,105 @@ Object.assign(questionSchema.methods, {
 
           case 17:
             if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-              _context.next = 24;
+              _context.next = 27;
               break;
             }
 
             o = _step.value;
-            _context.next = 21;
+            value = valueF(o);
+
+            if (value) {
+              _context.next = 22;
+              break;
+            }
+
+            return _context.abrupt('continue', 24);
+
+          case 22:
+            _context.next = 24;
             return { key: '_opt' + valueF(o), value: 1 };
 
-          case 21:
+          case 24:
             _iteratorNormalCompletion = true;
             _context.next = 17;
             break;
 
-          case 24:
-            _context.next = 30;
+          case 27:
+            _context.next = 33;
             break;
 
-          case 26:
-            _context.prev = 26;
+          case 29:
+            _context.prev = 29;
             _context.t0 = _context['catch'](15);
             _didIteratorError = true;
             _iteratorError = _context.t0;
 
-          case 30:
-            _context.prev = 30;
-            _context.prev = 31;
+          case 33:
+            _context.prev = 33;
+            _context.prev = 34;
 
             if (!_iteratorNormalCompletion && _iterator.return) {
               _iterator.return();
             }
 
-          case 33:
-            _context.prev = 33;
+          case 36:
+            _context.prev = 36;
 
             if (!_didIteratorError) {
-              _context.next = 36;
+              _context.next = 39;
               break;
             }
 
             throw _iteratorError;
 
-          case 36:
+          case 39:
+            return _context.finish(36);
+
+          case 40:
             return _context.finish(33);
 
-          case 37:
-            return _context.finish(30);
-
-          case 38:
+          case 41:
             return _context.abrupt('return');
 
-          case 39:
+          case 42:
             ansValue = valueF(opts[0]);
 
             if (!(qType === 'GPS')) {
-              _context.next = 50;
+              _context.next = 53;
               break;
             }
 
             _ansValue$split = ansValue.split(','), _ansValue$split2 = _slicedToArray(_ansValue$split, 2), lat = _ansValue$split2[0], long = _ansValue$split2[1];
 
             if (!(!lat || !long)) {
-              _context.next = 44;
+              _context.next = 47;
               break;
             }
 
             return _context.abrupt('return');
 
-          case 44:
-            _context.next = 46;
+          case 47:
+            _context.next = 49;
             return { key: '_lat', value: lat };
 
-          case 46:
-            _context.next = 48;
+          case 49:
+            _context.next = 51;
             return { key: '_long', value: long };
 
-          case 48:
-            _context.next = 52;
+          case 51:
+            _context.next = 55;
             break;
 
-          case 50:
-            _context.next = 52;
+          case 53:
+            _context.next = 55;
             return { key: '', value: ansValue };
 
-          case 52:
+          case 55:
           case 'end':
             return _context.stop();
         }
       }
-    }, values, this, [[15, 26, 30, 38], [31,, 33, 37]]);
+    }, values, this, [[15, 29, 33, 41], [34,, 36, 40]]);
   })
 });
 
@@ -2448,7 +2458,7 @@ var CollectResponses = function (_Mixin$mixin) {
       return this.iterateCursor(_Answer2.default.find({
         survey: this.surveyId,
         lastExport: null
-      }).limit(50000), 'collectOneAnswer').then(function (answers) {
+      }).limit(50), 'collectOneAnswer').then(function (answers) {
         return _this3.answers = answers;
       }).then(function () {
         return _this3._saveAllAggregates();
@@ -2624,31 +2634,42 @@ var CollectResponses = function (_Mixin$mixin) {
       });
     }
   }, {
-    key: '_ppClassHousehold',
-    value: function _ppClassHousehold(_ref, ctx) {
-      var _ref$select = _ref.select,
-          select = _ref$select === undefined ? 'Q_1_12' : _ref$select,
-          _ref$surveyorKey = _ref.surveyorKey,
-          surveyorKey = _ref$surveyorKey === undefined ? 'Q_1_1' : _ref$surveyorKey,
-          _ref$habitationKey = _ref.habitationKey,
-          habitationKey = _ref$habitationKey === undefined ? 'Q_1_6' : _ref$habitationKey;
+    key: '_ppClassSurveyor',
+    value: function _ppClassSurveyor(_ref, ctx) {
+      var _ref$surveyorKey = _ref.surveyorKey,
+          surveyorKey = _ref$surveyorKey === undefined ? 'Q_1_1' : _ref$surveyorKey;
 
       var obj = ctx.data;
-      if (!obj[surveyorKey]) return;
-      if (!obj[select]) return { _ignore: true };
+      var username = obj[surveyorKey];
+      if (!username) return { _ignore: true };
+      return _User2.default.findOne({ username: username }).then(function (user) {
+        if (!user || !user.payload) return;
+        ['DISTRICT', 'BLOCK', 'PANCHAYAT'].forEach(function (loc) {
+          ['NAME', 'CODE'].forEach(function (dat) {
+            ctx.addValue(loc + '_' + dat, user.payload[loc + '_' + dat], 'Location payload');
+          });
+        });
+      });
+    }
+  }, {
+    key: '_ppClassHabitation',
+    value: function _ppClassHabitation(_ref2, ctx) {
+      var habitationKey = _ref2.habitationKey;
+
+      if (!habitationKey) return;
+      var obj = ctx.data;
+      var locSpec = [];
       var _iteratorNormalCompletion3 = true;
       var _didIteratorError3 = false;
       var _iteratorError3 = undefined;
 
       try {
-        for (var _iterator3 = Object.keys(obj)[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-          var key = _step3.value;
+        for (var _iterator3 = 'DISTRICT BLOCK PANCHAYAT'.split(' ')[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var loc = _step3.value;
 
-          if (typeof obj[key] === 'string') {
-            if (obj[key].toUpperCase && obj[key].trim().toUpperCase() === 'DUMMY') {
-              return { _ignore: true };
-            }
-          }
+          var key = loc + '_CODE';
+          if (!obj[key]) return { _ignore: true };
+          locSpec.push(obj[key]);
         }
       } catch (err) {
         _didIteratorError3 = true;
@@ -2661,6 +2682,95 @@ var CollectResponses = function (_Mixin$mixin) {
         } finally {
           if (_didIteratorError3) {
             throw _iteratorError3;
+          }
+        }
+      }
+
+      return _Location2.default.findOne({ type: 'PANCHAYAT', uid: locSpec.join('/') }).then(function (loc) {
+        if (!loc || !loc.children || !loc.children.length) return;
+        if (!obj[habitationKey]) return;
+        var habitation = loc.children.find(function (child) {
+          return child.name === obj[habitationKey];
+        });
+        if (habitation) {
+          ctx.addValue('HABITATION_CODE', habitation.code, 'Habitation Code');
+        }
+      });
+    }
+  }, {
+    key: '_ppClassDummy',
+    value: function _ppClassDummy(_ref3, ctx) {
+      var select = _ref3.select;
+
+      var obj = ctx.data;
+      if (select && !obj[select]) return { _ignore: true };
+      var _iteratorNormalCompletion4 = true;
+      var _didIteratorError4 = false;
+      var _iteratorError4 = undefined;
+
+      try {
+        for (var _iterator4 = Object.keys(obj)[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+          var key = _step4.value;
+
+          if (typeof obj[key] === 'string') {
+            if (obj[key].toUpperCase && obj[key].trim().toUpperCase() === 'DUMMY') {
+              return { _ignore: true };
+            }
+          }
+        }
+      } catch (err) {
+        _didIteratorError4 = true;
+        _iteratorError4 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion4 && _iterator4.return) {
+            _iterator4.return();
+          }
+        } finally {
+          if (_didIteratorError4) {
+            throw _iteratorError4;
+          }
+        }
+      }
+    }
+  }, {
+    key: '_ppClassHousehold',
+    value: function _ppClassHousehold(_ref4, ctx) {
+      var _ref4$select = _ref4.select,
+          select = _ref4$select === undefined ? 'Q_1_12' : _ref4$select,
+          _ref4$surveyorKey = _ref4.surveyorKey,
+          surveyorKey = _ref4$surveyorKey === undefined ? 'Q_1_1' : _ref4$surveyorKey,
+          _ref4$habitationKey = _ref4.habitationKey,
+          habitationKey = _ref4$habitationKey === undefined ? 'Q_1_6' : _ref4$habitationKey;
+
+      var obj = ctx.data;
+      if (!obj[surveyorKey]) return;
+      if (!obj[select]) return { _ignore: true };
+      var _iteratorNormalCompletion5 = true;
+      var _didIteratorError5 = false;
+      var _iteratorError5 = undefined;
+
+      try {
+        for (var _iterator5 = Object.keys(obj)[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+          var key = _step5.value;
+
+          if (typeof obj[key] === 'string') {
+            if (obj[key].toUpperCase && obj[key].trim().toUpperCase() === 'DUMMY') {
+              return { _ignore: true };
+            }
+          }
+        }
+      } catch (err) {
+        _didIteratorError5 = true;
+        _iteratorError5 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion5 && _iterator5.return) {
+            _iterator5.return();
+          }
+        } finally {
+          if (_didIteratorError5) {
+            throw _iteratorError5;
           }
         }
       }
@@ -3331,7 +3441,7 @@ var _class = function () {
 
             case 14:
               if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
-                _context.next = 52;
+                _context.next = 53;
                 break;
               }
 
@@ -3345,7 +3455,7 @@ var _class = function () {
 
             case 22:
               if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
-                _context.next = 35;
+                _context.next = 36;
                 break;
               }
 
@@ -3357,98 +3467,102 @@ var _class = function () {
               this._iterProc([ctx, prev]);
 
               if (!(ctx.type === 'respondent')) {
-                _context.next = 32;
+                _context.next = 33;
                 break;
               }
 
+              if (ctx.answer.startTimestamp) {
+                ctx.addValue('START_TIME', ctx.answer.startTimestamp, 'Start time');
+                ctx.addValue('END_TIME', ctx.answer.startTimestamp, 'End time');
+              }
               ctx.collect();
-              _context.next = 32;
+              _context.next = 33;
               return ctx;
 
-            case 32:
+            case 33:
               _iteratorNormalCompletion3 = true;
               _context.next = 22;
               break;
 
-            case 35:
-              _context.next = 41;
+            case 36:
+              _context.next = 42;
               break;
 
-            case 37:
-              _context.prev = 37;
+            case 38:
+              _context.prev = 38;
               _context.t0 = _context['catch'](20);
               _didIteratorError3 = true;
               _iteratorError3 = _context.t0;
 
-            case 41:
-              _context.prev = 41;
+            case 42:
               _context.prev = 42;
+              _context.prev = 43;
 
               if (!_iteratorNormalCompletion3 && _iterator3.return) {
                 _iterator3.return();
               }
 
-            case 44:
-              _context.prev = 44;
+            case 45:
+              _context.prev = 45;
 
               if (!_didIteratorError3) {
-                _context.next = 47;
+                _context.next = 48;
                 break;
               }
 
               throw _iteratorError3;
 
-            case 47:
-              return _context.finish(44);
-
             case 48:
-              return _context.finish(41);
+              return _context.finish(45);
 
             case 49:
+              return _context.finish(42);
+
+            case 50:
               _iteratorNormalCompletion2 = true;
               _context.next = 14;
               break;
 
-            case 52:
-              _context.next = 58;
+            case 53:
+              _context.next = 59;
               break;
 
-            case 54:
-              _context.prev = 54;
+            case 55:
+              _context.prev = 55;
               _context.t1 = _context['catch'](12);
               _didIteratorError2 = true;
               _iteratorError2 = _context.t1;
 
-            case 58:
-              _context.prev = 58;
+            case 59:
               _context.prev = 59;
+              _context.prev = 60;
 
               if (!_iteratorNormalCompletion2 && _iterator2.return) {
                 _iterator2.return();
               }
 
-            case 61:
-              _context.prev = 61;
+            case 62:
+              _context.prev = 62;
 
               if (!_didIteratorError2) {
-                _context.next = 64;
+                _context.next = 65;
                 break;
               }
 
               throw _iteratorError2;
 
-            case 64:
-              return _context.finish(61);
-
             case 65:
-              return _context.finish(58);
+              return _context.finish(62);
 
             case 66:
+              return _context.finish(59);
+
+            case 67:
             case 'end':
               return _context.stop();
           }
         }
-      }, collectRespondents, this, [[12, 54, 58, 66], [20, 37, 41, 49], [42,, 44, 48], [59,, 61, 65]]);
+      }, collectRespondents, this, [[12, 55, 59, 67], [20, 38, 42, 50], [43,, 45, 49], [60,, 62, 66]]);
     })
   }, {
     key: '_iterProc',
@@ -3486,7 +3600,7 @@ var _class = function () {
     key: '_processAnswer',
     value: function _processAnswer() {
       var qFlow = this.question.flow;
-      if (qFlow && qFlow.answer.scope && !this.question.type === 'ROOT') {
+      if (this.type !== 'respondentAnswer' && qFlow && qFlow.answer.scope === 'multiple') {
         this.suffix = this.suffix + '_ans' + (this.answerIdx + 1);
       }
       var _iteratorNormalCompletion4 = true;

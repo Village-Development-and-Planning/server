@@ -36,7 +36,7 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
     return this.iterateCursor(Answer.find({
       survey: this.surveyId,
       lastExport: null,
-    }).limit(50000), 'collectOneAnswer')
+    }).limit(50), 'collectOneAnswer')
     .then((answers) => this.answers = answers)
     .then(() => this._saveAllAggregates())
     .then(() => ({
@@ -94,6 +94,64 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
       console.error(e.message || e);
       return Promise.resolve({status: 'ERROR', _id: answer._id});
     });
+  }
+
+  _ppClassSurveyor({
+    surveyorKey='Q_1_1',
+  }, ctx) {
+    const obj = ctx.data;
+    const username = obj[surveyorKey];
+    if (!username) return {_ignore: true};
+    return User.findOne({username}).then((user) => {
+      if (!user || !user.payload) return;
+      ['DISTRICT', 'BLOCK', 'PANCHAYAT'].forEach((loc) => {
+        ['NAME', 'CODE'].forEach((dat) => {
+          ctx.addValue(
+            `${loc}_${dat}`,
+            user.payload[`${loc}_${dat}`],
+            `Location payload`
+          );
+        });
+      });
+    });
+  }
+
+  _ppClassHabitation({habitationKey}, ctx) {
+    if (!habitationKey) return;
+    const obj = ctx.data;
+    let locSpec = [];
+    for (let loc of 'DISTRICT BLOCK PANCHAYAT'.split(' ')) {
+      const key = `${loc}_CODE`;
+      if (!obj[key]) return {_ignore: true};
+      locSpec.push(obj[key]);
+    }
+    return Location.findOne({type: 'PANCHAYAT', uid: locSpec.join('/')})
+    .then((loc) => {
+      if (!loc || !loc.children || !loc.children.length) return;
+      if (!obj[habitationKey]) return;
+      let habitation = loc.children.find(
+        (child) => (child.name === obj[habitationKey])
+      );
+      if (habitation) {
+        ctx.addValue(
+          'HABITATION_CODE',
+          habitation.code,
+          'Habitation Code',
+        );
+      }
+    });
+  }
+
+  _ppClassDummy({select}, ctx) {
+    const obj = ctx.data;
+    if (select && !obj[select]) return {_ignore: true};
+    for (let key of Object.keys(obj)) {
+      if (typeof obj[key] === 'string') {
+        if (obj[key].toUpperCase && obj[key].trim().toUpperCase() === 'DUMMY') {
+          return {_ignore: true};
+        }
+      }
+    }
   }
 
   _ppClassHousehold({

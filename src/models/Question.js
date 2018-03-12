@@ -98,11 +98,13 @@ Object.assign(questionSchema.methods, {
     const valueF = (el) => (
       qValue
       ? (el.value || el.text.english || '').toUpperCase()
-      : (el.position || '0')
+      : (el.position)
     );
 
     if (qConcat) {
       for (let o of opts) {
+        const value = valueF(o);
+        if (!value) continue;
         yield {key: `_opt${valueF(o)}`, value: 1};
       }
       return;

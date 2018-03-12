@@ -281,7 +281,7 @@ Object.assign(questionSchema.methods, {
     });
   },
   values: /*#__PURE__*/regeneratorRuntime.mark(function values(answer) {
-    var qType, qFlow, qValue, qConcat, opts, valueF, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, o, ansValue, _ansValue$split, _ansValue$split2, lat, long;
+    var qType, qFlow, qValue, qConcat, opts, valueF, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, o, value, ansValue, _ansValue$split, _ansValue$split2, lat, long;
 
     return regeneratorRuntime.wrap(function values$(_context) {
       while (1) {
@@ -315,11 +315,11 @@ Object.assign(questionSchema.methods, {
             if (qType === 'INPUT' || qType === 'INFO' || qType === 'CONFIRMATION' || qType === 'GPS') qValue = 1;
 
             valueF = function valueF(el) {
-              return qValue ? (el.value || el.text.english || '').toUpperCase() : el.position || '0';
+              return qValue ? (el.value || el.text.english || '').toUpperCase() : el.position;
             };
 
             if (!qConcat) {
-              _context.next = 39;
+              _context.next = 42;
               break;
             }
 
@@ -331,95 +331,105 @@ Object.assign(questionSchema.methods, {
 
           case 17:
             if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-              _context.next = 24;
+              _context.next = 27;
               break;
             }
 
             o = _step.value;
-            _context.next = 21;
+            value = valueF(o);
+
+            if (value) {
+              _context.next = 22;
+              break;
+            }
+
+            return _context.abrupt('continue', 24);
+
+          case 22:
+            _context.next = 24;
             return { key: '_opt' + valueF(o), value: 1 };
 
-          case 21:
+          case 24:
             _iteratorNormalCompletion = true;
             _context.next = 17;
             break;
 
-          case 24:
-            _context.next = 30;
+          case 27:
+            _context.next = 33;
             break;
 
-          case 26:
-            _context.prev = 26;
+          case 29:
+            _context.prev = 29;
             _context.t0 = _context['catch'](15);
             _didIteratorError = true;
             _iteratorError = _context.t0;
 
-          case 30:
-            _context.prev = 30;
-            _context.prev = 31;
+          case 33:
+            _context.prev = 33;
+            _context.prev = 34;
 
             if (!_iteratorNormalCompletion && _iterator.return) {
               _iterator.return();
             }
 
-          case 33:
-            _context.prev = 33;
+          case 36:
+            _context.prev = 36;
 
             if (!_didIteratorError) {
-              _context.next = 36;
+              _context.next = 39;
               break;
             }
 
             throw _iteratorError;
 
-          case 36:
+          case 39:
+            return _context.finish(36);
+
+          case 40:
             return _context.finish(33);
 
-          case 37:
-            return _context.finish(30);
-
-          case 38:
+          case 41:
             return _context.abrupt('return');
 
-          case 39:
+          case 42:
             ansValue = valueF(opts[0]);
 
             if (!(qType === 'GPS')) {
-              _context.next = 50;
+              _context.next = 53;
               break;
             }
 
             _ansValue$split = ansValue.split(','), _ansValue$split2 = _slicedToArray(_ansValue$split, 2), lat = _ansValue$split2[0], long = _ansValue$split2[1];
 
             if (!(!lat || !long)) {
-              _context.next = 44;
+              _context.next = 47;
               break;
             }
 
             return _context.abrupt('return');
 
-          case 44:
-            _context.next = 46;
+          case 47:
+            _context.next = 49;
             return { key: '_lat', value: lat };
 
-          case 46:
-            _context.next = 48;
+          case 49:
+            _context.next = 51;
             return { key: '_long', value: long };
 
-          case 48:
-            _context.next = 52;
+          case 51:
+            _context.next = 55;
             break;
 
-          case 50:
-            _context.next = 52;
+          case 53:
+            _context.next = 55;
             return { key: '', value: ansValue };
 
-          case 52:
+          case 55:
           case 'end':
             return _context.stop();
         }
       }
-    }, values, this, [[15, 26, 30, 38], [31,, 33, 37]]);
+    }, values, this, [[15, 29, 33, 41], [34,, 36, 40]]);
   })
 });
 
