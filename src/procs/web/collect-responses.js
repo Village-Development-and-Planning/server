@@ -42,7 +42,7 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
     return this.iterateCursor(Answer.find({
       survey: this.surveyId,
       lastExport: null,
-    }).limit(5), 'collectOneAnswer')
+    }).limit(5000), 'collectOneAnswer')
     .then((answers) => this.answers = answers)
     .then(() => this.saveAggregates())
     .then(() => this._saveAnswerStats())

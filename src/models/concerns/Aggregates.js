@@ -1,10 +1,10 @@
 import Mixin from '../../lib/Mixin';
 import {Parser as FormulaParser} from 'hot-formula-parser';
+import YAML from 'js-yaml';
 
 export default class extends Mixin {
   initialize({stat, aggregate}) {
     if (!aggregate.metadata) return;
-
     const parser = stat.parser();
     const metadata = Object.assign({}, this.metadata);
 
@@ -27,18 +27,21 @@ export default class extends Mixin {
 
     for (let key of Object.keys(aggregate.data)) {
       let formula, type, select;
-      formula = aggregate.data[key] || key;
-      if (formula.formula) {
+      formula = aggregate.data[key];
+      if (formula && typeof formula === 'object') {
         type = formula.type;
         select = formula.select;
         formula = formula.formula;
       }
+      if (!formula) formula = key;
       if (select && !parser.value(select)) continue;
       if (!type) type = 'count';
 
       const val = parser.value(formula);
       if (val === null || val === undefined) continue;
 
+      if (type === 'histogram') {
+      }
       data[key] = this._accumulateRegister(data[key], {val, type, invert});
     }
     this.data = data;

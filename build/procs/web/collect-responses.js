@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 88);
+/******/ 	return __webpack_require__(__webpack_require__.s = 89);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -206,7 +206,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _Aggregates = __webpack_require__(10);
+var _Aggregates = __webpack_require__(11);
 
 var _Aggregates2 = _interopRequireDefault(_Aggregates);
 
@@ -250,8 +250,14 @@ module.exports = {
 };
 
 /***/ }),
-/* 6 */,
-/* 7 */
+/* 6 */
+/***/ (function(module, exports) {
+
+module.exports = require("js-yaml");
+
+/***/ }),
+/* 7 */,
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -277,7 +283,7 @@ processSchema.index({ name: 1 });
 module.exports = mongoose.model('Process', processSchema);
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -304,7 +310,7 @@ _mongoose2.default.Promise = global.Promise;
 exports.default = _mongoose2.default.connect(options.connectionString, options.connectionOptions);
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -329,7 +335,7 @@ userSchema.index({ roles: 1 });
 module.exports = mongoose.model('User', userSchema);
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -347,7 +353,11 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _hotFormulaParser = __webpack_require__(11);
+var _hotFormulaParser = __webpack_require__(12);
+
+var _jsYaml = __webpack_require__(6);
+
+var _jsYaml2 = _interopRequireDefault(_jsYaml);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -375,7 +385,6 @@ var _class = function (_Mixin) {
           aggregate = _ref.aggregate;
 
       if (!aggregate.metadata) return;
-
       var parser = stat.parser();
       var metadata = Object.assign({}, this.metadata);
 
@@ -433,18 +442,20 @@ var _class = function (_Mixin) {
           var formula = void 0,
               type = void 0,
               select = void 0;
-          formula = aggregate.data[key] || key;
-          if (formula.formula) {
+          formula = aggregate.data[key];
+          if (formula && (typeof formula === 'undefined' ? 'undefined' : _typeof(formula)) === 'object') {
             type = formula.type;
             select = formula.select;
             formula = formula.formula;
           }
+          if (!formula) formula = key;
           if (select && !parser.value(select)) continue;
           if (!type) type = 'count';
 
           var val = parser.value(formula);
           if (val === null || val === undefined) continue;
 
+          if (type === 'histogram') {}
           data[key] = this._accumulateRegister(data[key], { val: val, type: type, invert: invert });
         }
       } catch (err) {
@@ -715,13 +726,13 @@ var _class = function (_Mixin) {
 exports.default = _class;
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports) {
 
 module.exports = require("hot-formula-parser");
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -729,7 +740,7 @@ module.exports = require("hot-formula-parser");
 
 __webpack_require__(3);
 
-var _Question = __webpack_require__(13);
+var _Question = __webpack_require__(14);
 
 var _Question2 = _interopRequireDefault(_Question);
 
@@ -757,7 +768,7 @@ surveySchema.index({ enabled: 1, name: 1 });
 module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -772,7 +783,7 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 __webpack_require__(3);
 
 var Schema = __webpack_require__(1);
-var Text = __webpack_require__(14);
+var Text = __webpack_require__(15);
 var mongoose = __webpack_require__(0);
 
 var questionSchema = new Schema({
@@ -995,7 +1006,7 @@ var Question = mongoose.model('Question', questionSchema);
 exports.default = Question;
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1011,7 +1022,7 @@ module.exports = new Schema({
 });
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1026,7 +1037,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Process = __webpack_require__(7);
+var _Process = __webpack_require__(8);
 
 var _Process2 = _interopRequireDefault(_Process);
 
@@ -1034,7 +1045,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _child_process = __webpack_require__(16);
+var _child_process = __webpack_require__(17);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1121,13 +1132,13 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procArgs) {
 };
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports) {
 
 module.exports = require("child_process");
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1166,8 +1177,8 @@ schema.index({ name: 1, type: 1 });
 exports.default = _mongoose2.default.model('Location', schema);
 
 /***/ }),
-/* 18 */,
-/* 19 */
+/* 19 */,
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1181,7 +1192,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _AnsweredQuestion = __webpack_require__(21);
+var _AnsweredQuestion = __webpack_require__(22);
 
 var _AnsweredQuestion2 = _interopRequireDefault(_AnsweredQuestion);
 
@@ -1212,13 +1223,13 @@ answerSchema.index({ createdAt: 1, survey: 1 });
 module.exports = _mongoose2.default.model('Answer', answerSchema);
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports) {
 
 module.exports = require("co");
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1228,7 +1239,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _AnswerWalk = __webpack_require__(22);
+var _AnswerWalk = __webpack_require__(23);
 
 var _AnswerWalk2 = _interopRequireDefault(_AnswerWalk);
 
@@ -1261,7 +1272,7 @@ var AnsweredQuestionModel = mongoose.model('AnsweredQuestion', aqSchema);
 exports.default = AnsweredQuestionModel;
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1943,9 +1954,9 @@ var _class = function (_Mixin) {
 exports.default = _class;
 
 /***/ }),
-/* 23 */,
 /* 24 */,
-/* 25 */
+/* 25 */,
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1961,7 +1972,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _Survey = __webpack_require__(12);
+var _Survey = __webpack_require__(13);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
@@ -2100,7 +2111,7 @@ var _class = function (_Mixin) {
 exports.default = _class;
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2163,13 +2174,13 @@ var _class = function (_Mixin) {
 exports.default = _class;
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-__webpack_require__(8);
+__webpack_require__(9);
 
 var _mongoose = __webpack_require__(0);
 
@@ -2197,7 +2208,6 @@ proc.promise.then(function () {
 process.exitCode = 0;
 
 /***/ }),
-/* 28 */,
 /* 29 */,
 /* 30 */,
 /* 31 */,
@@ -2257,21 +2267,22 @@ process.exitCode = 0;
 /* 85 */,
 /* 86 */,
 /* 87 */,
-/* 88 */
-/***/ (function(module, exports, __webpack_require__) {
-
-__webpack_require__(89);
-module.exports = __webpack_require__(27);
-
-
-/***/ }),
+/* 88 */,
 /* 89 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = global["Proc"] = __webpack_require__(90);
+__webpack_require__(90);
+module.exports = __webpack_require__(28);
+
 
 /***/ }),
 /* 90 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = global["Proc"] = __webpack_require__(91);
+
+/***/ }),
+/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2285,25 +2296,25 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 __webpack_require__(3);
 
-var _co = __webpack_require__(20);
+var _co = __webpack_require__(21);
 
 var _co2 = _interopRequireDefault(_co);
 
-var _childProcess = __webpack_require__(15);
+var _childProcess = __webpack_require__(16);
 
 var _Mixin = __webpack_require__(2);
 
 var _Mixin2 = _interopRequireDefault(_Mixin);
 
-var _SurveyExport = __webpack_require__(25);
+var _SurveyExport = __webpack_require__(26);
 
 var _SurveyExport2 = _interopRequireDefault(_SurveyExport);
 
-var _Cursor = __webpack_require__(26);
+var _Cursor = __webpack_require__(27);
 
 var _Cursor2 = _interopRequireDefault(_Cursor);
 
-var _Aggregation = __webpack_require__(91);
+var _Aggregation = __webpack_require__(92);
 
 var _Aggregation2 = _interopRequireDefault(_Aggregation);
 
@@ -2315,15 +2326,15 @@ var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
-var _Answer = __webpack_require__(19);
+var _Answer = __webpack_require__(20);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 
-var _Location = __webpack_require__(17);
+var _Location = __webpack_require__(18);
 
 var _Location2 = _interopRequireDefault(_Location);
 
-var _User = __webpack_require__(9);
+var _User = __webpack_require__(10);
 
 var _User2 = _interopRequireDefault(_User);
 
@@ -2379,7 +2390,7 @@ var CollectResponses = function (_Mixin$mixin) {
       return this.iterateCursor(_Answer2.default.find({
         survey: this.surveyId,
         lastExport: null
-      }).limit(5), 'collectOneAnswer').then(function (answers) {
+      }).limit(5000), 'collectOneAnswer').then(function (answers) {
         return _this3.answers = answers;
       }).then(function () {
         return _this3.saveAggregates();
@@ -2693,7 +2704,7 @@ var CollectResponses = function (_Mixin$mixin) {
 exports.default = CollectResponses;
 
 /***/ }),
-/* 91 */
+/* 92 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2702,8 +2713,6 @@ exports.default = CollectResponses;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -2717,11 +2726,11 @@ var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
-var _co = __webpack_require__(20);
+var _co = __webpack_require__(21);
 
 var _co2 = _interopRequireDefault(_co);
 
-var _jsYaml = __webpack_require__(92);
+var _jsYaml = __webpack_require__(6);
 
 var _jsYaml2 = _interopRequireDefault(_jsYaml);
 
@@ -2928,242 +2937,12 @@ var _class = function (_Mixin) {
         return stat;
       });
     }
-  }, {
-    key: '_iterateObj',
-    value: /*#__PURE__*/regeneratorRuntime.mark(function _iterateObj(obj, parseF) {
-      var _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, key, valObj, valType, formula, type, value, count;
-
-      return regeneratorRuntime.wrap(function _iterateObj$(_context2) {
-        while (1) {
-          switch (_context2.prev = _context2.next) {
-            case 0:
-              _iteratorNormalCompletion3 = true;
-              _didIteratorError3 = false;
-              _iteratorError3 = undefined;
-              _context2.prev = 3;
-              _iterator3 = Object.keys(obj)[Symbol.iterator]();
-
-            case 5:
-              if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
-                _context2.next = 24;
-                break;
-              }
-
-              key = _step3.value;
-              valObj = obj[key];
-              valType = typeof valObj === 'undefined' ? 'undefined' : _typeof(valObj);
-
-              if (!(valType === 'undefined')) {
-                _context2.next = 11;
-                break;
-              }
-
-              return _context2.abrupt('continue', 21);
-
-            case 11:
-              formula = void 0, type = void 0;
-
-              if (valType === 'string') {
-                formula = valObj;
-              } else if (valType === 'object' && valObj) {
-                formula = valObj.formula;
-                type = valObj.type;
-              }
-              value = void 0, count = void 0;
-
-              formula = formula || key;
-              type = type || 'count';
-              if (type === 'value') {
-                count = parseF(formula + '__count');
-                if (count) formula = formula + '__value';
-                type = 'count';
-              }
-              value = parseF(formula);
-
-              if (!(value !== null && value !== undefined)) {
-                _context2.next = 21;
-                break;
-              }
-
-              _context2.next = 21;
-              return { key: key, value: value, type: type, count: count };
-
-            case 21:
-              _iteratorNormalCompletion3 = true;
-              _context2.next = 5;
-              break;
-
-            case 24:
-              _context2.next = 30;
-              break;
-
-            case 26:
-              _context2.prev = 26;
-              _context2.t0 = _context2['catch'](3);
-              _didIteratorError3 = true;
-              _iteratorError3 = _context2.t0;
-
-            case 30:
-              _context2.prev = 30;
-              _context2.prev = 31;
-
-              if (!_iteratorNormalCompletion3 && _iterator3.return) {
-                _iterator3.return();
-              }
-
-            case 33:
-              _context2.prev = 33;
-
-              if (!_didIteratorError3) {
-                _context2.next = 36;
-                break;
-              }
-
-              throw _iteratorError3;
-
-            case 36:
-              return _context2.finish(33);
-
-            case 37:
-              return _context2.finish(30);
-
-            case 38:
-            case 'end':
-              return _context2.stop();
-          }
-        }
-      }, _iterateObj, this, [[3, 26, 30, 38], [31,, 33, 37]]);
-    })
-  }, {
-    key: '_accumulateObj',
-    value: function _accumulateObj(data, _ref) {
-      var key = _ref.key,
-          value = _ref.value,
-          type = _ref.type,
-          count = _ref.count;
-
-      var obj = data[key] = data[key] || {};
-      count = count || 1;
-
-      obj.count = obj.count || 0;
-      obj.count += count;
-      if (type === 'count') {
-        obj.value = obj.value || 0;
-
-        if (typeof value !== 'number') value = parseFloat(value);
-        if (value === NaN) value = 0;
-        obj.value = obj.value + value;
-      } else if (type === 'histogram') {
-        obj.value = obj.value || {};
-
-        obj.value[value] = obj.value[value] || 0;
-        obj.value[value]++;
-      }
-    }
-  }, {
-    key: '_decumulateObj',
-    value: function _decumulateObj(data, _ref2) {
-      var key = _ref2.key,
-          value = _ref2.value,
-          type = _ref2.type,
-          count = _ref2.count;
-
-      var obj = data[key];
-      if (!obj || !obj.count || !obj.value) return;
-      count = count || 1;
-      obj.count -= count;
-
-      if (type === 'count') {
-        value = parseInt(value);
-        if (value === NaN) value = 0;
-        obj.value = obj.value - value;
-      } else if (type === 'histogram') {
-        obj.value = obj.value || {};
-
-        if (!obj.value[value]) return;
-        obj.value[value]--;
-      }
-    }
-  }, {
-    key: '_evaluateAggregate',
-    value: function _evaluateAggregate(agg, stat, parseF, revert) {
-      if (!_typeof(agg.data) === 'object') return;
-      stat.data = stat.data || {};
-      stat._modified = true;
-      var _iteratorNormalCompletion4 = true;
-      var _didIteratorError4 = false;
-      var _iteratorError4 = undefined;
-
-      try {
-        for (var _iterator4 = this._iterateObj(agg.data, parseF)[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-          var o = _step4.value;
-
-          if (!revert) {
-            this._accumulateObj(stat.data, o);
-          } else {
-            this._decumulateObj(stat.data, o);
-          }
-        }
-      } catch (err) {
-        _didIteratorError4 = true;
-        _iteratorError4 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion4 && _iterator4.return) {
-            _iterator4.return();
-          }
-        } finally {
-          if (_didIteratorError4) {
-            throw _iteratorError4;
-          }
-        }
-      }
-    }
-  }, {
-    key: '_evaluateMetadata',
-    value: function _evaluateMetadata(agg, stat, parseF) {
-      if (stat.metadata || !agg.metadata) return;
-      if (_typeof(agg.metadata) !== 'object') return;
-      stat.metadata = stat.metadata || {};
-      var _iteratorNormalCompletion5 = true;
-      var _didIteratorError5 = false;
-      var _iteratorError5 = undefined;
-
-      try {
-        for (var _iterator5 = this._iterateObj(agg.metadata, parseF)[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-          var _ref3 = _step5.value;
-          var key = _ref3.key;
-          var value = _ref3.value;
-
-          stat.metadata[key] = value;
-        }
-      } catch (err) {
-        _didIteratorError5 = true;
-        _iteratorError5 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion5 && _iterator5.return) {
-            _iterator5.return();
-          }
-        } finally {
-          if (_didIteratorError5) {
-            throw _iteratorError5;
-          }
-        }
-      }
-    }
   }]);
 
   return _class;
 }(_Mixin3.default);
 
 exports.default = _class;
-
-/***/ }),
-/* 92 */
-/***/ (function(module, exports) {
-
-module.exports = require("js-yaml");
 
 /***/ }),
 /* 93 */

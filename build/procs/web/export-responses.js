@@ -115,7 +115,7 @@ module.exports = Schema;
 
 /***/ }),
 
-/***/ 10:
+/***/ 11:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -133,7 +133,11 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _hotFormulaParser = __webpack_require__(11);
+var _hotFormulaParser = __webpack_require__(12);
+
+var _jsYaml = __webpack_require__(6);
+
+var _jsYaml2 = _interopRequireDefault(_jsYaml);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -161,7 +165,6 @@ var _class = function (_Mixin) {
           aggregate = _ref.aggregate;
 
       if (!aggregate.metadata) return;
-
       var parser = stat.parser();
       var metadata = Object.assign({}, this.metadata);
 
@@ -219,18 +222,20 @@ var _class = function (_Mixin) {
           var formula = void 0,
               type = void 0,
               select = void 0;
-          formula = aggregate.data[key] || key;
-          if (formula.formula) {
+          formula = aggregate.data[key];
+          if (formula && (typeof formula === 'undefined' ? 'undefined' : _typeof(formula)) === 'object') {
             type = formula.type;
             select = formula.select;
             formula = formula.formula;
           }
+          if (!formula) formula = key;
           if (select && !parser.value(select)) continue;
           if (!type) type = 'count';
 
           var val = parser.value(formula);
           if (val === null || val === undefined) continue;
 
+          if (type === 'histogram') {}
           data[key] = this._accumulateRegister(data[key], { val: val, type: type, invert: invert });
         }
       } catch (err) {
@@ -502,14 +507,14 @@ exports.default = _class;
 
 /***/ }),
 
-/***/ 11:
+/***/ 12:
 /***/ (function(module, exports) {
 
 module.exports = require("hot-formula-parser");
 
 /***/ }),
 
-/***/ 12:
+/***/ 13:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -517,7 +522,7 @@ module.exports = require("hot-formula-parser");
 
 __webpack_require__(3);
 
-var _Question = __webpack_require__(13);
+var _Question = __webpack_require__(14);
 
 var _Question2 = _interopRequireDefault(_Question);
 
@@ -546,7 +551,7 @@ module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
 
-/***/ 13:
+/***/ 14:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -561,7 +566,7 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 __webpack_require__(3);
 
 var Schema = __webpack_require__(1);
-var Text = __webpack_require__(14);
+var Text = __webpack_require__(15);
 var mongoose = __webpack_require__(0);
 
 var questionSchema = new Schema({
@@ -785,7 +790,7 @@ exports.default = Question;
 
 /***/ }),
 
-/***/ 14:
+/***/ 15:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -802,7 +807,7 @@ module.exports = new Schema({
 
 /***/ }),
 
-/***/ 15:
+/***/ 16:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -817,7 +822,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Process = __webpack_require__(7);
+var _Process = __webpack_require__(8);
 
 var _Process2 = _interopRequireDefault(_Process);
 
@@ -825,7 +830,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _child_process = __webpack_require__(16);
+var _child_process = __webpack_require__(17);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -913,7 +918,7 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procArgs) {
 
 /***/ }),
 
-/***/ 16:
+/***/ 17:
 /***/ (function(module, exports) {
 
 module.exports = require("child_process");
@@ -995,14 +1000,14 @@ exports.default = Mixin;
 
 /***/ }),
 
-/***/ 23:
+/***/ 24:
 /***/ (function(module, exports) {
 
 module.exports = require("fs");
 
 /***/ }),
 
-/***/ 25:
+/***/ 26:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1018,7 +1023,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _Survey = __webpack_require__(12);
+var _Survey = __webpack_require__(13);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
@@ -1158,7 +1163,7 @@ exports.default = _class;
 
 /***/ }),
 
-/***/ 26:
+/***/ 27:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1222,13 +1227,13 @@ exports.default = _class;
 
 /***/ }),
 
-/***/ 27:
+/***/ 28:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-__webpack_require__(8);
+__webpack_require__(9);
 
 var _mongoose = __webpack_require__(0);
 
@@ -1278,7 +1283,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _Aggregates = __webpack_require__(10);
+var _Aggregates = __webpack_require__(11);
 
 var _Aggregates2 = _interopRequireDefault(_Aggregates);
 
@@ -1324,7 +1329,14 @@ module.exports = {
 
 /***/ }),
 
-/***/ 7:
+/***/ 6:
+/***/ (function(module, exports) {
+
+module.exports = require("js-yaml");
+
+/***/ }),
+
+/***/ 8:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1351,7 +1363,7 @@ module.exports = mongoose.model('Process', processSchema);
 
 /***/ }),
 
-/***/ 8:
+/***/ 9:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1383,7 +1395,7 @@ exports.default = _mongoose2.default.connect(options.connectionString, options.c
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(95);
-module.exports = __webpack_require__(27);
+module.exports = __webpack_require__(28);
 
 
 /***/ }),
@@ -1407,17 +1419,17 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _childProcess = __webpack_require__(15);
+var _childProcess = __webpack_require__(16);
 
 var _Mixin = __webpack_require__(2);
 
 var _Mixin2 = _interopRequireDefault(_Mixin);
 
-var _SurveyExport = __webpack_require__(25);
+var _SurveyExport = __webpack_require__(26);
 
 var _SurveyExport2 = _interopRequireDefault(_SurveyExport);
 
-var _Cursor = __webpack_require__(26);
+var _Cursor = __webpack_require__(27);
 
 var _Cursor2 = _interopRequireDefault(_Cursor);
 
@@ -1429,7 +1441,7 @@ var _csvStringify = __webpack_require__(97);
 
 var _csvStringify2 = _interopRequireDefault(_csvStringify);
 
-var _fs = __webpack_require__(23);
+var _fs = __webpack_require__(24);
 
 var _fs2 = _interopRequireDefault(_fs);
 
