@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 89);
+/******/ 	return __webpack_require__(__webpack_require__.s = 88);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -206,7 +206,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _Aggregates = __webpack_require__(11);
+var _Aggregates = __webpack_require__(10);
 
 var _Aggregates2 = _interopRequireDefault(_Aggregates);
 
@@ -250,14 +250,8 @@ module.exports = {
 };
 
 /***/ }),
-/* 6 */
-/***/ (function(module, exports) {
-
-module.exports = require("js-yaml");
-
-/***/ }),
-/* 7 */,
-/* 8 */
+/* 6 */,
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -283,7 +277,7 @@ processSchema.index({ name: 1 });
 module.exports = mongoose.model('Process', processSchema);
 
 /***/ }),
-/* 9 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -310,7 +304,7 @@ _mongoose2.default.Promise = global.Promise;
 exports.default = _mongoose2.default.connect(options.connectionString, options.connectionOptions);
 
 /***/ }),
-/* 10 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -335,7 +329,7 @@ userSchema.index({ roles: 1 });
 module.exports = mongoose.model('User', userSchema);
 
 /***/ }),
-/* 11 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -353,11 +347,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _hotFormulaParser = __webpack_require__(12);
-
-var _jsYaml = __webpack_require__(6);
-
-var _jsYaml2 = _interopRequireDefault(_jsYaml);
+var _hotFormulaParser = __webpack_require__(11);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -726,13 +716,13 @@ var _class = function (_Mixin) {
 exports.default = _class;
 
 /***/ }),
-/* 12 */
+/* 11 */
 /***/ (function(module, exports) {
 
 module.exports = require("hot-formula-parser");
 
 /***/ }),
-/* 13 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -740,7 +730,7 @@ module.exports = require("hot-formula-parser");
 
 __webpack_require__(3);
 
-var _Question = __webpack_require__(14);
+var _Question = __webpack_require__(13);
 
 var _Question2 = _interopRequireDefault(_Question);
 
@@ -768,7 +758,7 @@ surveySchema.index({ enabled: 1, name: 1 });
 module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
-/* 14 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -783,7 +773,7 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 __webpack_require__(3);
 
 var Schema = __webpack_require__(1);
-var Text = __webpack_require__(15);
+var Text = __webpack_require__(14);
 var mongoose = __webpack_require__(0);
 
 var questionSchema = new Schema({
@@ -1006,7 +996,7 @@ var Question = mongoose.model('Question', questionSchema);
 exports.default = Question;
 
 /***/ }),
-/* 15 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1022,7 +1012,7 @@ module.exports = new Schema({
 });
 
 /***/ }),
-/* 16 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1037,7 +1027,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Process = __webpack_require__(8);
+var _Process = __webpack_require__(7);
 
 var _Process2 = _interopRequireDefault(_Process);
 
@@ -1045,7 +1035,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _child_process = __webpack_require__(17);
+var _child_process = __webpack_require__(16);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1132,13 +1122,13 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procArgs) {
 };
 
 /***/ }),
-/* 17 */
+/* 16 */
 /***/ (function(module, exports) {
 
 module.exports = require("child_process");
 
 /***/ }),
-/* 18 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1177,8 +1167,8 @@ schema.index({ name: 1, type: 1 });
 exports.default = _mongoose2.default.model('Location', schema);
 
 /***/ }),
-/* 19 */,
-/* 20 */
+/* 18 */,
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1192,7 +1182,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _AnsweredQuestion = __webpack_require__(22);
+var _AnsweredQuestion = __webpack_require__(21);
 
 var _AnsweredQuestion2 = _interopRequireDefault(_AnsweredQuestion);
 
@@ -1223,13 +1213,13 @@ answerSchema.index({ createdAt: 1, survey: 1 });
 module.exports = _mongoose2.default.model('Answer', answerSchema);
 
 /***/ }),
-/* 21 */
+/* 20 */
 /***/ (function(module, exports) {
 
 module.exports = require("co");
 
 /***/ }),
-/* 22 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1239,7 +1229,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _AnswerWalk = __webpack_require__(23);
+var _AnswerWalk = __webpack_require__(22);
 
 var _AnswerWalk2 = _interopRequireDefault(_AnswerWalk);
 
@@ -1272,7 +1262,7 @@ var AnsweredQuestionModel = mongoose.model('AnsweredQuestion', aqSchema);
 exports.default = AnsweredQuestionModel;
 
 /***/ }),
-/* 23 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1954,9 +1944,9 @@ var _class = function (_Mixin) {
 exports.default = _class;
 
 /***/ }),
+/* 23 */,
 /* 24 */,
-/* 25 */,
-/* 26 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1972,7 +1962,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _Survey = __webpack_require__(13);
+var _Survey = __webpack_require__(12);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
@@ -2111,7 +2101,7 @@ var _class = function (_Mixin) {
 exports.default = _class;
 
 /***/ }),
-/* 27 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2174,13 +2164,13 @@ var _class = function (_Mixin) {
 exports.default = _class;
 
 /***/ }),
-/* 28 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-__webpack_require__(9);
+__webpack_require__(8);
 
 var _mongoose = __webpack_require__(0);
 
@@ -2208,6 +2198,7 @@ proc.promise.then(function () {
 process.exitCode = 0;
 
 /***/ }),
+/* 28 */,
 /* 29 */,
 /* 30 */,
 /* 31 */,
@@ -2267,22 +2258,21 @@ process.exitCode = 0;
 /* 85 */,
 /* 86 */,
 /* 87 */,
-/* 88 */,
+/* 88 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(89);
+module.exports = __webpack_require__(27);
+
+
+/***/ }),
 /* 89 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(90);
-module.exports = __webpack_require__(28);
-
+module.exports = global["Proc"] = __webpack_require__(90);
 
 /***/ }),
 /* 90 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = global["Proc"] = __webpack_require__(91);
-
-/***/ }),
-/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2296,25 +2286,25 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 __webpack_require__(3);
 
-var _co = __webpack_require__(21);
+var _co = __webpack_require__(20);
 
 var _co2 = _interopRequireDefault(_co);
 
-var _childProcess = __webpack_require__(16);
+var _childProcess = __webpack_require__(15);
 
 var _Mixin = __webpack_require__(2);
 
 var _Mixin2 = _interopRequireDefault(_Mixin);
 
-var _SurveyExport = __webpack_require__(26);
+var _SurveyExport = __webpack_require__(25);
 
 var _SurveyExport2 = _interopRequireDefault(_SurveyExport);
 
-var _Cursor = __webpack_require__(27);
+var _Cursor = __webpack_require__(26);
 
 var _Cursor2 = _interopRequireDefault(_Cursor);
 
-var _Aggregation = __webpack_require__(92);
+var _Aggregation = __webpack_require__(91);
 
 var _Aggregation2 = _interopRequireDefault(_Aggregation);
 
@@ -2326,15 +2316,15 @@ var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
-var _Answer = __webpack_require__(20);
+var _Answer = __webpack_require__(19);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 
-var _Location = __webpack_require__(18);
+var _Location = __webpack_require__(17);
 
 var _Location2 = _interopRequireDefault(_Location);
 
-var _User = __webpack_require__(10);
+var _User = __webpack_require__(9);
 
 var _User2 = _interopRequireDefault(_User);
 
@@ -2704,7 +2694,7 @@ var CollectResponses = function (_Mixin$mixin) {
 exports.default = CollectResponses;
 
 /***/ }),
-/* 92 */
+/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2726,11 +2716,11 @@ var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
-var _co = __webpack_require__(21);
+var _co = __webpack_require__(20);
 
 var _co2 = _interopRequireDefault(_co);
 
-var _jsYaml = __webpack_require__(6);
+var _jsYaml = __webpack_require__(92);
 
 var _jsYaml2 = _interopRequireDefault(_jsYaml);
 
@@ -2914,7 +2904,13 @@ var _class = function (_Mixin) {
       var cacheKey = type + '//$$\\' + key;
       if (this.aggregatesStore[cacheKey]) {
         var a = this.aggregatesStore[cacheKey];
-        a.dependencies.push(context.stat);
+        if (a.then) {
+          a.then(function (st) {
+            return st.dependencies.push(context.stat);
+          });
+        } else {
+          a.dependencies.push(context.stat);
+        }
         return Promise.resolve(this.aggregatesStore[cacheKey]);
       }
 
@@ -2943,6 +2939,12 @@ var _class = function (_Mixin) {
 }(_Mixin3.default);
 
 exports.default = _class;
+
+/***/ }),
+/* 92 */
+/***/ (function(module, exports) {
+
+module.exports = require("js-yaml");
 
 /***/ }),
 /* 93 */

@@ -73,7 +73,11 @@ export default class extends Mixin {
     let cacheKey = `${type}//$$\\${key}`;
     if (this.aggregatesStore[cacheKey]) {
       let a = this.aggregatesStore[cacheKey];
-      a.dependencies.push(context.stat);
+      if (a.then) {
+        a.then((st) => st.dependencies.push(context.stat));
+      } else {
+        a.dependencies.push(context.stat);
+      }
       return Promise.resolve(this.aggregatesStore[cacheKey]);
     }
 

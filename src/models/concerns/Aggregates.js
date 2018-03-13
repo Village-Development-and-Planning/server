@@ -1,6 +1,5 @@
 import Mixin from '../../lib/Mixin';
 import {Parser as FormulaParser} from 'hot-formula-parser';
-import YAML from 'js-yaml';
 
 export default class extends Mixin {
   initialize({stat, aggregate}) {
