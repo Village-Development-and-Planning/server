@@ -1060,15 +1060,6 @@ var _class = function (_Mixin) {
       });
     }
   }, {
-    key: '_pushKey',
-    value: function _pushKey(key, description) {
-      var keys = this.collectionKeys;
-      if (!keys['pos' + key]) {
-        keys.push(key);
-        keys['pos' + key] = description;
-      }
-    }
-  }, {
     key: 'getExportHeader',
     value: function getExportHeader() {
       var _this3 = this;

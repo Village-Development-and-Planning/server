@@ -2003,15 +2003,6 @@ var _class = function (_Mixin) {
       });
     }
   }, {
-    key: '_pushKey',
-    value: function _pushKey(key, description) {
-      var keys = this.collectionKeys;
-      if (!keys['pos' + key]) {
-        keys.push(key);
-        keys['pos' + key] = description;
-      }
-    }
-  }, {
     key: 'getExportHeader',
     value: function getExportHeader() {
       var _this3 = this;
@@ -2747,7 +2738,6 @@ var _class = function (_Mixin) {
   _createClass(_class, [{
     key: 'saveAggregates',
     value: function saveAggregates() {
-      this.aggregatesStore = this.aggregatesStore || {};
       return _co2.default.call(this, /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
         var _this2 = this;
 
@@ -2756,11 +2746,19 @@ var _class = function (_Mixin) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
-                aKeys = void 0;
+                if (this.aggregatesStore) {
+                  _context.next = 2;
+                  break;
+                }
 
-              case 1:
-                if (!(aKeys = Object.keys(this.aggregatesStore)).length) {
-                  _context.next = 19;
+                return _context.abrupt('return');
+
+              case 2:
+                aKeys = Object.keys(this.aggregatesStore);
+
+              case 3:
+                if (!aKeys.length) {
+                  _context.next = 23;
                   break;
                 }
 
@@ -2794,19 +2792,19 @@ var _class = function (_Mixin) {
                 });
 
                 if (aKey) {
-                  _context.next = 6;
+                  _context.next = 8;
                   break;
                 }
 
                 console.error('Error: circular dependency!');
                 return _context.abrupt('return');
 
-              case 6:
+              case 8:
                 agg = this.aggregatesStore[aKey];
-                _context.next = 9;
+                _context.next = 11;
                 return agg.save();
 
-              case 9:
+              case 11:
 
                 console.log('Saved stat: [' + agg.type + '] ' + agg.key);
                 if (agg.metadata) {
@@ -2815,23 +2813,25 @@ var _class = function (_Mixin) {
                 if (agg.data) console.log('Data: ', _jsYaml2.default.safeDump(agg.data));
 
                 if (!agg.aggregates) {
-                  _context.next = 16;
+                  _context.next = 18;
                   break;
                 }
 
                 console.log('Accumulating ' + agg.aggregates.length + ' sub-aggregates');
-                _context.next = 16;
+                _context.next = 18;
                 return Promise.resolve(this.accumulateAggregates({
                   stat: agg,
                   aggregates: agg.aggregates
                 }));
 
-              case 16:
+              case 18:
                 delete this.aggregatesStore[aKey];
-                _context.next = 1;
+                aKeys = Object.keys(this.aggregatesStore);
+                console.log('Length is now ' + aKeys.length);
+                _context.next = 3;
                 break;
 
-              case 19:
+              case 23:
               case 'end':
                 return _context.stop();
             }
@@ -2853,7 +2853,7 @@ var _class = function (_Mixin) {
       var _loop = function _loop(ctx) {
         Object.setPrototypeOf(ctx, context);
         promises.push(_this3.findAggregate(ctx).then(function (tgStat) {
-          return tgStat.accumulate(ctx);
+          return stat.isNew || tgStat.accumulate(ctx);
         }));
       };
 
@@ -2882,9 +2882,7 @@ var _class = function (_Mixin) {
         }
       }
 
-      return Promise.all(promises).then(function () {
-        return stat;
-      });
+      return Promise.all(promises);
     }
   }, {
     key: 'findAggregate',
@@ -2900,27 +2898,25 @@ var _class = function (_Mixin) {
           key = aggregateKey.key;
 
       if (!type || !key) throw new Error('type, key needed in AggregateKey.');
+      console.log('Finding aggregate [' + type + '] ' + key);
 
-      var cacheKey = type + '//$$\\' + key;
+      var cacheKey = type + '||' + key;
       if (this.aggregatesStore[cacheKey]) {
         var a = this.aggregatesStore[cacheKey];
+        var promise = void 0;
         if (a.then) {
-          a.then(function (st) {
-            return st.dependencies.push(context.stat);
+          promise = a.then(function (st) {
+            st.dependencies.push(context.stat);
+            return st;
           });
         } else {
           a.dependencies.push(context.stat);
+          promise = Promise.resolve(a);
         }
-        return Promise.resolve(this.aggregatesStore[cacheKey]);
+        return promise;
       }
 
       return this.aggregatesStore[cacheKey] = _Statistic2.default.findOne({ type: type, key: key }).then(function (stat) {
-        return stat && _this4.accumulateAggregates({
-          stat: stat,
-          aggregates: context.aggregate.aggregates,
-          invert: 1
-        });
-      }).then(function (stat) {
         if (!stat) {
           stat = new _Statistic2.default();
           stat.set({ type: type, key: key });
@@ -2929,8 +2925,16 @@ var _class = function (_Mixin) {
         stat.aggregates = context.aggregate.aggregates;
         stat.modifiedAt = Date.now();
         stat.dependencies = [context.stat];
-        _this4.aggregatesStore[cacheKey] = stat;
-        return stat;
+        return Promise.resolve(_this4.accumulateAggregates({
+          stat: stat,
+          aggregates: context.aggregate.aggregates,
+          invert: 1
+        })).then(function () {
+          _this4.aggregatesStore[cacheKey] = stat;
+          return stat;
+        });
+      }).catch(function (err) {
+        console.log('Error finding aggregate: ' + type + ' ' + key);
       });
     }
   }]);

@@ -8,10 +8,10 @@ import YAML from 'js-yaml';
  */
 export default class extends Mixin {
   saveAggregates() {
-    this.aggregatesStore = this.aggregatesStore || {};
     return co.call(this, function* () {
-      let aKeys;
-      while ((aKeys = Object.keys(this.aggregatesStore)).length) {
+      if (!this.aggregatesStore) return;
+      let aKeys = Object.keys(this.aggregatesStore);
+      while (aKeys.length) {
         const aKey = aKeys.find(
           (key) => {
             for (let dStat of this.aggregatesStore[key].dependencies) {
@@ -42,6 +42,8 @@ export default class extends Mixin {
           );
         }
         delete this.aggregatesStore[aKey];
+        aKeys = Object.keys(this.aggregatesStore);
+        console.log(`Length is now ${aKeys.length}`);
       }
     });
   }
@@ -55,11 +57,11 @@ export default class extends Mixin {
       Object.setPrototypeOf(ctx, context);
       promises.push(
         this.findAggregate(ctx).then(
-          (tgStat) => tgStat.accumulate(ctx)
+          (tgStat) => stat.isNew || tgStat.accumulate(ctx)
         )
       );
     }
-    return Promise.all(promises).then(() => stat);
+    return Promise.all(promises);
   }
 
   findAggregate(context) {
@@ -69,24 +71,26 @@ export default class extends Mixin {
 
     const {type, key} = aggregateKey;
     if (!type || !key) throw new Error('type, key needed in AggregateKey.');
+    console.log(`Finding aggregate [${type}] ${key}`);
 
-    let cacheKey = `${type}//$$\\${key}`;
+    let cacheKey = `${type}||${key}`;
     if (this.aggregatesStore[cacheKey]) {
       let a = this.aggregatesStore[cacheKey];
+      let promise;
       if (a.then) {
-        a.then((st) => st.dependencies.push(context.stat));
+        promise = a.then((st) => {
+          st.dependencies.push(context.stat);
+          return st;
+        });
       } else {
         a.dependencies.push(context.stat);
+        promise = Promise.resolve(a);
       }
-      return Promise.resolve(this.aggregatesStore[cacheKey]);
+      return promise;
     }
 
     return this.aggregatesStore[cacheKey] = Statistic.findOne({type, key})
-    .then((stat) => stat && this.accumulateAggregates({
-      stat,
-      aggregates: context.aggregate.aggregates,
-      invert: 1,
-    })).then((stat) => {
+    .then((stat) => {
       if (!stat) {
         stat = new Statistic();
         stat.set({type, key});
@@ -95,8 +99,16 @@ export default class extends Mixin {
       stat.aggregates = context.aggregate.aggregates;
       stat.modifiedAt = Date.now();
       stat.dependencies = [context.stat];
-      this.aggregatesStore[cacheKey] = stat;
-      return stat;
+      return Promise.resolve(this.accumulateAggregates({
+        stat,
+        aggregates: context.aggregate.aggregates,
+        invert: 1,
+      })).then(() => {
+        this.aggregatesStore[cacheKey] = stat;
+        return stat;
+      });
+    }).catch((err) => {
+      console.log(`Error finding aggregate: ${type} ${key}`);
     });
   }
 }

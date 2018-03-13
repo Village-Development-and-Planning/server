@@ -16,14 +16,6 @@ export default class extends Mixin {
     });
   }
 
-  _pushKey(key, description) {
-    const keys = this.collectionKeys;
-    if (!keys[`pos${key}`]) {
-      keys.push(key);
-      keys[`pos${key}`] = description;
-    }
-  }
-
   getExportHeader() {
     return Statistic
     .findOne({key: this.surveyId, type: 'SurveyResponseHeader'})
