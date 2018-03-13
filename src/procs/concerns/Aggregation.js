@@ -2,11 +2,13 @@ import 'babel-polyfill';
 import Mixin from '../../lib/Mixin';
 import Statistic from '../../models/Statistic';
 import co from 'co';
+import YAML from 'js-yaml';
 /**
  * Handles Survey concerns
  */
 export default class extends Mixin {
   saveAggregates() {
+    this.aggregatesStore = this.aggregatesStore || {};
     return co.call(this, function* () {
       let aKeys;
       while ((aKeys = Object.keys(this.aggregatesStore)).length) {
@@ -23,7 +25,15 @@ export default class extends Mixin {
           return;
         }
         const agg = this.aggregatesStore[aKey];
+        yield agg.save();
+
+        (console.log(`Saved stat: [${agg.type}] ${agg.key}`));
+        if (agg.metadata) {
+          (console.log('Metadata: ', YAML.safeDump(agg.metadata)));
+        }
+        if (agg.data) (console.log('Data: ', YAML.safeDump(agg.data)));
         if (agg.aggregates) {
+          (console.log(`Accumulating ${agg.aggregates.length} sub-aggregates`));
           yield Promise.resolve(
             this.accumulateAggregates({
               stat: agg,
@@ -31,7 +41,6 @@ export default class extends Mixin {
             })
           );
         }
-        yield agg.save();
         delete this.aggregatesStore[aKey];
       }
     });
@@ -54,16 +63,18 @@ export default class extends Mixin {
   }
 
   findAggregate(context) {
+    const {aggregateKey} = context;
     if (!aggregateKey) throw new Error('Aggregate Key needed.');
     this.aggregatesStore = this.aggregatesStore || {};
 
-    const {type, key} = context.aggregateKey;
+    const {type, key} = aggregateKey;
     if (!type || !key) throw new Error('type, key needed in AggregateKey.');
+
 
     let cacheKey = `${type}//$$\\${key}`;
     if (this.aggregatesStore[cacheKey]) {
       let a = this.aggregatesStore[cacheKey];
-      a.dependencies.push(stat);
+      a.dependencies.push(context.stat);
       return Promise.resolve(this.aggregatesStore[cacheKey]);
     }
 
@@ -76,9 +87,9 @@ export default class extends Mixin {
       if (!stat) {
         stat = new Statistic();
         stat.set({type, key});
-        stat.aggregates = context.aggregate.aggregates;
         stat.initialize(context);
       }
+      stat.aggregates = context.aggregate.aggregates;
       stat.modifiedAt = Date.now();
       stat.dependencies = [context.stat];
       this.aggregatesStore[cacheKey] = stat;

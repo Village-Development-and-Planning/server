@@ -44,7 +44,7 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
       lastExport: null,
     }).limit(5), 'collectOneAnswer')
     .then((answers) => this.answers = answers)
-    .then(() => this._saveAllAggregates())
+    .then(() => this.saveAggregates())
     .then(() => this._saveAnswerStats())
     .then(() => ({
       answers: this.answers,
@@ -57,7 +57,6 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
     this.survey.answerStats = {
       processed: this.surveyProcessed + this.answersCount,
     };
-    console.log('Saving answer stats...', this.survey.answerStats);
     return this.survey.save();
   }
 
@@ -107,6 +106,7 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
     }).catch((e) => {
       e = e || {message: 'UNKNOWN'};
       console.error(e.message || e);
+      console.error(e.stack);
       return Promise.resolve({status: 'ERROR', _id: answer._id});
     }).then((remarks) => {
       if (this.answersCount && !(this.answersCount % 500)) {
@@ -181,7 +181,9 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
       type: 'SurveyResponse',
       data: obj,
     }).then(
-      (stat) => this.accumulateAggregates(stat, this.survey.aggregates)
+      (stat) => this.accumulateAggregates(
+        {stat, aggregates: this.survey.aggregates}
+      )
     );
   }
 }

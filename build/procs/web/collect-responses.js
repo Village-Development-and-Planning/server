@@ -507,6 +507,9 @@ var _class = function (_Mixin) {
           _value = _defineProperty({}, val, 1);
           _count = 1;
         }
+        if ((typeof _value === 'undefined' ? 'undefined' : _typeof(_value)) !== 'object') {
+          _value = _defineProperty({}, _value, 1);
+        }
         var _iteratorNormalCompletion3 = true;
         var _didIteratorError3 = false;
         var _iteratorError3 = undefined;
@@ -515,13 +518,13 @@ var _class = function (_Mixin) {
           for (var _iterator3 = Object.keys(_value)[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
             var k = _step3.value;
 
-            obj[k] = obj[k] || 0;
+            obj.value[k] = obj.value[k] || 0;
             if (invert) {
-              obj[k] = obj[k] - _value[k];
+              obj.value[k] = obj.value[k] - _value[k];
             } else {
-              obj[k] = obj[k] + _value[k];
+              obj.value[k] = obj.value[k] + _value[k];
             }
-            if (obj[k] <= 0) delete obj[k];
+            if (obj.value[k] <= 0) delete obj.value[k];
           }
         } catch (err) {
           _didIteratorError3 = true;
@@ -616,7 +619,7 @@ var _class = function (_Mixin) {
               }
               if (!type) type === 'Aggregate';
               _context.next = 23;
-              return [{ aggregate: agg, aggregateKey: { key: key, type: type } }, ctx];
+              return { aggregate: agg, aggregateKey: { key: key, type: type } };
 
             case 23:
               _iteratorNormalCompletion4 = true;
@@ -669,7 +672,7 @@ var _class = function (_Mixin) {
     value: function parser() {
       var _this2 = this;
 
-      if (this.parser) return this.parser;
+      if (this._parser) return this._parser;
 
       var parser = new _hotFormulaParser.Parser();
       parser.on('callVariable', function (name, done) {
@@ -691,7 +694,7 @@ var _class = function (_Mixin) {
         if (data && data.hasOwnProperty(name)) {
           var obj = data[name];
           if (!suffix || !obj || !((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object')) return done(obj);
-          return done(obj)[suffix];
+          return done(obj[suffix]);
         }
       });
       parser.on('callFunction', function (name, params, done) {
@@ -700,9 +703,9 @@ var _class = function (_Mixin) {
         }
       });
       parser.value = function (exp) {
-        return parser.parse(exp).value;
+        return parser.parse(exp).result;
       };
-      return this.parser = parser;
+      return this._parser = parser;
     }
   }]);
 
@@ -2304,7 +2307,7 @@ var _Aggregation = __webpack_require__(91);
 
 var _Aggregation2 = _interopRequireDefault(_Aggregation);
 
-var _AnswerCollector = __webpack_require__(92);
+var _AnswerCollector = __webpack_require__(93);
 
 var _AnswerCollector2 = _interopRequireDefault(_AnswerCollector);
 
@@ -2379,7 +2382,7 @@ var CollectResponses = function (_Mixin$mixin) {
       }).limit(5), 'collectOneAnswer').then(function (answers) {
         return _this3.answers = answers;
       }).then(function () {
-        return _this3._saveAllAggregates();
+        return _this3.saveAggregates();
       }).then(function () {
         return _this3._saveAnswerStats();
       }).then(function () {
@@ -2396,7 +2399,6 @@ var CollectResponses = function (_Mixin$mixin) {
       this.survey.answerStats = {
         processed: this.surveyProcessed + this.answersCount
       };
-      console.log('Saving answer stats...', this.survey.answerStats);
       return this.survey.save();
     }
   }, {
@@ -2559,6 +2561,7 @@ var CollectResponses = function (_Mixin$mixin) {
       }).catch(function (e) {
         e = e || { message: 'UNKNOWN' };
         console.error(e.message || e);
+        console.error(e.stack);
         return Promise.resolve({ status: 'ERROR', _id: answer._id });
       }).then(function (remarks) {
         if (_this4.answersCount && !(_this4.answersCount % 500)) {
@@ -2679,7 +2682,7 @@ var CollectResponses = function (_Mixin$mixin) {
         type: 'SurveyResponse',
         data: obj
       }).then(function (stat) {
-        return _this5.accumulateAggregates(stat, _this5.survey.aggregates);
+        return _this5.accumulateAggregates({ stat: stat, aggregates: _this5.survey.aggregates });
       });
     }
   }]);
@@ -2718,6 +2721,10 @@ var _co = __webpack_require__(20);
 
 var _co2 = _interopRequireDefault(_co);
 
+var _jsYaml = __webpack_require__(92);
+
+var _jsYaml2 = _interopRequireDefault(_jsYaml);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -2741,6 +2748,7 @@ var _class = function (_Mixin) {
   _createClass(_class, [{
     key: 'saveAggregates',
     value: function saveAggregates() {
+      this.aggregatesStore = this.aggregatesStore || {};
       return _co2.default.call(this, /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
         var _this2 = this;
 
@@ -2753,7 +2761,7 @@ var _class = function (_Mixin) {
 
               case 1:
                 if (!(aKeys = Object.keys(this.aggregatesStore)).length) {
-                  _context.next = 15;
+                  _context.next = 19;
                   break;
                 }
 
@@ -2796,28 +2804,35 @@ var _class = function (_Mixin) {
 
               case 6:
                 agg = this.aggregatesStore[aKey];
+                _context.next = 9;
+                return agg.save();
+
+              case 9:
+
+                console.log('Saved stat: [' + agg.type + '] ' + agg.key);
+                if (agg.metadata) {
+                  console.log('Metadata: ', _jsYaml2.default.safeDump(agg.metadata));
+                }
+                if (agg.data) console.log('Data: ', _jsYaml2.default.safeDump(agg.data));
 
                 if (!agg.aggregates) {
-                  _context.next = 10;
+                  _context.next = 16;
                   break;
                 }
 
-                _context.next = 10;
+                console.log('Accumulating ' + agg.aggregates.length + ' sub-aggregates');
+                _context.next = 16;
                 return Promise.resolve(this.accumulateAggregates({
                   stat: agg,
                   aggregates: agg.aggregates
                 }));
 
-              case 10:
-                _context.next = 12;
-                return agg.save();
-
-              case 12:
+              case 16:
                 delete this.aggregatesStore[aKey];
                 _context.next = 1;
                 break;
 
-              case 15:
+              case 19:
               case 'end':
                 return _context.stop();
             }
@@ -2877,19 +2892,20 @@ var _class = function (_Mixin) {
     value: function findAggregate(context) {
       var _this4 = this;
 
+      var aggregateKey = context.aggregateKey;
+
       if (!aggregateKey) throw new Error('Aggregate Key needed.');
       this.aggregatesStore = this.aggregatesStore || {};
 
-      var _context$aggregateKey = context.aggregateKey,
-          type = _context$aggregateKey.type,
-          key = _context$aggregateKey.key;
+      var type = aggregateKey.type,
+          key = aggregateKey.key;
 
       if (!type || !key) throw new Error('type, key needed in AggregateKey.');
 
       var cacheKey = type + '//$$\\' + key;
       if (this.aggregatesStore[cacheKey]) {
         var a = this.aggregatesStore[cacheKey];
-        a.dependencies.push(stat);
+        a.dependencies.push(context.stat);
         return Promise.resolve(this.aggregatesStore[cacheKey]);
       }
 
@@ -2903,9 +2919,9 @@ var _class = function (_Mixin) {
         if (!stat) {
           stat = new _Statistic2.default();
           stat.set({ type: type, key: key });
-          stat.aggregates = context.aggregate.aggregates;
           stat.initialize(context);
         }
+        stat.aggregates = context.aggregate.aggregates;
         stat.modifiedAt = Date.now();
         stat.dependencies = [context.stat];
         _this4.aggregatesStore[cacheKey] = stat;
@@ -3145,6 +3161,12 @@ exports.default = _class;
 
 /***/ }),
 /* 92 */
+/***/ (function(module, exports) {
+
+module.exports = require("js-yaml");
+
+/***/ }),
+/* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

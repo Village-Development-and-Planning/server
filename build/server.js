@@ -616,6 +616,9 @@ var _class = function (_Mixin) {
           _value = _defineProperty({}, val, 1);
           _count = 1;
         }
+        if ((typeof _value === 'undefined' ? 'undefined' : _typeof(_value)) !== 'object') {
+          _value = _defineProperty({}, _value, 1);
+        }
         var _iteratorNormalCompletion3 = true;
         var _didIteratorError3 = false;
         var _iteratorError3 = undefined;
@@ -624,13 +627,13 @@ var _class = function (_Mixin) {
           for (var _iterator3 = Object.keys(_value)[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
             var k = _step3.value;
 
-            obj[k] = obj[k] || 0;
+            obj.value[k] = obj.value[k] || 0;
             if (invert) {
-              obj[k] = obj[k] - _value[k];
+              obj.value[k] = obj.value[k] - _value[k];
             } else {
-              obj[k] = obj[k] + _value[k];
+              obj.value[k] = obj.value[k] + _value[k];
             }
-            if (obj[k] <= 0) delete obj[k];
+            if (obj.value[k] <= 0) delete obj.value[k];
           }
         } catch (err) {
           _didIteratorError3 = true;
@@ -725,7 +728,7 @@ var _class = function (_Mixin) {
               }
               if (!type) type === 'Aggregate';
               _context.next = 23;
-              return [{ aggregate: agg, aggregateKey: { key: key, type: type } }, ctx];
+              return { aggregate: agg, aggregateKey: { key: key, type: type } };
 
             case 23:
               _iteratorNormalCompletion4 = true;
@@ -778,7 +781,7 @@ var _class = function (_Mixin) {
     value: function parser() {
       var _this2 = this;
 
-      if (this.parser) return this.parser;
+      if (this._parser) return this._parser;
 
       var parser = new _hotFormulaParser.Parser();
       parser.on('callVariable', function (name, done) {
@@ -800,7 +803,7 @@ var _class = function (_Mixin) {
         if (data && data.hasOwnProperty(name)) {
           var obj = data[name];
           if (!suffix || !obj || !((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object')) return done(obj);
-          return done(obj)[suffix];
+          return done(obj[suffix]);
         }
       });
       parser.on('callFunction', function (name, params, done) {
@@ -809,9 +812,9 @@ var _class = function (_Mixin) {
         }
       });
       parser.value = function (exp) {
-        return parser.parse(exp).value;
+        return parser.parse(exp).result;
       };
-      return this.parser = parser;
+      return this._parser = parser;
     }
   }]);
 

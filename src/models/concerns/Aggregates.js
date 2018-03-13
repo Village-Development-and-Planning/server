@@ -24,6 +24,7 @@ export default class extends Mixin {
     const parser = stat.parser();
     const data = Object.assign({}, this.data);
 
+
     for (let key of Object.keys(aggregate.data)) {
       let formula, type, select;
       formula = aggregate.data[key] || key;
@@ -78,14 +79,17 @@ export default class extends Mixin {
         value = {[val]: 1};
         count = 1;
       }
+      if (typeof value !== 'object') {
+        value = {[value]: 1};
+      }
       for (let k of Object.keys(value)) {
-        obj[k] = obj[k] || 0;
+        obj.value[k] = obj.value[k] || 0;
         if (invert) {
-          obj[k] = obj[k] - value[k];
+          obj.value[k] = obj.value[k] - value[k];
         } else {
-          obj[k] = obj[k] + value[k];
+          obj.value[k] = obj.value[k] + value[k];
         }
-        if (obj[k] <= 0) delete obj[k];
+        if (obj.value[k] <= 0) delete obj.value[k];
       }
       if (invert) {
         obj.count = obj.count - count;
@@ -109,19 +113,18 @@ export default class extends Mixin {
     const parser = this.parser();
     for (let agg of aggregates) {
       let type, key;
-
       if (agg.select && !parser.value(agg.select)) continue;
       if (!agg.key || !(key = parser.value(agg.key))) continue;
       if (agg.type) {
         type = parser.value(agg.type);
       }
       if (!type) type === 'Aggregate';
-      yield [{aggregate: agg, aggregateKey: {key, type}}, ctx];
+      yield {aggregate: agg, aggregateKey: {key, type}};
     }
   }
 
   parser() {
-    if (this.parser) return this.parser;
+    if (this._parser) return this._parser;
 
     const parser = new FormulaParser();
     parser.on('callVariable', (name, done) => {
@@ -143,7 +146,7 @@ export default class extends Mixin {
       if (data && data.hasOwnProperty(name)) {
         const obj = data[name];
         if (!suffix || !obj || !(typeof obj === 'object')) return done(obj);
-        return done(obj)[suffix];
+        return done(obj[suffix]);
       }
     });
     parser.on('callFunction', (name, params, done) => {
@@ -151,7 +154,7 @@ export default class extends Mixin {
         done(new Date(parseInt(params[0])));
       }
     });
-    parser.value = (exp) => parser.parse(exp).value;
-    return this.parser = parser;
+    parser.value = (exp) => parser.parse(exp).result;
+    return this._parser = parser;
   }
 }
