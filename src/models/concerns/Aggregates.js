@@ -23,6 +23,7 @@ export default class extends Mixin {
     const parser = stat.parser();
     const data = Object.assign({}, this.data);
 
+    if (aggregate.select && !parser.value(aggregate.select)) return;
 
     for (let key of Object.keys(aggregate.data)) {
       let formula, type, select;
@@ -115,7 +116,6 @@ export default class extends Mixin {
     const parser = this.parser();
     for (let agg of aggregates) {
       let type, key;
-      if (agg.select && !parser.value(agg.select)) continue;
       if (!agg.key || !(key = parser.value(agg.key))) continue;
       if (agg.type) {
         type = parser.value(agg.type);

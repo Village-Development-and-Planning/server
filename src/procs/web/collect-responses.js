@@ -77,20 +77,19 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
     });
 
     const promises = [];
-    const self = this;
     for (let ctx of collector.collectRespondents()) {
       ctx.addValue('UPLOAD_TIME', answer.createdAt.getTime(), 'Upload time');
       ctx.addValue('ANSWER_ID', answer._id, 'Answer Id');
       promises.push(
-        co(function* () {
+        co.call(this, function* () {
           for (let p of surveyPP) {
-            let func = p.class && self[`_ppClass${p.class}`];
+            let func = p.class && this[`_ppClass${p.class}`];
             let ret;
             if (func) ret = yield (func(p, ctx) || {});
             if (ret && ret._ignore) return;
           }
           yield ctx.data;
-          return self.writeStatsObj(ctx.data)
+          return this.writeStatsObj(ctx.data)
           .then(() => ++statsCount);
         })
       );

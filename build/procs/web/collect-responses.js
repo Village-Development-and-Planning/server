@@ -421,6 +421,8 @@ var _class = function (_Mixin) {
       var parser = stat.parser();
       var data = Object.assign({}, this.data);
 
+      if (aggregate.select && !parser.value(aggregate.select)) return;
+
       var _iteratorNormalCompletion2 = true;
       var _didIteratorError2 = false;
       var _iteratorError2 = undefined;
@@ -592,81 +594,73 @@ var _class = function (_Mixin) {
 
             case 12:
               if (_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done) {
-                _context.next = 26;
+                _context.next = 24;
                 break;
               }
 
               agg = _step4.value;
               type = void 0, key = void 0;
 
-              if (!(agg.select && !parser.value(agg.select))) {
+              if (!(!agg.key || !(key = parser.value(agg.key)))) {
                 _context.next = 17;
                 break;
               }
 
-              return _context.abrupt('continue', 23);
+              return _context.abrupt('continue', 21);
 
             case 17:
-              if (!(!agg.key || !(key = parser.value(agg.key)))) {
-                _context.next = 19;
-                break;
-              }
-
-              return _context.abrupt('continue', 23);
-
-            case 19:
               if (agg.type) {
                 type = parser.value(agg.type);
               }
               if (!type) type === 'Aggregate';
-              _context.next = 23;
+              _context.next = 21;
               return { aggregate: agg, aggregateKey: { key: key, type: type } };
 
-            case 23:
+            case 21:
               _iteratorNormalCompletion4 = true;
               _context.next = 12;
               break;
 
-            case 26:
-              _context.next = 32;
+            case 24:
+              _context.next = 30;
               break;
 
-            case 28:
-              _context.prev = 28;
+            case 26:
+              _context.prev = 26;
               _context.t0 = _context['catch'](10);
               _didIteratorError4 = true;
               _iteratorError4 = _context.t0;
 
-            case 32:
-              _context.prev = 32;
-              _context.prev = 33;
+            case 30:
+              _context.prev = 30;
+              _context.prev = 31;
 
               if (!_iteratorNormalCompletion4 && _iterator4.return) {
                 _iterator4.return();
               }
 
-            case 35:
-              _context.prev = 35;
+            case 33:
+              _context.prev = 33;
 
               if (!_didIteratorError4) {
-                _context.next = 38;
+                _context.next = 36;
                 break;
               }
 
               throw _iteratorError4;
 
+            case 36:
+              return _context.finish(33);
+
+            case 37:
+              return _context.finish(30);
+
             case 38:
-              return _context.finish(35);
-
-            case 39:
-              return _context.finish(32);
-
-            case 40:
             case 'end':
               return _context.stop();
           }
         }
-      }, walkAggregates, this, [[10, 28, 32, 40], [33,, 35, 39]]);
+      }, walkAggregates, this, [[10, 26, 30, 38], [31,, 33, 37]]);
     })
   }, {
     key: 'parser',
@@ -2414,12 +2408,11 @@ var CollectResponses = function (_Mixin$mixin) {
       });
 
       var promises = [];
-      var self = this;
 
       var _loop = function _loop(ctx) {
         ctx.addValue('UPLOAD_TIME', answer.createdAt.getTime(), 'Upload time');
         ctx.addValue('ANSWER_ID', answer._id, 'Answer Id');
-        promises.push((0, _co2.default)( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+        promises.push(_co2.default.call(_this4, /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
           var _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, p, func, ret;
 
           return regeneratorRuntime.wrap(function _callee$(_context) {
@@ -2439,7 +2432,7 @@ var CollectResponses = function (_Mixin$mixin) {
                   }
 
                   p = _step2.value;
-                  func = p.class && self['_ppClass' + p.class];
+                  func = p.class && this['_ppClass' + p.class];
                   ret = void 0;
 
                   if (!func) {
@@ -2505,7 +2498,7 @@ var CollectResponses = function (_Mixin$mixin) {
                   return ctx.data;
 
                 case 34:
-                  return _context.abrupt('return', self.writeStatsObj(ctx.data).then(function () {
+                  return _context.abrupt('return', this.writeStatsObj(ctx.data).then(function () {
                     return ++statsCount;
                   }));
 
@@ -2717,6 +2710,8 @@ var _jsYaml2 = _interopRequireDefault(_jsYaml);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -2741,7 +2736,8 @@ var _class = function (_Mixin) {
       return _co2.default.call(this, /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
         var _this2 = this;
 
-        var aKeys, aKey, agg;
+        var aKeys, aKey, agg, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, dKey;
+
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
@@ -2758,19 +2754,21 @@ var _class = function (_Mixin) {
 
               case 3:
                 if (!aKeys.length) {
-                  _context.next = 23;
+                  _context.next = 41;
                   break;
                 }
 
                 aKey = aKeys.find(function (key) {
+                  var deps = _this2.aggregatesStore[key].dependencies;
                   var _iteratorNormalCompletion = true;
                   var _didIteratorError = false;
                   var _iteratorError = undefined;
 
                   try {
-                    for (var _iterator = _this2.aggregatesStore[key].dependencies[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                      var dStat = _step.value;
+                    for (var _iterator = Object.keys(deps)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                      var dKey = _step.value;
 
+                      var dStat = deps[dKey];
                       if (dStat.isModified()) return false;
                     }
                   } catch (err) {
@@ -2825,18 +2823,59 @@ var _class = function (_Mixin) {
                 }));
 
               case 18:
+                _iteratorNormalCompletion2 = true;
+                _didIteratorError2 = false;
+                _iteratorError2 = undefined;
+                _context.prev = 21;
+
+                for (_iterator2 = Object.keys(agg.dependencies)[Symbol.iterator](); !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                  dKey = _step2.value;
+                }
+                _context.next = 29;
+                break;
+
+              case 25:
+                _context.prev = 25;
+                _context.t0 = _context['catch'](21);
+                _didIteratorError2 = true;
+                _iteratorError2 = _context.t0;
+
+              case 29:
+                _context.prev = 29;
+                _context.prev = 30;
+
+                if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                  _iterator2.return();
+                }
+
+              case 32:
+                _context.prev = 32;
+
+                if (!_didIteratorError2) {
+                  _context.next = 35;
+                  break;
+                }
+
+                throw _iteratorError2;
+
+              case 35:
+                return _context.finish(32);
+
+              case 36:
+                return _context.finish(29);
+
+              case 37:
                 delete this.aggregatesStore[aKey];
                 aKeys = Object.keys(this.aggregatesStore);
-                console.log('Length is now ' + aKeys.length);
                 _context.next = 3;
                 break;
 
-              case 23:
+              case 41:
               case 'end':
                 return _context.stop();
             }
           }
-        }, _callee, this);
+        }, _callee, this, [[21, 25, 29, 37], [30,, 32, 36]]);
       }));
     }
   }, {
@@ -2857,27 +2896,27 @@ var _class = function (_Mixin) {
         }));
       };
 
-      var _iteratorNormalCompletion2 = true;
-      var _didIteratorError2 = false;
-      var _iteratorError2 = undefined;
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
 
       try {
-        for (var _iterator2 = stat.walkAggregates(context)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          var ctx = _step2.value;
+        for (var _iterator3 = stat.walkAggregates(context)[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var ctx = _step3.value;
 
           _loop(ctx);
         }
       } catch (err) {
-        _didIteratorError2 = true;
-        _iteratorError2 = err;
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion2 && _iterator2.return) {
-            _iterator2.return();
+          if (!_iteratorNormalCompletion3 && _iterator3.return) {
+            _iterator3.return();
           }
         } finally {
-          if (_didIteratorError2) {
-            throw _iteratorError2;
+          if (_didIteratorError3) {
+            throw _iteratorError3;
           }
         }
       }
@@ -2889,7 +2928,8 @@ var _class = function (_Mixin) {
     value: function findAggregate(context) {
       var _this4 = this;
 
-      var aggregateKey = context.aggregateKey;
+      var aggregateKey = context.aggregateKey,
+          stat = context.stat;
 
       if (!aggregateKey) throw new Error('Aggregate Key needed.');
       this.aggregatesStore = this.aggregatesStore || {};
@@ -2898,24 +2938,25 @@ var _class = function (_Mixin) {
           key = aggregateKey.key;
 
       if (!type || !key) throw new Error('type, key needed in AggregateKey.');
-      console.log('Finding aggregate [' + type + '] ' + key);
 
-      var cacheKey = type + '||' + key;
+      var cacheKeyFunction = function cacheKeyFunction(stat) {
+        return '[' + stat.type + '] ' + stat.key;
+      };
+      var cacheKey = cacheKeyFunction(aggregateKey);
       if (this.aggregatesStore[cacheKey]) {
         var a = this.aggregatesStore[cacheKey];
         var promise = void 0;
         if (a.then) {
           promise = a.then(function (st) {
-            st.dependencies.push(context.stat);
+            st.dependencies[cacheKeyFunction(stat)] = stat;
             return st;
           });
         } else {
-          a.dependencies.push(context.stat);
+          a.dependencies[cacheKeyFunction(stat)] = stat;
           promise = Promise.resolve(a);
         }
         return promise;
       }
-
       return this.aggregatesStore[cacheKey] = _Statistic2.default.findOne({ type: type, key: key }).then(function (stat) {
         if (!stat) {
           stat = new _Statistic2.default();
@@ -2924,7 +2965,7 @@ var _class = function (_Mixin) {
         }
         stat.aggregates = context.aggregate.aggregates;
         stat.modifiedAt = Date.now();
-        stat.dependencies = [context.stat];
+        stat.dependencies = _defineProperty({}, cacheKeyFunction(context.stat), context.stat);
         return Promise.resolve(_this4.accumulateAggregates({
           stat: stat,
           aggregates: context.aggregate.aggregates,
@@ -2934,7 +2975,7 @@ var _class = function (_Mixin) {
           return stat;
         });
       }).catch(function (err) {
-        console.log('Error finding aggregate: ' + type + ' ' + key);
+        console.error(cacheKey, err);
       });
     }
   }]);
