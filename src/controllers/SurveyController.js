@@ -91,7 +91,7 @@ class SurveyController extends EntityController {
   }
 
   _findOne(query) {
-    const promise = super._findOne(query);
+    let promise = super._findOne(query);
     if (this.req.query.light) {
       promise = promise.select('-question');
     }
