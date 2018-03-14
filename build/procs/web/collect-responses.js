@@ -236,9 +236,8 @@ module.exports = {
     connectionOptions: {
       poolSize: 5,
       useMongoClient: true,
-      safe: {
-        j: true
-      }
+      j: true,
+      w: 1
     },
     connectionString: 'mongodb://localhost/test'
   },
@@ -411,6 +410,7 @@ var _class = function (_Mixin) {
       }
 
       this.metadata = metadata;
+      this.markModified(metadata);
     }
   }, {
     key: 'accumulate',
@@ -469,6 +469,7 @@ var _class = function (_Mixin) {
       }
 
       this.data = data;
+      this.markModified('data');
     }
   }, {
     key: '_accumulateRegister',
@@ -2294,7 +2295,7 @@ var _Aggregation = __webpack_require__(91);
 
 var _Aggregation2 = _interopRequireDefault(_Aggregation);
 
-var _AnswerCollector = __webpack_require__(93);
+var _AnswerCollector = __webpack_require__(92);
 
 var _AnswerCollector2 = _interopRequireDefault(_AnswerCollector);
 
@@ -2373,11 +2374,12 @@ var CollectResponses = function (_Mixin$mixin) {
       }).then(function () {
         return _this3._saveAnswerStats();
       }).then(function () {
-        return console.log({
+        return console.log(JSON.stringify({
+          _logHeader: 'stats',
           answers: _this3.answers,
           answersCount: _this3.answersCount,
           totalStatsCount: _this3.totalStatsCount
-        });
+        }));
       });
     }
   }, {
@@ -2386,6 +2388,7 @@ var CollectResponses = function (_Mixin$mixin) {
       this.survey.answerStats = {
         processed: this.surveyProcessed + this.answersCount
       };
+      this.survey.markModified('answerStats');
       return this.survey.save();
     }
   }, {
@@ -2689,6 +2692,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 __webpack_require__(3);
@@ -2704,10 +2709,6 @@ var _Statistic2 = _interopRequireDefault(_Statistic);
 var _co = __webpack_require__(20);
 
 var _co2 = _interopRequireDefault(_co);
-
-var _jsYaml = __webpack_require__(92);
-
-var _jsYaml2 = _interopRequireDefault(_jsYaml);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2737,100 +2738,137 @@ var _class = function (_Mixin) {
       return _co2.default.call(this, /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
         var _this2 = this;
 
-        var aKeys, aKey, agg;
-        return regeneratorRuntime.wrap(function _callee$(_context) {
+        var aKeys, _loop, _ret;
+
+        return regeneratorRuntime.wrap(function _callee$(_context2) {
           while (1) {
-            switch (_context.prev = _context.next) {
+            switch (_context2.prev = _context2.next) {
               case 0:
                 if (this.aggregatesStore) {
-                  _context.next = 2;
+                  _context2.next = 2;
                   break;
                 }
 
-                return _context.abrupt('return');
+                return _context2.abrupt('return');
 
               case 2:
                 aKeys = Object.keys(this.aggregatesStore);
+                _loop = /*#__PURE__*/regeneratorRuntime.mark(function _loop() {
+                  var aKey, agg;
+                  return regeneratorRuntime.wrap(function _loop$(_context) {
+                    while (1) {
+                      switch (_context.prev = _context.next) {
+                        case 0:
+                          aKey = aKeys.find(function (key) {
+                            var deps = _this2.aggregatesStore[key].dependencies;
+                            var _iteratorNormalCompletion = true;
+                            var _didIteratorError = false;
+                            var _iteratorError = undefined;
 
-              case 3:
-                if (!aKeys.length) {
-                  _context.next = 22;
-                  break;
-                }
+                            try {
+                              for (var _iterator = Object.keys(deps)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                                var dKey = _step.value;
 
-                aKey = aKeys.find(function (key) {
-                  var deps = _this2.aggregatesStore[key].dependencies;
-                  var _iteratorNormalCompletion = true;
-                  var _didIteratorError = false;
-                  var _iteratorError = undefined;
+                                var dStat = deps[dKey];
+                                if (dStat.isModified()) return false;
+                              }
+                            } catch (err) {
+                              _didIteratorError = true;
+                              _iteratorError = err;
+                            } finally {
+                              try {
+                                if (!_iteratorNormalCompletion && _iterator.return) {
+                                  _iterator.return();
+                                }
+                              } finally {
+                                if (_didIteratorError) {
+                                  throw _iteratorError;
+                                }
+                              }
+                            }
 
-                  try {
-                    for (var _iterator = Object.keys(deps)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                      var dKey = _step.value;
+                            return true;
+                          });
 
-                      var dStat = deps[dKey];
-                      if (dStat.isModified()) return false;
-                    }
-                  } catch (err) {
-                    _didIteratorError = true;
-                    _iteratorError = err;
-                  } finally {
-                    try {
-                      if (!_iteratorNormalCompletion && _iterator.return) {
-                        _iterator.return();
+                          if (aKey) {
+                            _context.next = 4;
+                            break;
+                          }
+
+                          console.error('Error: circular dependency!');
+                          return _context.abrupt('return', {
+                            v: void 0
+                          });
+
+                        case 4:
+                          agg = _this2.aggregatesStore[aKey];
+
+                          if (!agg.isModified()) {
+                            console.error('Unmodified stat: [' + agg.type + '] ' + agg.key);
+                          }
+                          _context.next = 8;
+                          return agg.save().catch(function (err) {
+                            return console.error(agg.key, err);
+                          });
+
+                        case 8:
+
+                          console.log(JSON.stringify({
+                            _logHeader: 'aggregate',
+                            type: agg.type,
+                            key: agg.key,
+                            metadata: agg.metadata,
+                            data: agg.data
+                          }));
+
+                          if (!agg.aggregates) {
+                            _context.next = 12;
+                            break;
+                          }
+
+                          _context.next = 12;
+                          return Promise.resolve(_this2.accumulateAggregates({
+                            stat: agg,
+                            aggregates: agg.aggregates
+                          }));
+
+                        case 12:
+                          delete _this2.aggregatesStore[aKey];
+                          aKeys = Object.keys(_this2.aggregatesStore);
+
+                        case 14:
+                        case 'end':
+                          return _context.stop();
                       }
-                    } finally {
-                      if (_didIteratorError) {
-                        throw _iteratorError;
-                      }
                     }
-                  }
-
-                  return true;
+                  }, _loop, _this2);
                 });
 
-                if (aKey) {
-                  _context.next = 8;
+              case 4:
+                if (!aKeys.length) {
+                  _context2.next = 11;
                   break;
                 }
 
-                console.error('Error: circular dependency!');
-                return _context.abrupt('return');
+                return _context2.delegateYield(_loop(), 't0', 6);
 
-              case 8:
-                agg = this.aggregatesStore[aKey];
-                _context.next = 11;
-                return agg.save();
+              case 6:
+                _ret = _context2.t0;
 
-              case 11:
-
-                console.log('Saved stat: [' + agg.type + '] ' + agg.key);
-                if (agg.metadata) {
-                  console.log('Metadata: ', _jsYaml2.default.safeDump(agg.metadata));
-                }
-                if (agg.data) console.log('Data: ', _jsYaml2.default.safeDump(agg.data));
-
-                if (!agg.aggregates) {
-                  _context.next = 18;
+                if (!((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object")) {
+                  _context2.next = 9;
                   break;
                 }
 
-                console.log('Accumulating ' + agg.aggregates.length + ' sub-aggregates');
-                _context.next = 18;
-                return Promise.resolve(this.accumulateAggregates({
-                  stat: agg,
-                  aggregates: agg.aggregates
-                }));
+                return _context2.abrupt('return', _ret.v);
 
-              case 18:
-                delete this.aggregatesStore[aKey];
-                aKeys = Object.keys(this.aggregatesStore);
-                _context.next = 3;
+              case 9:
+                _context2.next = 4;
                 break;
 
-              case 22:
+              case 11:
               case 'end':
-                return _context.stop();
+                return _context2.stop();
             }
           }
         }, _callee, this);
@@ -2847,7 +2885,7 @@ var _class = function (_Mixin) {
 
       var promises = [];
 
-      var _loop = function _loop(ctx) {
+      var _loop2 = function _loop2(ctx) {
         Object.setPrototypeOf(ctx, context);
         promises.push(_this3.findAggregate(ctx).then(function (tgStat) {
           return stat.isNew || tgStat.accumulate(ctx);
@@ -2862,7 +2900,7 @@ var _class = function (_Mixin) {
         for (var _iterator2 = stat.walkAggregates(context)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
           var ctx = _step2.value;
 
-          _loop(ctx);
+          _loop2(ctx);
         }
       } catch (err) {
         _didIteratorError2 = true;
@@ -2924,6 +2962,13 @@ var _class = function (_Mixin) {
         stat.aggregates = context.aggregate.aggregates;
         stat.modifiedAt = Date.now();
         stat.dependencies = _defineProperty({}, cacheKeyFunction(context.stat), context.stat);
+
+        // (console.log(`Decumulating stat: [${stat.type}] ${stat.key}`));
+        // if (stat.metadata) {
+        //   (console.log('Metadata: ', YAML.safeDump(stat.metadata)));
+        // }
+        // if (stat.data) (console.log('Data: ', YAML.safeDump(stat.data)));
+
         return Promise.resolve(_this4.accumulateAggregates({
           stat: stat,
           aggregates: context.aggregate.aggregates,
@@ -2945,12 +2990,6 @@ exports.default = _class;
 
 /***/ }),
 /* 92 */
-/***/ (function(module, exports) {
-
-module.exports = require("js-yaml");
-
-/***/ }),
-/* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

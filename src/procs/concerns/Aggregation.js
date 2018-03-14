@@ -2,7 +2,6 @@ import 'babel-polyfill';
 import Mixin from '../../lib/Mixin';
 import Statistic from '../../models/Statistic';
 import co from 'co';
-import YAML from 'js-yaml';
 /**
  * Handles Survey concerns
  */
@@ -27,15 +26,21 @@ export default class extends Mixin {
           return;
         }
         const agg = this.aggregatesStore[aKey];
-        yield agg.save();
-
-        (console.log(`Saved stat: [${agg.type}] ${agg.key}`));
-        if (agg.metadata) {
-          (console.log('Metadata: ', YAML.safeDump(agg.metadata)));
+        if (!agg.isModified()) {
+          console.error(`Unmodified stat: [${agg.type}] ${agg.key}`);
         }
-        if (agg.data) (console.log('Data: ', YAML.safeDump(agg.data)));
+        yield agg.save().catch(
+          (err) => console.error(agg.key, err)
+        );
+
+        (console.log(JSON.stringify({
+          _logHeader: 'aggregate',
+          type: agg.type,
+          key: agg.key,
+          metadata: agg.metadata,
+          data: agg.data,
+        })));
         if (agg.aggregates) {
-          (console.log(`Accumulating ${agg.aggregates.length} sub-aggregates`));
           yield Promise.resolve(
             this.accumulateAggregates({
               stat: agg,
@@ -101,6 +106,13 @@ export default class extends Mixin {
       stat.dependencies = {
         [cacheKeyFunction(context.stat)]: context.stat,
       };
+
+      // (console.log(`Decumulating stat: [${stat.type}] ${stat.key}`));
+      // if (stat.metadata) {
+      //   (console.log('Metadata: ', YAML.safeDump(stat.metadata)));
+      // }
+      // if (stat.data) (console.log('Data: ', YAML.safeDump(stat.data)));
+
       return Promise.resolve(this.accumulateAggregates({
         stat,
         aggregates: context.aggregate.aggregates,

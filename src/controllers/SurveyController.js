@@ -86,7 +86,7 @@ class SurveyController extends EntityController {
   }
 
   _findOne(query) {
-    return super._findOne(query)
+    return super._findOne(query).select('-question')
     .then((survey) => survey.toObject())
     .then((survey) => co(function* () {
       let aStats = survey.answerStats = survey.answerStats || {};

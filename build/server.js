@@ -236,9 +236,8 @@ module.exports = {
     connectionOptions: {
       poolSize: 5,
       useMongoClient: true,
-      safe: {
-        j: true
-      }
+      j: true,
+      w: 1
     },
     connectionString: 'mongodb://localhost/test'
   },
@@ -520,6 +519,7 @@ var _class = function (_Mixin) {
       }
 
       this.metadata = metadata;
+      this.markModified(metadata);
     }
   }, {
     key: 'accumulate',
@@ -578,6 +578,7 @@ var _class = function (_Mixin) {
       }
 
       this.data = data;
+      this.markModified('data');
     }
   }, {
     key: '_accumulateRegister',
@@ -2297,7 +2298,7 @@ var SurveyController = function (_EntityController) {
   }, {
     key: '_findOne',
     value: function _findOne(query) {
-      return _get(SurveyController.prototype.__proto__ || Object.getPrototypeOf(SurveyController.prototype), '_findOne', this).call(this, query).then(function (survey) {
+      return _get(SurveyController.prototype.__proto__ || Object.getPrototypeOf(SurveyController.prototype), '_findOne', this).call(this, query).select('-question').then(function (survey) {
         return survey.toObject();
       }).then(function (survey) {
         return (0, _co2.default)( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {

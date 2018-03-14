@@ -46,7 +46,8 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
     .then((answers) => this.answers = answers)
     .then(() => this.saveAggregates())
     .then(() => this._saveAnswerStats())
-    .then(() => (console.log({
+    .then(() => console.log(JSON.stringify({
+      _logHeader: 'stats',
       answers: this.answers,
       answersCount: this.answersCount,
       totalStatsCount: this.totalStatsCount,
@@ -57,6 +58,7 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
     this.survey.answerStats = {
       processed: this.surveyProcessed + this.answersCount,
     };
+    this.survey.markModified('answerStats');
     return this.survey.save();
   }
 

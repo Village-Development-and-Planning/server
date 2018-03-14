@@ -15,6 +15,7 @@ export default class extends Mixin {
       metadata[key] = val;
     }
     this.metadata = metadata;
+    this.markModified(metadata);
   }
 
   accumulate({stat, aggregate, invert}) {
@@ -45,6 +46,7 @@ export default class extends Mixin {
       data[key] = this._accumulateRegister(data[key], {val, type, invert});
     }
     this.data = data;
+    this.markModified('data');
   }
 
   _accumulateRegister(obj, {val, type, invert}) {
