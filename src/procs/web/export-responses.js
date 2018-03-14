@@ -33,10 +33,11 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
         }),
         'collectOneStatistic',
       ).then((out) => {
-        this.writer.end(null, null, () => res(console.log({
-          processedStats: out ? out.length : 0,
+        this.writer.end(null, null, () => res(console.log(JSON.stringify({
+          _logHeader: 'stats',
+          processedStats: out,
           numRows: this.rowCount,
-        })));
+        }))));
       });
     });
   }

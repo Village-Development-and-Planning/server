@@ -1468,10 +1468,11 @@ var ExportResponses = function (_Mixin$mixin) {
           key: _this3.surveyId
         }), 'collectOneStatistic').then(function (out) {
           _this3.writer.end(null, null, function () {
-            return res(console.log({
-              processedStats: out ? out.length : 0,
+            return res(console.log(JSON.stringify({
+              _logHeader: 'stats',
+              processedStats: out,
               numRows: _this3.rowCount
-            }));
+            })));
           });
         });
       });
