@@ -2400,7 +2400,7 @@ var CollectResponses = function (_Mixin$mixin) {
       return this.iterateCursor(_Answer2.default.find({
         survey: this.surveyId,
         lastExport: null
-      }).limit(5000), 'collectOneAnswer').then(function (answers) {
+      }).limit(50000), 'collectOneAnswer').then(function (answers) {
         return _this3.answers = answers;
       }).then(function () {
         return _this3.saveAggregates();
@@ -2412,7 +2412,7 @@ var CollectResponses = function (_Mixin$mixin) {
           answers: _this3.answers,
           answersCount: _this3.answersCount,
           totalStatsCount: _this3.totalStatsCount
-        }));
+        }, null, 2));
       });
     }
   }, {
@@ -2853,7 +2853,7 @@ var _class = function (_Mixin) {
                             key: agg.key,
                             metadata: agg.metadata,
                             data: agg.data
-                          }));
+                          }, null, 2));
 
                           if (!agg.aggregates) {
                             _context.next = 12;

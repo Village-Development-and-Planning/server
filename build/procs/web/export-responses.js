@@ -1537,7 +1537,7 @@ var ExportResponses = function (_Mixin$mixin) {
                               respondent: _number,
                               processed: out,
                               numRows: _this3.rowCount
-                            }));
+                            }, null, 2));
                           });
 
                         case 10:

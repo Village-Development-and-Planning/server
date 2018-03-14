@@ -41,7 +41,7 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
             respondent: number,
             processed: out,
             numRows: this.rowCount,
-          }));
+          }, null, 2));
         });
       }
     });

@@ -39,7 +39,7 @@ export default class extends Mixin {
           key: agg.key,
           metadata: agg.metadata,
           data: agg.data,
-        })));
+        }, null, 2)));
         if (agg.aggregates) {
           yield Promise.resolve(
             this.accumulateAggregates({
