@@ -23,15 +23,10 @@ export default class {
     this.question = this.survey.question;
     this.answeredQuestion = this.answer.rootQuestion;
 
-    this.respondents = this.survey.respondents;
-    if (!this.respondents || !this.respondents.length) {
-      this.respondents = [null];
-    }
+    this.ignores = this.respondents.map(({number}) => number);
 
-    this.ignores = this.respondents;
-
-    for (let respondent of this.respondents) {
-      const c = Object.setPrototypeOf({respondent}, this);
+    for (let {number} of this.respondents) {
+      const c = Object.setPrototypeOf({respondent: number}, this);
       for (let [ctx, prev] of this.answeredQuestion.walkRespondents(c)) {
         this._iterProc([ctx, prev]);
         if (ctx.type === 'respondent') {
@@ -91,11 +86,14 @@ export default class {
   }
 
   addValue(key, value, description) {
-    if (!this.keys[`pos${key}`]) {
-      this.keys.push(key);
-      this.keys[`pos${key}`] = description ||
-        `${this.question.number || 'N'}. ` +
-        `${this.question.text.english || 'TEXT'}`;
+    const {keys, keysHash} = this.keys[String(this.respondent || null)];
+    if (!keysHash[key]) {
+      description = description
+      ||`${this.question.number || 'N'}. `
+        + `${this.question.text.english || 'TEXT'}`;
+
+      keys.push({key, description});
+      keysHash[key] = 1;
     }
     this.data[key] = value;
   }

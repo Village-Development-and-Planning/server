@@ -13,46 +13,53 @@ export default class extends Mixin {
       if (!survey) {
         return Promise.reject(`Survey: ${this.surveyId} not found.`);
       }
+      this.respondents = this.survey.getRespondents();
     });
   }
 
+
   getExportHeader() {
-    return Statistic
-    .findOne({key: this.surveyId, type: 'SurveyResponseHeader'})
-    .then((stat) => {
-      this.collectionKeys = [];
-      if (stat && stat.data) {
-        this.collectionKeys = stat.data.keys;
-        if (stat.data.keyDescriptions) {
-          this.collectionKeys.forEach((key, idx) => {
-            this.collectionKeys[`pos${key}`] = stat.data.keyDescriptions[idx];
-          });
-        }
-      }
-    });
+    this.answerKeys = {};
+    return Promise.all(
+      this.respondents.map(({number, opts}) => {
+        this.answerKeys[String(number)] = {
+          keys: [],
+          keysHash: {},
+        };
+        return Statistic
+        .findOne({
+          key: `${this.surveyId}/${number}`,
+          type: 'SurveyResponseHeader',
+        })
+        .then((stat) => {
+          if (!stat || !stat.data || !stat.data.keys) return;
+          const keys = stat.data.keys;
+          const keysHash = keys.reduce(
+            (acc, el) => ((acc[el.key] = 1), acc),
+            {},
+          );
+          this.answerKeys[String(number)] = {keys, keysHash};
+        });
+      })
+    );
   }
 
   updateExportHeader() {
-    const data = this.sortKeys().reduce(
-      ({keys, keyDescriptions}, {key, index}) => {
-        keys.push(key);
-        keyDescriptions.push(this.collectionKeys[`pos${key}`]);
-        return {keys, keyDescriptions};
-      },
-      {keys: [], keyDescriptions: []},
-    );
-    return Statistic
-    .findOneAndUpdate(
-      {key: this.surveyId, type: 'SurveyResponseHeader'},
-      {data},
-      {upsert: true},
+    return Promise.all(
+      Object.keys(this.answerKeys).map((key) => {
+        const {keys} = this.answerKeys[key];
+        return Statistic.findOneAndUpdate({
+          key: `${this.surveyId}/${key}`,
+          type: 'SurveyResponseHeader',
+        }, {
+          data: {keys: this.sortKeys(keys)},
+        }, {upsert: 1, new: 1});
+      })
     );
   }
 
-  sortKeys() {
-    return this.collectionKeys
-    .map((key, index) => ({key, index}))
-    .sort(this._keyListComparator.bind(this));
+  sortKeys(keys) {
+    return keys.sort(this._keyListComparator.bind(this));
   }
 
   _questionNumberParser(acc, el) {

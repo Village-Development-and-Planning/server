@@ -30,39 +30,44 @@ class SurveyController extends EntityController {
   }
 
   answers() {
+    const resp = this.req.query.resp || null;
     let _id = this.req.params.id;
+    const key = `${_id}/${resp}`;
     this.renderer.renderPromise(
-      Statistic.findOne({type: 'SurveyResponseHeader', key: _id})
+      Statistic.findOne({type: 'SurveyResponseHeader', key})
       .then(
-        (header) => (header && header.data) || {keys: [], keyDescriptions: []}
-      ).then(({keys, keyDescriptions}) => {
+        (header) => (header && header.data) || {keys: []}
+      ).then(({keys}) => {
         return Statistic.find({
-          type: 'SurveyResponse', key: _id,
+          type: 'SurveyResponse', key,
         }).limit(50)
         .then((stats) => stats.reduce(
           (acc, stat) => {
             let data = stat.data;
             if (data) {
               acc.push(
-                keys.map((k) => data[k])
+                keys.map(({key}) => data[key])
               );
             }
             return acc;
-          },
-          [keys, keyDescriptions],
+          }, [
+            keys.map(({key}) => key),
+            keys.map(({description}) => description),
+          ],
         ));
       })
     );
   }
 
   download() {
+    const resp = this.req.query.resp || null;
     return Promise.resolve(this._getQuery())
     .then((q) => q && this._findOne(q))
     .then((e) => e || Promise.reject(new Error('Entity not found.')))
     .catch((err) => this.renderer.renderPromise(Promise.reject(err)))
     .then((survey) => {
       const _id = survey._id;
-      const path = `data/export-responses/${_id}.csv`;
+      const path = `data/export-responses/${_id}-${resp}.csv`;
       if (fs.existsSync(path)) {
         const res = this.renderer.res;
         res.attachment(`${survey.name || _id}.csv`);
@@ -87,13 +92,16 @@ class SurveyController extends EntityController {
 
   _findOne(query) {
     return super._findOne(query).select('-question')
-    .then((survey) => survey.toObject())
-    .then((survey) => co(function* () {
-      let aStats = survey.answerStats = survey.answerStats || {};
-      aStats.total = yield Answer.count({
+    .then((mSurvey) => co.call(this, function* () {
+      if (!mSurvey) return;
+      const survey = mSurvey.toObject();
+      let total = yield Answer.count({
         survey: survey._id,
       });
-      aStats.processed = aStats.processed || 0;
+      const respondents = mSurvey.getRespondents();
+      survey.answerStats = survey.answerStats || {};
+      Object.assign(survey.answerStats, {total});
+      Object.assign(survey, {respondents});
       return survey;
     }));
   }

@@ -48,7 +48,8 @@ export default class extends Mixin {
     if (typeof respondent === 'undefined') throw new Error('Respondent needed');
 
     if (
-      (!respondent && question.type === 'ROOT')
+      (!respondent && (question.type === 'ROOT'))
+      || (!respondent && !question.number)
       || (question.number === respondent)
     ) {
       for (let ansCtx of this.walkAnswers()) {

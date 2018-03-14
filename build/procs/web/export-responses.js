@@ -115,7 +115,7 @@ module.exports = Schema;
 
 /***/ }),
 
-/***/ 10:
+/***/ 11:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -133,7 +133,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _hotFormulaParser = __webpack_require__(11);
+var _hotFormulaParser = __webpack_require__(12);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -499,22 +499,24 @@ exports.default = _class;
 
 /***/ }),
 
-/***/ 11:
+/***/ 12:
 /***/ (function(module, exports) {
 
 module.exports = require("hot-formula-parser");
 
 /***/ }),
 
-/***/ 12:
+/***/ 13:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 __webpack_require__(3);
 
-var _Question = __webpack_require__(13);
+var _Question = __webpack_require__(14);
 
 var _Question2 = _interopRequireDefault(_Question);
 
@@ -539,11 +541,34 @@ var surveySchema = new Schema({
 surveySchema.index({ name: 1 });
 surveySchema.index({ enabled: 1, name: 1 });
 
+surveySchema.methods = {
+  getRespondents: function getRespondents() {
+    if (!this.respondents || !this.respondents.length) {
+      this.respondents = [null];
+    }
+    return this.respondents.map(function (resp) {
+      var number = null,
+          opts = {};
+      if (!resp) return { number: number, opts: opts };
+      if ((typeof resp === 'undefined' ? 'undefined' : _typeof(resp)) !== 'object') {
+        number = String(resp);
+        if (!number) number = null;
+        return { number: number, opts: opts };
+      }
+      number = resp.number;
+      opts = resp.opts;
+
+      if (!number) number = null;
+      return { number: number, opts: opts };
+    });
+  }
+};
+
 module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
 
-/***/ 13:
+/***/ 14:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -558,7 +583,7 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 __webpack_require__(3);
 
 var Schema = __webpack_require__(1);
-var Text = __webpack_require__(14);
+var Text = __webpack_require__(15);
 var mongoose = __webpack_require__(0);
 
 var questionSchema = new Schema({
@@ -782,7 +807,7 @@ exports.default = Question;
 
 /***/ }),
 
-/***/ 14:
+/***/ 15:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -799,7 +824,7 @@ module.exports = new Schema({
 
 /***/ }),
 
-/***/ 15:
+/***/ 16:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -814,7 +839,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Process = __webpack_require__(7);
+var _Process = __webpack_require__(8);
 
 var _Process2 = _interopRequireDefault(_Process);
 
@@ -822,7 +847,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _child_process = __webpack_require__(16);
+var _child_process = __webpack_require__(17);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -908,7 +933,7 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procArgs) {
 
 /***/ }),
 
-/***/ 16:
+/***/ 17:
 /***/ (function(module, exports) {
 
 module.exports = require("child_process");
@@ -1013,7 +1038,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _Survey = __webpack_require__(12);
+var _Survey = __webpack_require__(13);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
@@ -1051,6 +1076,7 @@ var _class = function (_Mixin) {
         if (!survey) {
           return Promise.reject('Survey: ' + _this2.surveyId + ' not found.');
         }
+        _this2.respondents = _this2.survey.getRespondents();
       });
     }
   }, {
@@ -1058,41 +1084,48 @@ var _class = function (_Mixin) {
     value: function getExportHeader() {
       var _this3 = this;
 
-      return _Statistic2.default.findOne({ key: this.surveyId, type: 'SurveyResponseHeader' }).then(function (stat) {
-        _this3.collectionKeys = [];
-        if (stat && stat.data) {
-          _this3.collectionKeys = stat.data.keys;
-          if (stat.data.keyDescriptions) {
-            _this3.collectionKeys.forEach(function (key, idx) {
-              _this3.collectionKeys['pos' + key] = stat.data.keyDescriptions[idx];
-            });
-          }
-        }
-      });
+      this.answerKeys = {};
+      return Promise.all(this.respondents.map(function (_ref) {
+        var number = _ref.number,
+            opts = _ref.opts;
+
+        _this3.answerKeys[String(number)] = {
+          keys: [],
+          keysHash: {}
+        };
+        return _Statistic2.default.findOne({
+          key: _this3.surveyId + '/' + number,
+          type: 'SurveyResponseHeader'
+        }).then(function (stat) {
+          if (!stat || !stat.data || !stat.data.keys) return;
+          var keys = stat.data.keys;
+          var keysHash = keys.reduce(function (acc, el) {
+            return acc[el.key] = 1, acc;
+          }, {});
+          _this3.answerKeys[String(number)] = { keys: keys, keysHash: keysHash };
+        });
+      }));
     }
   }, {
     key: 'updateExportHeader',
     value: function updateExportHeader() {
       var _this4 = this;
 
-      var data = this.sortKeys().reduce(function (_ref, _ref2) {
-        var keys = _ref.keys,
-            keyDescriptions = _ref.keyDescriptions;
-        var key = _ref2.key,
-            index = _ref2.index;
+      return Promise.all(Object.keys(this.answerKeys).map(function (key) {
+        var keys = _this4.answerKeys[key].keys;
 
-        keys.push(key);
-        keyDescriptions.push(_this4.collectionKeys['pos' + key]);
-        return { keys: keys, keyDescriptions: keyDescriptions };
-      }, { keys: [], keyDescriptions: [] });
-      return _Statistic2.default.findOneAndUpdate({ key: this.surveyId, type: 'SurveyResponseHeader' }, { data: data }, { upsert: true });
+        return _Statistic2.default.findOneAndUpdate({
+          key: _this4.surveyId + '/' + key,
+          type: 'SurveyResponseHeader'
+        }, {
+          data: { keys: _this4.sortKeys(keys) }
+        }, { upsert: 1, new: 1 });
+      }));
     }
   }, {
     key: 'sortKeys',
-    value: function sortKeys() {
-      return this.collectionKeys.map(function (key, index) {
-        return { key: key, index: index };
-      }).sort(this._keyListComparator.bind(this));
+    value: function sortKeys(keys) {
+      return keys.sort(this._keyListComparator.bind(this));
     }
   }, {
     key: '_questionNumberParser',
@@ -1214,7 +1247,7 @@ exports.default = _class;
 "use strict";
 
 
-__webpack_require__(8);
+__webpack_require__(9);
 
 var _mongoose = __webpack_require__(0);
 
@@ -1264,7 +1297,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _Aggregates = __webpack_require__(10);
+var _Aggregates = __webpack_require__(11);
 
 var _Aggregates2 = _interopRequireDefault(_Aggregates);
 
@@ -1312,7 +1345,14 @@ module.exports = {
 
 /***/ }),
 
-/***/ 7:
+/***/ 6:
+/***/ (function(module, exports) {
+
+module.exports = require("co");
+
+/***/ }),
+
+/***/ 8:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1339,7 +1379,7 @@ module.exports = mongoose.model('Process', processSchema);
 
 /***/ }),
 
-/***/ 8:
+/***/ 9:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1395,7 +1435,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _childProcess = __webpack_require__(15);
+var _childProcess = __webpack_require__(16);
 
 var _Mixin = __webpack_require__(2);
 
@@ -1420,6 +1460,10 @@ var _csvStringify2 = _interopRequireDefault(_csvStringify);
 var _fs = __webpack_require__(23);
 
 var _fs2 = _interopRequireDefault(_fs);
+
+var _co = __webpack_require__(6);
+
+var _co2 = _interopRequireDefault(_co);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1453,29 +1497,121 @@ var ExportResponses = function (_Mixin$mixin) {
   }, {
     key: 'collectStatistics',
     value: function collectStatistics() {
-      var _this3 = this;
+      return _co2.default.call(this, /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+        var _this3 = this;
 
-      return new Promise(function (res, rej) {
-        _this3.writer = _this3._createCsvWriter(_this3.surveyId, rej);
-        _this3.writer.on('error', rej);
-        _this3.writer.write(_this3.collectionKeys);
-        _this3.writer.write(_this3.collectionKeys.map(function (k) {
-          return _this3.collectionKeys['pos' + k];
-        }));
-        _this3.rowCount = 2;
-        _this3.iterateCursor(_Statistic2.default.find({
-          type: 'SurveyResponse',
-          key: _this3.surveyId
-        }), 'collectOneStatistic').then(function (out) {
-          _this3.writer.end(null, null, function () {
-            return res(console.log(JSON.stringify({
-              _logHeader: 'stats',
-              processedStats: out,
-              numRows: _this3.rowCount
-            })));
-          });
-        });
-      });
+        var _loop, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, _ref, number;
+
+        return regeneratorRuntime.wrap(function _callee$(_context2) {
+          while (1) {
+            switch (_context2.prev = _context2.next) {
+              case 0:
+                _loop = /*#__PURE__*/regeneratorRuntime.mark(function _loop(_number) {
+                  var writer, keys;
+                  return regeneratorRuntime.wrap(function _loop$(_context) {
+                    while (1) {
+                      switch (_context.prev = _context.next) {
+                        case 0:
+                          if (!_number) _number = null;
+                          writer = _this3._createCsvWriter(_this3.surveyId, _number);
+                          keys = _this3.answerKeys[_number].keys;
+
+                          writer.write(keys.map(function (_ref2) {
+                            var key = _ref2.key;
+                            return key;
+                          }));
+                          writer.write(keys.map(function (_ref3) {
+                            var description = _ref3.description;
+                            return description;
+                          }));
+                          _this3.writer = writer;
+                          _this3.rowCount = 0;
+                          _this3.keys = keys;
+                          _context.next = 10;
+                          return _this3.iterateCursor(_Statistic2.default.find({
+                            type: 'SurveyResponse',
+                            key: _this3.surveyId + '/' + _number
+                          }), 'collectOneStatistic').then(function (out) {
+                            console.log(JSON.stringify({
+                              _logHeader: 'stats',
+                              respondent: _number,
+                              processed: out,
+                              numRows: _this3.rowCount
+                            }));
+                          });
+
+                        case 10:
+                          number = _number;
+
+                        case 11:
+                        case 'end':
+                          return _context.stop();
+                      }
+                    }
+                  }, _loop, _this3);
+                });
+                _iteratorNormalCompletion = true;
+                _didIteratorError = false;
+                _iteratorError = undefined;
+                _context2.prev = 4;
+                _iterator = this.respondents[Symbol.iterator]();
+
+              case 6:
+                if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
+                  _context2.next = 13;
+                  break;
+                }
+
+                _ref = _step.value;
+                number = _ref.number;
+                return _context2.delegateYield(_loop(number), 't0', 10);
+
+              case 10:
+                _iteratorNormalCompletion = true;
+                _context2.next = 6;
+                break;
+
+              case 13:
+                _context2.next = 19;
+                break;
+
+              case 15:
+                _context2.prev = 15;
+                _context2.t1 = _context2['catch'](4);
+                _didIteratorError = true;
+                _iteratorError = _context2.t1;
+
+              case 19:
+                _context2.prev = 19;
+                _context2.prev = 20;
+
+                if (!_iteratorNormalCompletion && _iterator.return) {
+                  _iterator.return();
+                }
+
+              case 22:
+                _context2.prev = 22;
+
+                if (!_didIteratorError) {
+                  _context2.next = 25;
+                  break;
+                }
+
+                throw _iteratorError;
+
+              case 25:
+                return _context2.finish(22);
+
+              case 26:
+                return _context2.finish(19);
+
+              case 27:
+              case 'end':
+                return _context2.stop();
+            }
+          }
+        }, _callee, this, [[4, 15, 19, 27], [20,, 22, 26]]);
+      }));
     }
   }, {
     key: 'collectOneStatistic',
@@ -1483,8 +1619,9 @@ var ExportResponses = function (_Mixin$mixin) {
       var _this4 = this;
 
       return new Promise(function (res, rej) {
-        _this4.writer.write(_this4.collectionKeys.map(function (k) {
-          return stat.data[k];
+        _this4.writer.write(_this4.keys.map(function (_ref4) {
+          var key = _ref4.key;
+          return stat.data[key];
         }), null, function () {
           ++_this4.rowCount;
           res(stat._id);
@@ -1493,13 +1630,19 @@ var ExportResponses = function (_Mixin$mixin) {
     }
   }, {
     key: '_createCsvWriter',
-    value: function _createCsvWriter(surveyId, errH) {
-      var path = 'data/export-responses/' + surveyId + '.csv';
+    value: function _createCsvWriter(surveyId, resp) {
+      var path = 'data/export-responses/' + surveyId + '-' + resp + '.csv';
       var mode = 'w';
       var fileStream = _fs2.default.createWriteStream(path, { encoding: 'utf8', flags: mode });
-      if (errH) fileStream.on('error', errH);
+      fileStream.on('error', function (err) {
+        throw err;
+      });
 
       var csvWriter = new _csvStringify2.default();
+      csvWriter.on('error', function (err) {
+        throw err;
+      });
+
       csvWriter.pipe(fileStream);
       csvWriter.on('end', function () {
         return fileStream.end();

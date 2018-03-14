@@ -7,6 +7,7 @@ import Statistic from '../../models/Statistic';
 
 import CSVWriter from 'csv-stringify';
 import fs from 'fs';
+import co from 'co';
 
 export default class ExportResponses
 extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
@@ -18,34 +19,38 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
   }
 
   collectStatistics() {
-    return new Promise((res, rej) => {
-      this.writer = this._createCsvWriter(this.surveyId, rej);
-      this.writer.on('error', rej);
-      this.writer.write(this.collectionKeys);
-      this.writer.write(this.collectionKeys.map(
-        (k) => this.collectionKeys[`pos${k}`]
-      ));
-      this.rowCount = 2;
-      this.iterateCursor(
-        Statistic.find({
-          type: 'SurveyResponse',
-          key: this.surveyId,
-        }),
-        'collectOneStatistic',
-      ).then((out) => {
-        this.writer.end(null, null, () => res(console.log(JSON.stringify({
-          _logHeader: 'stats',
-          processedStats: out,
-          numRows: this.rowCount,
-        }))));
-      });
+    return co.call(this, function* () {
+      for (let {number} of this.respondents) {
+        if (!number) number = null;
+        const writer = this._createCsvWriter(this.surveyId, number);
+        const {keys} = this.answerKeys[number];
+        writer.write(keys.map(({key}) => key));
+        writer.write(keys.map(({description}) => description));
+        this.writer = writer;
+        this.rowCount = 0;
+        this.keys = keys;
+        yield this.iterateCursor(
+          Statistic.find({
+            type: 'SurveyResponse',
+            key: `${this.surveyId}/${number}`,
+          }),
+          'collectOneStatistic'
+        ).then((out) => {
+          console.log(JSON.stringify({
+            _logHeader: 'stats',
+            respondent: number,
+            processed: out,
+            numRows: this.rowCount,
+          }));
+        });
+      }
     });
   }
 
   collectOneStatistic(stat) {
     return new Promise((res, rej) => {
       this.writer.write(
-        this.collectionKeys.map((k) => stat.data[k]),
+        this.keys.map(({key}) => stat.data[key]),
         null,
         () => {
           ++this.rowCount;
@@ -55,16 +60,22 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
     });
   }
 
-  _createCsvWriter(surveyId, errH) {
-    const path = `data/export-responses/${surveyId}.csv`;
+  _createCsvWriter(surveyId, resp) {
+    const path = `data/export-responses/${surveyId}-${resp}.csv`;
     const mode = 'w';
     const fileStream = fs.createWriteStream(
       path,
       {encoding: 'utf8', flags: mode},
     );
-    if (errH) fileStream.on('error', errH);
+    fileStream.on('error', (err) => {
+      throw err;
+    });
 
     const csvWriter = new CSVWriter();
+    csvWriter.on('error', (err) => {
+      throw err;
+    });
+
     csvWriter.pipe(fileStream);
     csvWriter.on('end', () => fileStream.end());
     return csvWriter;

@@ -75,7 +75,8 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
     let statsCount = 0;
     const collector = new AnswerCollector({
       survey, answer,
-      keys: this.collectionKeys,
+      keys: this.answerKeys,
+      respondents: this.respondents,
     });
 
     const promises = [];
@@ -91,7 +92,7 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
             if (ret && ret._ignore) return;
           }
           yield ctx.data;
-          return this.writeStatsObj(ctx.data)
+          return this.writeStatsObj(ctx.data, ctx.respondent || null)
           .then(() => ++statsCount);
         })
       );
@@ -176,9 +177,9 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
     }
   }
 
-  writeStatsObj(obj) {
+  writeStatsObj(obj, resp) {
     return Statistic.create({
-      key: this.surveyId,
+      key: `${this.surveyId}/${resp}`,
       type: 'SurveyResponse',
       data: obj,
     }).then(
