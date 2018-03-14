@@ -17,7 +17,7 @@ class SurveyController extends EntityController {
   reset() {
     let _id = this.req.params.id;
     this.renderer.renderPromise(
-      Statistic.deleteMany({key: _id})
+      Statistic.deleteMany({key: new RegExp('^' + _id)})
       .then(() => Answer.update(
         {survey: _id, lastExport: {$ne: null}},
         {lastExport: null},
@@ -91,7 +91,11 @@ class SurveyController extends EntityController {
   }
 
   _findOne(query) {
-    return super._findOne(query).select('-question')
+    const promise = super._findOne(query);
+    if (this.req.query.light) {
+      promise = promise.select('-question');
+    }
+    return promise
     .then((mSurvey) => co.call(this, function* () {
       if (!mSurvey) return;
       const survey = mSurvey.toObject();

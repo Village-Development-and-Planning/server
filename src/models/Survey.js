@@ -22,16 +22,12 @@ surveySchema.methods = {
       this.respondents = [null];
     }
     return this.respondents.map((resp) => {
-      let number = null, opts = {};
-      if (!resp) return {number, opts};
+      if (!resp) return {number: null};
       if (typeof resp !== 'object') {
-        number = String(resp);
-        if (!number) number = null;
-        return {number, opts};
+        return {number: String(resp)};
       }
-      ({number, opts} = resp);
-      if (!number) number = null;
-      return {number, opts};
+      if (!resp.number) resp.number = null;
+      return resp;
     });
   },
 

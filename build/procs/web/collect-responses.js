@@ -220,6 +220,7 @@ var schema = new _Schema2.default({
   metadata: { type: {} }
 });
 schema.index({ key: 1, type: 1 });
+schema.index({ type: 1 });
 _Aggregates2.default.copyTo(schema.methods);
 
 module.exports = _mongoose2.default.model('Statistic', schema);
@@ -767,19 +768,12 @@ surveySchema.methods = {
       this.respondents = [null];
     }
     return this.respondents.map(function (resp) {
-      var number = null,
-          opts = {};
-      if (!resp) return { number: number, opts: opts };
+      if (!resp) return { number: null };
       if ((typeof resp === 'undefined' ? 'undefined' : _typeof(resp)) !== 'object') {
-        number = String(resp);
-        if (!number) number = null;
-        return { number: number, opts: opts };
+        return { number: String(resp) };
       }
-      number = resp.number;
-      opts = resp.opts;
-
-      if (!number) number = null;
-      return { number: number, opts: opts };
+      if (!resp.number) resp.number = null;
+      return resp;
     });
   }
 };

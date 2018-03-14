@@ -220,6 +220,7 @@ var schema = new _Schema2.default({
   metadata: { type: {} }
 });
 schema.index({ key: 1, type: 1 });
+schema.index({ type: 1 });
 _Aggregates2.default.copyTo(schema.methods);
 
 module.exports = _mongoose2.default.model('Statistic', schema);
@@ -876,19 +877,12 @@ surveySchema.methods = {
       this.respondents = [null];
     }
     return this.respondents.map(function (resp) {
-      var number = null,
-          opts = {};
-      if (!resp) return { number: number, opts: opts };
+      if (!resp) return { number: null };
       if ((typeof resp === 'undefined' ? 'undefined' : _typeof(resp)) !== 'object') {
-        number = String(resp);
-        if (!number) number = null;
-        return { number: number, opts: opts };
+        return { number: String(resp) };
       }
-      number = resp.number;
-      opts = resp.opts;
-
-      if (!number) number = null;
-      return { number: number, opts: opts };
+      if (!resp.number) resp.number = null;
+      return resp;
     });
   }
 };
@@ -2257,7 +2251,7 @@ var SurveyController = function (_EntityController) {
       var _this2 = this;
 
       var _id = this.req.params.id;
-      this.renderer.renderPromise(_Statistic2.default.deleteMany({ key: _id }).then(function () {
+      this.renderer.renderPromise(_Statistic2.default.deleteMany({ key: new RegExp('^' + _id) }).then(function () {
         return _Answer2.default.update({ survey: _id, lastExport: { $ne: null } }, { lastExport: null }, { multi: true });
       }).then(function () {
         return _this2._findOneAndUpdate(_this2._getQuery(), { answerStats: { processed: 0 } });
@@ -2334,7 +2328,11 @@ var SurveyController = function (_EntityController) {
     value: function _findOne(query) {
       var _this4 = this;
 
-      return _get(SurveyController.prototype.__proto__ || Object.getPrototypeOf(SurveyController.prototype), '_findOne', this).call(this, query).select('-question').then(function (mSurvey) {
+      var promise = _get(SurveyController.prototype.__proto__ || Object.getPrototypeOf(SurveyController.prototype), '_findOne', this).call(this, query);
+      if (this.req.query.light) {
+        promise = promise.select('-question');
+      }
+      return promise.then(function (mSurvey) {
         return _co2.default.call(_this4, /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
           var survey, total, respondents;
           return regeneratorRuntime.wrap(function _callee$(_context) {

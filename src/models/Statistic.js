@@ -12,6 +12,7 @@ const schema = new Schema({
   metadata: {type: {}},
 });
 schema.index({key: 1, type: 1});
+schema.index({type: 1});
 Aggregates.copyTo(schema.methods);
 
 module.exports = mongoose.model('Statistic', schema);
