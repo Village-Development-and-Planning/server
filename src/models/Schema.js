@@ -9,10 +9,10 @@ const mongoose = require('mongoose');
  * @extends {mongoose.Schema}
  */
 class Schema extends mongoose.Schema {
-  constructor(schema) {
+  constructor(schema, opts) {
     super(Object.assign({
       modifiedAt: {type: Date, default: Date.now},
-    }, schema));
+    }, schema), opts);
   }
 }
 Schema.Types = mongoose.Schema.Types;

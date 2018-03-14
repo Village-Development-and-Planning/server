@@ -96,12 +96,12 @@ var mongoose = __webpack_require__(0);
 var Schema = function (_mongoose$Schema) {
   _inherits(Schema, _mongoose$Schema);
 
-  function Schema(schema) {
+  function Schema(schema, opts) {
     _classCallCheck(this, Schema);
 
     return _possibleConstructorReturn(this, (Schema.__proto__ || Object.getPrototypeOf(Schema)).call(this, Object.assign({
       modifiedAt: { type: Date, default: Date.now }
-    }, schema)));
+    }, schema), opts));
   }
 
   return Schema;
@@ -218,7 +218,7 @@ var schema = new _Schema2.default({
   name: { type: String },
   data: { type: {} },
   metadata: { type: {} }
-});
+}, { safe: { j: 1, w: 1 } });
 schema.index({ key: 1, type: 1 });
 _Aggregates2.default.copyTo(schema.methods);
 

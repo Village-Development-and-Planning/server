@@ -43,8 +43,6 @@ export default class extends Mixin {
             })
           );
         }
-        for (let dKey of Object.keys(agg.dependencies)) {
-        }
         delete this.aggregatesStore[aKey];
         aKeys = Object.keys(this.aggregatesStore);
       }

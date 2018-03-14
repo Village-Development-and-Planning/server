@@ -10,7 +10,7 @@ const schema = new Schema({
   name: {type: String},
   data: {type: {}},
   metadata: {type: {}},
-});
+}, {safe: {j: 1, w: 1}});
 schema.index({key: 1, type: 1});
 Aggregates.copyTo(schema.methods);
 

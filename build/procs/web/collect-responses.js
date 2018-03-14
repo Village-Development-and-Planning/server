@@ -96,12 +96,12 @@ var mongoose = __webpack_require__(0);
 var Schema = function (_mongoose$Schema) {
   _inherits(Schema, _mongoose$Schema);
 
-  function Schema(schema) {
+  function Schema(schema, opts) {
     _classCallCheck(this, Schema);
 
     return _possibleConstructorReturn(this, (Schema.__proto__ || Object.getPrototypeOf(Schema)).call(this, Object.assign({
       modifiedAt: { type: Date, default: Date.now }
-    }, schema)));
+    }, schema), opts));
   }
 
   return Schema;
@@ -218,7 +218,7 @@ var schema = new _Schema2.default({
   name: { type: String },
   data: { type: {} },
   metadata: { type: {} }
-});
+}, { safe: { j: 1, w: 1 } });
 schema.index({ key: 1, type: 1 });
 _Aggregates2.default.copyTo(schema.methods);
 
@@ -2736,8 +2736,7 @@ var _class = function (_Mixin) {
       return _co2.default.call(this, /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
         var _this2 = this;
 
-        var aKeys, aKey, agg, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, dKey;
-
+        var aKeys, aKey, agg;
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
@@ -2754,7 +2753,7 @@ var _class = function (_Mixin) {
 
               case 3:
                 if (!aKeys.length) {
-                  _context.next = 41;
+                  _context.next = 22;
                   break;
                 }
 
@@ -2823,59 +2822,17 @@ var _class = function (_Mixin) {
                 }));
 
               case 18:
-                _iteratorNormalCompletion2 = true;
-                _didIteratorError2 = false;
-                _iteratorError2 = undefined;
-                _context.prev = 21;
-
-                for (_iterator2 = Object.keys(agg.dependencies)[Symbol.iterator](); !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-                  dKey = _step2.value;
-                }
-                _context.next = 29;
-                break;
-
-              case 25:
-                _context.prev = 25;
-                _context.t0 = _context['catch'](21);
-                _didIteratorError2 = true;
-                _iteratorError2 = _context.t0;
-
-              case 29:
-                _context.prev = 29;
-                _context.prev = 30;
-
-                if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                  _iterator2.return();
-                }
-
-              case 32:
-                _context.prev = 32;
-
-                if (!_didIteratorError2) {
-                  _context.next = 35;
-                  break;
-                }
-
-                throw _iteratorError2;
-
-              case 35:
-                return _context.finish(32);
-
-              case 36:
-                return _context.finish(29);
-
-              case 37:
                 delete this.aggregatesStore[aKey];
                 aKeys = Object.keys(this.aggregatesStore);
                 _context.next = 3;
                 break;
 
-              case 41:
+              case 22:
               case 'end':
                 return _context.stop();
             }
           }
-        }, _callee, this, [[21, 25, 29, 37], [30,, 32, 36]]);
+        }, _callee, this);
       }));
     }
   }, {
@@ -2896,27 +2853,27 @@ var _class = function (_Mixin) {
         }));
       };
 
-      var _iteratorNormalCompletion3 = true;
-      var _didIteratorError3 = false;
-      var _iteratorError3 = undefined;
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
 
       try {
-        for (var _iterator3 = stat.walkAggregates(context)[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-          var ctx = _step3.value;
+        for (var _iterator2 = stat.walkAggregates(context)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var ctx = _step2.value;
 
           _loop(ctx);
         }
       } catch (err) {
-        _didIteratorError3 = true;
-        _iteratorError3 = err;
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion3 && _iterator3.return) {
-            _iterator3.return();
+          if (!_iteratorNormalCompletion2 && _iterator2.return) {
+            _iterator2.return();
           }
         } finally {
-          if (_didIteratorError3) {
-            throw _iteratorError3;
+          if (_didIteratorError2) {
+            throw _iteratorError2;
           }
         }
       }
