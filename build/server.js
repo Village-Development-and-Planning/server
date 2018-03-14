@@ -235,10 +235,8 @@ module.exports = _mongoose2.default.model('Statistic', schema);
 module.exports = {
   db: {
     connectionOptions: {
-      poolSize: 5,
-      useMongoClient: true,
-      j: true,
-      w: 1
+      poolSize: 2,
+      useMongoClient: true
     },
     connectionString: 'mongodb://localhost/test'
   },

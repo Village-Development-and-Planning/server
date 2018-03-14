@@ -1,10 +1,8 @@
 module.exports = {
   db: {
     connectionOptions: {
-      poolSize: 5,
+      poolSize: 2,
       useMongoClient: true,
-      j: true,
-      w: 1,
     },
     connectionString: 'mongodb://localhost/test',
   },
