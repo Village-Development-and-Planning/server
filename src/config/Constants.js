@@ -3,6 +3,9 @@ module.exports = {
     connectionOptions: {
       poolSize: 5,
       useMongoClient: true,
+      safe: {
+        j: true,
+      },
     },
     connectionString: 'mongodb://localhost/test',
   },

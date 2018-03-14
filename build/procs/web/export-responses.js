@@ -899,10 +899,8 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procArgs) {
   };
   this.promise = this.promise.then(function (proc) {
     return _this2.execute(proc);
-  }).then(function (output) {
-    return console.log('Output: ', output);
   }).catch(function (err) {
-    return console.log('Error: ', err);
+    console.error('Error: ', err);
   });
 };
 
@@ -1276,7 +1274,7 @@ var schema = new _Schema2.default({
   name: { type: String },
   data: { type: {} },
   metadata: { type: {} }
-}, { safe: { j: 1, w: 1 } });
+});
 schema.index({ key: 1, type: 1 });
 _Aggregates2.default.copyTo(schema.methods);
 
@@ -1294,7 +1292,10 @@ module.exports = {
   db: {
     connectionOptions: {
       poolSize: 5,
-      useMongoClient: true
+      useMongoClient: true,
+      safe: {
+        j: true
+      }
     },
     connectionString: 'mongodb://localhost/test'
   },

@@ -70,8 +70,8 @@ export class ChildTemplate {
     };
     this.promise = this.promise.then(
       (proc) => this.execute(proc),
-    )
-    .then((output) => console.log('Output: ', output))
-    .catch((err) => console.log('Error: ', err));
+    ).catch((err) => {
+      console.error('Error: ', err);
+    });
   }
 }

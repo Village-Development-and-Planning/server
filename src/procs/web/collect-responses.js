@@ -46,11 +46,11 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
     .then((answers) => this.answers = answers)
     .then(() => this.saveAggregates())
     .then(() => this._saveAnswerStats())
-    .then(() => ({
+    .then(() => (console.log({
       answers: this.answers,
       answersCount: this.answersCount,
       totalStatsCount: this.totalStatsCount,
-    }));
+    })));
   }
 
   _saveAnswerStats() {
