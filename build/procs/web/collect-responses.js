@@ -3146,6 +3146,7 @@ var _class = function () {
               }
 
               if (ctx.answer.startTimestamp && ctx.answer.endTimestamp) {
+                ctx.addValue('RESPONDENT', number, 'Respondent');
                 ctx.addValue('START_TIME', ctx.answer.startTimestamp.getTime(), 'Start');
                 ctx.addValue('END_TIME', ctx.answer.endTimestamp.getTime(), 'End');
               }

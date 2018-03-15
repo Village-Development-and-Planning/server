@@ -32,6 +32,9 @@ export default class {
         if (ctx.type === 'respondent') {
           if (ctx.answer.startTimestamp && ctx.answer.endTimestamp) {
             ctx.addValue(
+              'RESPONDENT', number, 'Respondent'
+            );
+            ctx.addValue(
               'START_TIME', ctx.answer.startTimestamp.getTime(), 'Start'
             );
             ctx.addValue(
