@@ -35,14 +35,14 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor) {
             key: `${this.surveyId}/${number}`,
           }),
           'collectOneStatistic'
-        ).then((out) => {
-          console.log(JSON.stringify({
+        ).then((out) => console.log(
+          JSON.stringify({
             _logHeader: 'stats',
             respondent: number,
             processed: out,
             numRows: this.rowCount,
-          }, null, 2));
-        });
+          }, null, 2))
+        );
       }
     });
   }

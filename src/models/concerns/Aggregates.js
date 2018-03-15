@@ -72,8 +72,6 @@ export default class extends Mixin {
         obj.value = 0;
       }
     } else if (type === 'histogram') {
-      console.log('Accumulating histogram');
-      console.log(obj, val);
       obj.value = obj.value || {};
       let count, value;
       if (typeof val === 'object') {

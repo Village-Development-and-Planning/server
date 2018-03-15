@@ -286,8 +286,6 @@ var _class = function (_Mixin) {
           obj.value = 0;
         }
       } else if (type === 'histogram') {
-        console.log('Accumulating histogram');
-        console.log(obj, val);
         obj.value = obj.value || {};
         var _count = void 0,
             _value = void 0;
@@ -1526,7 +1524,7 @@ var ExportResponses = function (_Mixin$mixin) {
                             type: 'SurveyResponse',
                             key: _this3.surveyId + '/' + _number
                           }), 'collectOneStatistic').then(function (out) {
-                            console.log(JSON.stringify({
+                            return console.log(JSON.stringify({
                               _logHeader: 'stats',
                               respondent: _number,
                               processed: out,

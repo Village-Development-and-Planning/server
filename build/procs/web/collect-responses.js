@@ -507,8 +507,6 @@ var _class = function (_Mixin) {
           obj.value = 0;
         }
       } else if (type === 'histogram') {
-        console.log('Accumulating histogram');
-        console.log(obj, val);
         obj.value = obj.value || {};
         var _count = void 0,
             _value = void 0;
