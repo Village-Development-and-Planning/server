@@ -162,7 +162,7 @@ var _class = function (_Mixin) {
 
       if (!aggregate.metadata) return;
       var parser = stat.parser();
-      var metadata = Object.assign({}, this.metadata);
+      var metadata = this.metadata || {};
 
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
@@ -194,7 +194,7 @@ var _class = function (_Mixin) {
       }
 
       this.metadata = metadata;
-      this.markModified(metadata);
+      this.markModified('metadata');
     }
   }, {
     key: 'accumulate',
@@ -206,7 +206,7 @@ var _class = function (_Mixin) {
       if (!aggregate.data) return;
 
       var parser = stat.parser();
-      var data = Object.assign({}, this.data);
+      var data = this.data || {};
 
       if (aggregate.select && !parser.value(aggregate.select)) return;
 
@@ -233,8 +233,6 @@ var _class = function (_Mixin) {
 
           var val = parser.value(formula);
           if (val === null || val === undefined) continue;
-
-          if (type === 'histogram') {}
           data[key] = this._accumulateRegister(data[key], { val: val, type: type, invert: invert });
         }
       } catch (err) {
@@ -288,19 +286,23 @@ var _class = function (_Mixin) {
           obj.value = 0;
         }
       } else if (type === 'histogram') {
+        console.log('Accumulating histogram');
+        console.log(obj, val);
         obj.value = obj.value || {};
         var _count = void 0,
             _value = void 0;
         if ((typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object') {
-          _value = val.value || val;
-          _count = Object.keys(_value).count;
+          _count = val.count || 0;
+          _value = val.value || {};
         } else {
           _value = _defineProperty({}, val, 1);
           _count = 1;
         }
         if ((typeof _value === 'undefined' ? 'undefined' : _typeof(_value)) !== 'object') {
           _value = _defineProperty({}, _value, 1);
+          _count = 1;
         }
+        if (!_count) _count = 1;
         var _iteratorNormalCompletion3 = true;
         var _didIteratorError3 = false;
         var _iteratorError3 = undefined;

@@ -5,7 +5,7 @@ export default class extends Mixin {
   initialize({stat, aggregate}) {
     if (!aggregate.metadata) return;
     const parser = stat.parser();
-    const metadata = Object.assign({}, this.metadata);
+    const metadata = this.metadata || {};
 
     for (let key of Object.keys(aggregate.metadata)) {
       const formula = aggregate.metadata[key] || key;
@@ -15,14 +15,14 @@ export default class extends Mixin {
       metadata[key] = val;
     }
     this.metadata = metadata;
-    this.markModified(metadata);
+    this.markModified('metadata');
   }
 
   accumulate({stat, aggregate, invert}) {
     if (!aggregate.data) return;
 
     const parser = stat.parser();
-    const data = Object.assign({}, this.data);
+    const data = this.data || {};
 
     if (aggregate.select && !parser.value(aggregate.select)) return;
 
@@ -40,9 +40,6 @@ export default class extends Mixin {
 
       const val = parser.value(formula);
       if (val === null || val === undefined) continue;
-
-      if (type === 'histogram') {
-      }
       data[key] = this._accumulateRegister(data[key], {val, type, invert});
     }
     this.data = data;
@@ -75,18 +72,22 @@ export default class extends Mixin {
         obj.value = 0;
       }
     } else if (type === 'histogram') {
+      console.log('Accumulating histogram');
+      console.log(obj, val);
       obj.value = obj.value || {};
       let count, value;
       if (typeof val === 'object') {
-        value = val.value || val;
-        count = Object.keys(value).count;
+        count = val.count || 0;
+        value = val.value || {};
       } else {
         value = {[val]: 1};
         count = 1;
       }
       if (typeof value !== 'object') {
         value = {[value]: 1};
+        count = 1;
       }
+      if (!count) count = 1;
       for (let k of Object.keys(value)) {
         obj.value[k] = obj.value[k] || 0;
         if (invert) {
