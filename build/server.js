@@ -712,73 +712,81 @@ var _class = function (_Mixin) {
 
             case 12:
               if (_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done) {
-                _context.next = 24;
+                _context.next = 26;
                 break;
               }
 
               agg = _step4.value;
               type = void 0, key = void 0;
 
-              if (!(!agg.key || !(key = parser.value(agg.key)))) {
+              if (!(agg.preSelect && !parser.value(agg.preSelect))) {
                 _context.next = 17;
                 break;
               }
 
-              return _context.abrupt('continue', 21);
+              return _context.abrupt('continue', 23);
 
             case 17:
+              if (!(!agg.key || !(key = parser.value(agg.key)))) {
+                _context.next = 19;
+                break;
+              }
+
+              return _context.abrupt('continue', 23);
+
+            case 19:
               if (agg.type) {
                 type = parser.value(agg.type);
               }
               if (!type) type === 'Aggregate';
-              _context.next = 21;
+              _context.next = 23;
               return { aggregate: agg, aggregateKey: { key: key, type: type } };
 
-            case 21:
+            case 23:
               _iteratorNormalCompletion4 = true;
               _context.next = 12;
               break;
 
-            case 24:
-              _context.next = 30;
+            case 26:
+              _context.next = 32;
               break;
 
-            case 26:
-              _context.prev = 26;
+            case 28:
+              _context.prev = 28;
               _context.t0 = _context['catch'](10);
               _didIteratorError4 = true;
               _iteratorError4 = _context.t0;
 
-            case 30:
-              _context.prev = 30;
-              _context.prev = 31;
+            case 32:
+              _context.prev = 32;
+              _context.prev = 33;
 
               if (!_iteratorNormalCompletion4 && _iterator4.return) {
                 _iterator4.return();
               }
 
-            case 33:
-              _context.prev = 33;
+            case 35:
+              _context.prev = 35;
 
               if (!_didIteratorError4) {
-                _context.next = 36;
+                _context.next = 38;
                 break;
               }
 
               throw _iteratorError4;
 
-            case 36:
-              return _context.finish(33);
-
-            case 37:
-              return _context.finish(30);
-
             case 38:
+              return _context.finish(35);
+
+            case 39:
+              return _context.finish(32);
+
+            case 40:
             case 'end':
               return _context.stop();
           }
         }
-      }, walkAggregates, this, [[10, 26, 30, 38], [31,, 33, 37]]);
+      }, walkAggregates, this, [[10, 28, 32, 40], [33,, 35, 39]]);
     })
   }, {
     key: 'parser',

@@ -603,73 +603,81 @@ var _class = function (_Mixin) {
 
             case 12:
               if (_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done) {
-                _context.next = 24;
+                _context.next = 26;
                 break;
               }
 
               agg = _step4.value;
               type = void 0, key = void 0;
 
-              if (!(!agg.key || !(key = parser.value(agg.key)))) {
+              if (!(agg.preSelect && !parser.value(agg.preSelect))) {
                 _context.next = 17;
                 break;
               }
 
-              return _context.abrupt('continue', 21);
+              return _context.abrupt('continue', 23);
 
             case 17:
+              if (!(!agg.key || !(key = parser.value(agg.key)))) {
+                _context.next = 19;
+                break;
+              }
+
+              return _context.abrupt('continue', 23);
+
+            case 19:
               if (agg.type) {
                 type = parser.value(agg.type);
               }
               if (!type) type === 'Aggregate';
-              _context.next = 21;
+              _context.next = 23;
               return { aggregate: agg, aggregateKey: { key: key, type: type } };
 
-            case 21:
+            case 23:
               _iteratorNormalCompletion4 = true;
               _context.next = 12;
               break;
 
-            case 24:
-              _context.next = 30;
+            case 26:
+              _context.next = 32;
               break;
 
-            case 26:
-              _context.prev = 26;
+            case 28:
+              _context.prev = 28;
               _context.t0 = _context['catch'](10);
               _didIteratorError4 = true;
               _iteratorError4 = _context.t0;
 
-            case 30:
-              _context.prev = 30;
-              _context.prev = 31;
+            case 32:
+              _context.prev = 32;
+              _context.prev = 33;
 
               if (!_iteratorNormalCompletion4 && _iterator4.return) {
                 _iterator4.return();
               }
 
-            case 33:
-              _context.prev = 33;
+            case 35:
+              _context.prev = 35;
 
               if (!_didIteratorError4) {
-                _context.next = 36;
+                _context.next = 38;
                 break;
               }
 
               throw _iteratorError4;
 
-            case 36:
-              return _context.finish(33);
-
-            case 37:
-              return _context.finish(30);
-
             case 38:
+              return _context.finish(35);
+
+            case 39:
+              return _context.finish(32);
+
+            case 40:
             case 'end':
               return _context.stop();
           }
         }
-      }, walkAggregates, this, [[10, 26, 30, 38], [31,, 33, 37]]);
+      }, walkAggregates, this, [[10, 28, 32, 40], [33,, 35, 39]]);
     })
   }, {
     key: 'parser',
@@ -3047,6 +3055,7 @@ var _class = function () {
   _createClass(_class, [{
     key: 'collect',
     value: function collect() {
+      this._processAnswer();
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
       var _iteratorError = undefined;
@@ -3114,7 +3123,7 @@ var _class = function () {
 
             case 12:
               if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
-                _context.next = 52;
+                _context.next = 54;
                 break;
               }
 
@@ -3129,7 +3138,7 @@ var _class = function () {
 
             case 21:
               if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
-                _context.next = 35;
+                _context.next = 37;
                 break;
               }
 
@@ -3141,103 +3150,104 @@ var _class = function () {
               this._iterProc([ctx, prev]);
 
               if (!(ctx.type === 'respondent')) {
-                _context.next = 32;
+                _context.next = 34;
                 break;
               }
 
+              ctx._cloneStore();
+              ctx.addValue('RESPONDENT', number, 'Respondent');
               if (ctx.answer.startTimestamp && ctx.answer.endTimestamp) {
-                ctx.addValue('RESPONDENT', number, 'Respondent');
                 ctx.addValue('START_TIME', ctx.answer.startTimestamp.getTime(), 'Start');
                 ctx.addValue('END_TIME', ctx.answer.endTimestamp.getTime(), 'End');
               }
               ctx.collect();
-              _context.next = 32;
+              _context.next = 34;
               return ctx;
 
-            case 32:
+            case 34:
               _iteratorNormalCompletion3 = true;
               _context.next = 21;
               break;
 
-            case 35:
-              _context.next = 41;
+            case 37:
+              _context.next = 43;
               break;
 
-            case 37:
-              _context.prev = 37;
+            case 39:
+              _context.prev = 39;
               _context.t0 = _context['catch'](19);
               _didIteratorError3 = true;
               _iteratorError3 = _context.t0;
 
-            case 41:
-              _context.prev = 41;
-              _context.prev = 42;
+            case 43:
+              _context.prev = 43;
+              _context.prev = 44;
 
               if (!_iteratorNormalCompletion3 && _iterator3.return) {
                 _iterator3.return();
               }
 
-            case 44:
-              _context.prev = 44;
+            case 46:
+              _context.prev = 46;
 
               if (!_didIteratorError3) {
-                _context.next = 47;
+                _context.next = 49;
                 break;
               }
 
               throw _iteratorError3;
 
-            case 47:
-              return _context.finish(44);
-
-            case 48:
-              return _context.finish(41);
-
             case 49:
+              return _context.finish(46);
+
+            case 50:
+              return _context.finish(43);
+
+            case 51:
               _iteratorNormalCompletion2 = true;
               _context.next = 12;
               break;
 
-            case 52:
-              _context.next = 58;
+            case 54:
+              _context.next = 60;
               break;
 
-            case 54:
-              _context.prev = 54;
+            case 56:
+              _context.prev = 56;
               _context.t1 = _context['catch'](10);
               _didIteratorError2 = true;
               _iteratorError2 = _context.t1;
 
-            case 58:
-              _context.prev = 58;
-              _context.prev = 59;
+            case 60:
+              _context.prev = 60;
+              _context.prev = 61;
 
               if (!_iteratorNormalCompletion2 && _iterator2.return) {
                 _iterator2.return();
               }
 
-            case 61:
-              _context.prev = 61;
+            case 63:
+              _context.prev = 63;
 
               if (!_didIteratorError2) {
-                _context.next = 64;
+                _context.next = 66;
                 break;
               }
 
               throw _iteratorError2;
 
-            case 64:
-              return _context.finish(61);
-
-            case 65:
-              return _context.finish(58);
-
             case 66:
+              return _context.finish(63);
+
+            case 67:
+              return _context.finish(60);
+
+            case 68:
             case 'end':
               return _context.stop();
           }
         }
-      }, collectRespondents, this, [[10, 54, 58, 66], [19, 37, 41, 49], [42,, 44, 48], [59,, 61, 65]]);
+      }, collectRespondents, this, [[10, 56, 60, 68], [19, 39, 43, 51], [44,, 46, 50], [61,, 63, 67]]);
     })
   }, {
     key: '_iterProc',
@@ -3275,7 +3285,7 @@ var _class = function () {
     key: '_processAnswer',
     value: function _processAnswer() {
       var qFlow = this.question.flow;
-      if (this.type !== 'respondentAnswer' && qFlow && qFlow.answer.scope === 'multiple') {
+      if (!this.type.startsWith('respondent') && qFlow && qFlow.answer.scope === 'multiple') {
         this.suffix = this.suffix + '_ans' + (this.answerIdx + 1);
       }
       var _iteratorNormalCompletion4 = true;

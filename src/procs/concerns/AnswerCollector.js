@@ -10,6 +10,7 @@ export default class {
   }
 
   collect() {
+    this._processAnswer();
     for (let arg of this.answeredQuestion.walkAnswer(this)) {
       this._iterProc(arg);
     }
@@ -30,10 +31,9 @@ export default class {
       for (let [ctx, prev] of this.answeredQuestion.walkRespondents(c)) {
         this._iterProc([ctx, prev]);
         if (ctx.type === 'respondent') {
+          ctx._cloneStore();
+          ctx.addValue('RESPONDENT', number, 'Respondent');
           if (ctx.answer.startTimestamp && ctx.answer.endTimestamp) {
-            ctx.addValue(
-              'RESPONDENT', number, 'Respondent'
-            );
             ctx.addValue(
               'START_TIME', ctx.answer.startTimestamp.getTime(), 'Start'
             );
@@ -76,7 +76,7 @@ export default class {
   _processAnswer() {
     const qFlow = this.question.flow;
     if (
-      (this.type !== 'respondentAnswer')
+      !(this.type.startsWith('respondent'))
       && qFlow
       && qFlow.answer.scope === 'multiple'
     ) {

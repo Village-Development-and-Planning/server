@@ -117,6 +117,7 @@ export default class extends Mixin {
     const parser = this.parser();
     for (let agg of aggregates) {
       let type, key;
+      if (agg.preSelect && !parser.value(agg.preSelect)) continue;
       if (!agg.key || !(key = parser.value(agg.key))) continue;
       if (agg.type) {
         type = parser.value(agg.type);
