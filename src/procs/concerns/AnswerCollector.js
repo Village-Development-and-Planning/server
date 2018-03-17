@@ -33,13 +33,14 @@ export default class {
         if (ctx.type === 'respondent') {
           ctx._cloneStore();
           ctx.addValue('RESPONDENT', number, 'Respondent');
-          if (ctx.answer.startTimestamp && ctx.answer.endTimestamp) {
-            ctx.addValue(
-              'START_TIME', ctx.answer.startTimestamp.getTime(), 'Start'
-            );
-            ctx.addValue(
-              'END_TIME', ctx.answer.endTimestamp.getTime(), 'End'
-            );
+          const answer = ctx.answer;
+          const startTime = answer.startTimestamp
+            && answer.startTimestamp.getTime();
+          const endTime = answer.endTimestamp
+            && answer.endTimestamp.getTime();
+          if (startTime && endTime && (startTime <= endTime)) {
+            ctx.addValue('START_TIME', startTime, 'Start time.');
+            ctx.addValue('END_TIME', endTime, 'End time.');
           }
           ctx.collect();
           yield ctx;

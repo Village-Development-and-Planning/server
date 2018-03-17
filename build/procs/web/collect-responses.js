@@ -3084,7 +3084,7 @@ var _class = function () {
   }, {
     key: 'collectRespondents',
     value: /*#__PURE__*/regeneratorRuntime.mark(function collectRespondents() {
-      var _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, _ref2, number, c, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, _ref3, _ref4, ctx, prev;
+      var _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, _ref2, number, c, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, _ref3, _ref4, ctx, prev, answer, startTime, endTime;
 
       return regeneratorRuntime.wrap(function collectRespondents$(_context) {
         while (1) {
@@ -3123,7 +3123,7 @@ var _class = function () {
 
             case 12:
               if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
-                _context.next = 54;
+                _context.next = 57;
                 break;
               }
 
@@ -3138,7 +3138,7 @@ var _class = function () {
 
             case 21:
               if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
-                _context.next = 37;
+                _context.next = 40;
                 break;
               }
 
@@ -3150,104 +3150,108 @@ var _class = function () {
               this._iterProc([ctx, prev]);
 
               if (!(ctx.type === 'respondent')) {
-                _context.next = 34;
+                _context.next = 37;
                 break;
               }
 
               ctx._cloneStore();
               ctx.addValue('RESPONDENT', number, 'Respondent');
-              if (ctx.answer.startTimestamp && ctx.answer.endTimestamp) {
-                ctx.addValue('START_TIME', ctx.answer.startTimestamp.getTime(), 'Start');
-                ctx.addValue('END_TIME', ctx.answer.endTimestamp.getTime(), 'End');
+              answer = ctx.answer;
+              startTime = answer.startTimestamp && answer.startTimestamp.getTime();
+              endTime = answer.endTimestamp && answer.endTimestamp.getTime();
+
+              if (startTime && endTime && startTime <= endTime) {
+                ctx.addValue('START_TIME', startTime, 'Start time.');
+                ctx.addValue('END_TIME', endTime, 'End time.');
               }
               ctx.collect();
-              _context.next = 34;
+              _context.next = 37;
               return ctx;
 
-            case 34:
+            case 37:
               _iteratorNormalCompletion3 = true;
               _context.next = 21;
               break;
 
-            case 37:
-              _context.next = 43;
+            case 40:
+              _context.next = 46;
               break;
 
-            case 39:
-              _context.prev = 39;
+            case 42:
+              _context.prev = 42;
               _context.t0 = _context['catch'](19);
               _didIteratorError3 = true;
               _iteratorError3 = _context.t0;
 
-            case 43:
-              _context.prev = 43;
-              _context.prev = 44;
+            case 46:
+              _context.prev = 46;
+              _context.prev = 47;
 
               if (!_iteratorNormalCompletion3 && _iterator3.return) {
                 _iterator3.return();
               }
 
-            case 46:
-              _context.prev = 46;
+            case 49:
+              _context.prev = 49;
 
               if (!_didIteratorError3) {
-                _context.next = 49;
+                _context.next = 52;
                 break;
               }
 
               throw _iteratorError3;
 
-            case 49:
+            case 52:
+              return _context.finish(49);
+
+            case 53:
               return _context.finish(46);
 
-            case 50:
-              return _context.finish(43);
-
-            case 51:
+            case 54:
               _iteratorNormalCompletion2 = true;
               _context.next = 12;
               break;
 
-            case 54:
-              _context.next = 60;
+            case 57:
+              _context.next = 63;
               break;
 
-            case 56:
-              _context.prev = 56;
+            case 59:
+              _context.prev = 59;
               _context.t1 = _context['catch'](10);
               _didIteratorError2 = true;
               _iteratorError2 = _context.t1;
 
-            case 60:
-              _context.prev = 60;
-              _context.prev = 61;
+            case 63:
+              _context.prev = 63;
+              _context.prev = 64;
 
               if (!_iteratorNormalCompletion2 && _iterator2.return) {
                 _iterator2.return();
               }
 
-            case 63:
-              _context.prev = 63;
+            case 66:
+              _context.prev = 66;
 
               if (!_didIteratorError2) {
-                _context.next = 66;
+                _context.next = 69;
                 break;
               }
 
               throw _iteratorError2;
 
-            case 66:
+            case 69:
+              return _context.finish(66);
+
+            case 70:
               return _context.finish(63);
 
-            case 67:
-              return _context.finish(60);
-
-            case 68:
+            case 71:
             case 'end':
               return _context.stop();
           }
         }
-      }, collectRespondents, this, [[10, 56, 60, 68], [19, 39, 43, 51], [44,, 46, 50], [61,, 63, 67]]);
+      }, collectRespondents, this, [[10, 59, 63, 71], [19, 42, 46, 54], [47,, 49, 53], [64,, 66, 70]]);
     })
   }, {
     key: '_iterProc',
