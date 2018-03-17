@@ -2412,7 +2412,7 @@ var CollectResponses = function (_Mixin$mixin) {
           answers: _this3.answers,
           answersCount: _this3.answersCount,
           totalStatsCount: _this3.totalStatsCount
-        }, null, 2));
+        }));
       });
     }
   }, {
@@ -2853,7 +2853,7 @@ var _class = function (_Mixin) {
                             key: agg.key,
                             metadata: agg.metadata,
                             data: agg.data
-                          }, null, 2));
+                          }));
 
                           if (!agg.aggregates) {
                             _context.next = 12;

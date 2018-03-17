@@ -51,7 +51,7 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
       answers: this.answers,
       answersCount: this.answersCount,
       totalStatsCount: this.totalStatsCount,
-    }, null, 2)));
+    })));
   }
 
   _saveAnswerStats() {
