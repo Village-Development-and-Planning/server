@@ -1222,7 +1222,9 @@ var _class = function (_Mixin) {
       var _this2 = this;
 
       var iterProc = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'iteration';
+      var cursorOpts = arguments[2];
 
+      cursorOpts = cursorOpts || { batchSize: 50 };
       return new Promise(function (res, rej) {
         var promises = [];
         var cursor = query.cursor();

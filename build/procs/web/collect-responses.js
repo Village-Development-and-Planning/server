@@ -2165,7 +2165,9 @@ var _class = function (_Mixin) {
       var _this2 = this;
 
       var iterProc = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'iteration';
+      var cursorOpts = arguments[2];
 
+      cursorOpts = cursorOpts || { batchSize: 50 };
       return new Promise(function (res, rej) {
         var promises = [];
         var cursor = query.cursor();
@@ -2587,7 +2589,7 @@ var CollectResponses = function (_Mixin$mixin) {
         console.error(e.stack);
         return Promise.resolve({ status: 'ERROR', _id: answer._id });
       }).then(function (remarks) {
-        if (_this4.answersCount && !(_this4.answersCount % 500)) {
+        if (_this4.answersCount && !(_this4.answersCount % 50)) {
           return _this4._saveAnswerStats().then(function () {
             return remarks;
           });
