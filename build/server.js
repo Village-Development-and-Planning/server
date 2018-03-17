@@ -1387,7 +1387,7 @@ var aqSchema = new Schema({
       }
     }],
     startTimestamp: { type: Date },
-    endTimeStamp: { type: Date }
+    endTimestamp: { type: Date }
   }]
 });
 
