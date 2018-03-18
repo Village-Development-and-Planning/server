@@ -64,19 +64,17 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
 
   collectOneAnswer(answer) {
     if (!answer.rootQuestion) {
-      console.log(JSON.stringify({
-        _logHeader: 'answer',
+      (console.log(JSON.stringify({_logHeader: 'answer',
         _id: answer._id,
         status: 'SKIPPED', reason: 'EMPTY',
-      }));
+      })));
       return;
     }
     if (answer.version === 0) {
-      console.log(JSON.stringify({
-        _logHeader: 'answer',
+      (console.log(JSON.stringify({_logHeader: 'answer',
         _id: answer._id,
         status: 'SKIPPED', reason: 'VERSION0',
-      }));
+      })));
       return;
     }
 
@@ -129,7 +127,6 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
         return this._saveAnswerStats()
         .then(() => remarks);
       }
-      console.log(JSON.stringify(remarks));
     });
   }
 
@@ -185,7 +182,15 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
       const stat = new Statistic();
       stat.data = ctx.data;
       const parser = stat.parser();
-      if (!parser.value(select)) return {_ignore: true};
+      let value;
+      if (typeof select === 'string') {
+        value = parser.value(select);
+      } else if (Array.isArray(select)) {
+        value = select.some(parser.value.bind(parser));
+      }
+      if (!value) {
+        return {_ignore: true};
+      }
     }
     for (let key of Object.keys(obj)) {
       if (typeof obj[key] === 'string') {

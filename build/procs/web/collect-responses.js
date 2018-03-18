@@ -2465,16 +2465,14 @@ var CollectResponses = function (_Mixin$mixin) {
       var _this4 = this;
 
       if (!answer.rootQuestion) {
-        console.log(JSON.stringify({
-          _logHeader: 'answer',
+        console.log(JSON.stringify({ _logHeader: 'answer',
           _id: answer._id,
           status: 'SKIPPED', reason: 'EMPTY'
         }));
         return;
       }
       if (answer.version === 0) {
-        console.log(JSON.stringify({
-          _logHeader: 'answer',
+        console.log(JSON.stringify({ _logHeader: 'answer',
           _id: answer._id,
           status: 'SKIPPED', reason: 'VERSION0'
         }));
@@ -2639,7 +2637,6 @@ var CollectResponses = function (_Mixin$mixin) {
             return remarks;
           });
         }
-        console.log(JSON.stringify(remarks));
       });
     }
   }, {
@@ -2716,7 +2713,15 @@ var CollectResponses = function (_Mixin$mixin) {
         var stat = new _Statistic2.default();
         stat.data = ctx.data;
         var parser = stat.parser();
-        if (!parser.value(select)) return { _ignore: true };
+        var value = void 0;
+        if (typeof select === 'string') {
+          value = parser.value(select);
+        } else if (Array.isArray(select)) {
+          value = select.some(parser.value.bind(parser));
+        }
+        if (!value) {
+          return { _ignore: true };
+        }
       }
       var _iteratorNormalCompletion4 = true;
       var _didIteratorError4 = false;
