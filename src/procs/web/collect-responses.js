@@ -64,10 +64,20 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
 
   collectOneAnswer(answer) {
     if (!answer.rootQuestion) {
-      return {status: 'SKIPPED', reason: 'EMPTY', _id: answer._id};
+      console.log(JSON.stringify({
+        _logHeader: 'answer',
+        _id: answer._id,
+        status: 'SKIPPED', reason: 'EMPTY',
+      }));
+      return;
     }
     if (answer.version === 0) {
-      return {status: 'SKIPPED', reason: 'VERSION0', _id: answer._id};
+      console.log(JSON.stringify({
+        _logHeader: 'answer',
+        _id: answer._id,
+        status: 'SKIPPED', reason: 'VERSION0',
+      }));
+      return;
     }
 
     const survey = this.survey;
@@ -119,7 +129,7 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
         return this._saveAnswerStats()
         .then(() => remarks);
       }
-      return remarks;
+      console.log(JSON.stringify(remarks));
     });
   }
 
@@ -171,7 +181,12 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
 
   _ppClassDummy({select}, ctx) {
     const obj = ctx.data;
-    if (select && !obj[select]) return {_ignore: true};
+    if (select) {
+      const stat = new Statistic();
+      stat.data = ctx.data;
+      const parser = stat.parser();
+      if (!parser.value(select)) return {_ignore: true};
+    }
     for (let key of Object.keys(obj)) {
       if (typeof obj[key] === 'string') {
         if (obj[key].toUpperCase && obj[key].trim().toUpperCase() === 'DUMMY') {

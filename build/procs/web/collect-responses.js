@@ -696,6 +696,7 @@ var _class = function (_Mixin) {
       });
       parser.on('callVariable', function (name, done) {
         var data = _this2.data;
+        if (!data) return;
         var suffix = void 0;
         if (name.endsWith('__value')) {
           name = name.slice(0, -7);
@@ -2464,10 +2465,20 @@ var CollectResponses = function (_Mixin$mixin) {
       var _this4 = this;
 
       if (!answer.rootQuestion) {
-        return { status: 'SKIPPED', reason: 'EMPTY', _id: answer._id };
+        console.log(JSON.stringify({
+          _logHeader: 'answer',
+          _id: answer._id,
+          status: 'SKIPPED', reason: 'EMPTY'
+        }));
+        return;
       }
       if (answer.version === 0) {
-        return { status: 'SKIPPED', reason: 'VERSION0', _id: answer._id };
+        console.log(JSON.stringify({
+          _logHeader: 'answer',
+          _id: answer._id,
+          status: 'SKIPPED', reason: 'VERSION0'
+        }));
+        return;
       }
 
       var survey = this.survey;
@@ -2628,7 +2639,7 @@ var CollectResponses = function (_Mixin$mixin) {
             return remarks;
           });
         }
-        return remarks;
+        console.log(JSON.stringify(remarks));
       });
     }
   }, {
@@ -2701,7 +2712,12 @@ var CollectResponses = function (_Mixin$mixin) {
       var select = _ref3.select;
 
       var obj = ctx.data;
-      if (select && !obj[select]) return { _ignore: true };
+      if (select) {
+        var stat = new _Statistic2.default();
+        stat.data = ctx.data;
+        var parser = stat.parser();
+        if (!parser.value(select)) return { _ignore: true };
+      }
       var _iteratorNormalCompletion4 = true;
       var _didIteratorError4 = false;
       var _iteratorError4 = undefined;

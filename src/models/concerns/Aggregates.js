@@ -139,6 +139,7 @@ export default class extends Mixin {
     });
     parser.on('callVariable', (name, done) => {
       const data = this.data;
+      if (!data) return;
       let suffix;
       if (name.endsWith('__value')) {
         name = name.slice(0, -7);

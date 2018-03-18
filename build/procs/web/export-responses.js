@@ -474,6 +474,7 @@ var _class = function (_Mixin) {
       });
       parser.on('callVariable', function (name, done) {
         var data = _this2.data;
+        if (!data) return;
         var suffix = void 0;
         if (name.endsWith('__value')) {
           name = name.slice(0, -7);
