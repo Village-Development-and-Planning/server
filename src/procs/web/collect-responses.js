@@ -85,16 +85,19 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
       ctx.addValue('ANSWER_ID', answer._id, 'Answer Id');
       promises.push(
         co.call(this, function* () {
+          // console.log('Survey Response constructed.');
           for (let p of surveyPP) {
             let func = p.class && this[`_ppClass${p.class}`];
             let ret;
-            if (func) ret = yield (func(p, ctx) || {});
-            if (ret && ret._ignore) return;
+            if (func) ret = yield Promise.resolve(func(p, ctx));
+            if (ret && ret._ignore) {
+              return;
+            }
           }
           yield ctx.data;
           return this.writeStatsObj(ctx.data, ctx.respondent || null)
           .then(() => ++statsCount);
-        })
+        }),
       );
     }
     return Promise.all(promises)
@@ -107,6 +110,7 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
       return {status: 'DONE', statsCount, _id: answer._id};
     }).catch((e) => {
       e = e || {message: 'UNKNOWN'};
+      console.error('Error saving answer:');
       console.error(e.message || e);
       console.error(e.stack);
       return Promise.resolve({status: 'ERROR', _id: answer._id});
@@ -182,7 +186,11 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
       key: `${this.surveyId}/${resp}`,
       type: 'SurveyResponse',
       data: obj,
-    }).then(
+    })
+    .then((stat) => {
+      return stat;
+    })
+    .then(
       (stat) => this.accumulateAggregates(
         {stat, aggregates: this.survey.aggregates}
       )

@@ -273,6 +273,7 @@ var processSchema = new Schema({
     args: { type: {} },
     status: { type: String },
     exitCode: { type: Number },
+    exitSignal: { type: String },
     stdout: { type: String },
     stderr: { type: String },
     startDate: { type: Date, default: Date.now },
@@ -2139,6 +2140,10 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
+var _co = __webpack_require__(6);
+
+var _co2 = _interopRequireDefault(_co);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -2162,21 +2167,48 @@ var _class = function (_Mixin) {
   _createClass(_class, [{
     key: 'iterateCursor',
     value: function iterateCursor(query) {
-      var _this2 = this;
-
       var iterProc = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'iteration';
-      var cursorOpts = arguments[2];
+      var opts = arguments[2];
 
-      cursorOpts = cursorOpts || { batchSize: 50 };
-      return new Promise(function (res, rej) {
-        var promises = [];
-        var cursor = query.cursor();
-        cursor.on('data', function (doc) {
-          return doc && promises.push(_this2[iterProc](doc));
-        }).on('end', function () {
-          return res(Promise.all(promises));
-        });
-      });
+      opts = Object.assign({ bufferSize: 50 }, opts);
+      return _co2.default.call(this, /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+        var cursor, doc;
+        return regeneratorRuntime.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                cursor = query.cursor({ batchSize: opts.bufferSize });
+                _context.next = 3;
+                return cursor.next();
+
+              case 3:
+                doc = _context.sent;
+
+              case 4:
+                if (!(doc != null)) {
+                  _context.next = 12;
+                  break;
+                }
+
+                _context.next = 7;
+                return Promise.resolve(this[iterProc](doc));
+
+              case 7:
+                _context.next = 9;
+                return cursor.next();
+
+              case 9:
+                doc = _context.sent;
+                _context.next = 4;
+                break;
+
+              case 12:
+              case 'end':
+                return _context.stop();
+            }
+          }
+        }, _callee, this);
+      }));
     }
   }]);
 
@@ -2459,6 +2491,7 @@ var CollectResponses = function (_Mixin$mixin) {
             while (1) {
               switch (_context.prev = _context.next) {
                 case 0:
+                  // console.log('Survey Response constructed.');
                   _iteratorNormalCompletion2 = true;
                   _didIteratorError2 = false;
                   _iteratorError2 = undefined;
@@ -2481,7 +2514,7 @@ var CollectResponses = function (_Mixin$mixin) {
                   }
 
                   _context.next = 12;
-                  return func(p, ctx) || {};
+                  return Promise.resolve(func(p, ctx));
 
                 case 12:
                   ret = _context.sent;
@@ -2585,6 +2618,7 @@ var CollectResponses = function (_Mixin$mixin) {
         return { status: 'DONE', statsCount: statsCount, _id: answer._id };
       }).catch(function (e) {
         e = e || { message: 'UNKNOWN' };
+        console.error('Error saving answer:');
         console.error(e.message || e);
         console.error(e.stack);
         return Promise.resolve({ status: 'ERROR', _id: answer._id });
@@ -2706,6 +2740,8 @@ var CollectResponses = function (_Mixin$mixin) {
         key: this.surveyId + '/' + resp,
         type: 'SurveyResponse',
         data: obj
+      }).then(function (stat) {
+        return stat;
       }).then(function (stat) {
         return _this5.accumulateAggregates({ stat: stat, aggregates: _this5.survey.aggregates });
       });

@@ -382,6 +382,7 @@ var processSchema = new Schema({
     args: { type: {} },
     status: { type: String },
     exitCode: { type: Number },
+    exitSignal: { type: String },
     stdout: { type: String },
     stderr: { type: String },
     startDate: { type: Date, default: Date.now },
