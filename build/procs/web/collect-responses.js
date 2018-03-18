@@ -2623,7 +2623,7 @@ var CollectResponses = function (_Mixin$mixin) {
         console.error(e.stack);
         return Promise.resolve({ status: 'ERROR', _id: answer._id });
       }).then(function (remarks) {
-        if (_this4.answersCount && !(_this4.answersCount % 50)) {
+        if (_this4.answersCount && !(_this4.answersCount % 100)) {
           return _this4._saveAnswerStats().then(function () {
             return remarks;
           });

@@ -115,7 +115,7 @@ extends Mixin.mixin(ChildTemplate, SurveyExport, Cursor, Aggregation) {
       console.error(e.stack);
       return Promise.resolve({status: 'ERROR', _id: answer._id});
     }).then((remarks) => {
-      if (this.answersCount && !(this.answersCount % 50)) {
+      if (this.answersCount && !(this.answersCount % 100)) {
         return this._saveAnswerStats()
         .then(() => remarks);
       }

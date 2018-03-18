@@ -56,7 +56,11 @@ export default class SurveyorController extends EntityController {
   }
 
   _getQuery() {
-    const query = super._getQuery();
+    let query = super._getQuery();
+    if (!query) {
+      let _id = this.req.params.id;
+      if (_id) query = {username: _id};
+    }
     return query && Object.assign(query, this._indexQuery());
   }
 

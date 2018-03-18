@@ -2821,6 +2821,10 @@ var SurveyorController = function (_EntityController) {
     key: '_getQuery',
     value: function _getQuery() {
       var query = _get(SurveyorController.prototype.__proto__ || Object.getPrototypeOf(SurveyorController.prototype), '_getQuery', this).call(this);
+      if (!query) {
+        var _id = this.req.params.id;
+        if (_id) query = { username: _id };
+      }
       return query && Object.assign(query, this._indexQuery());
     }
   }, {
@@ -5019,6 +5023,16 @@ var LocationController = function (_EntityController) {
         return Promise.resolve(query);
       }
       return _get(LocationController.prototype.__proto__ || Object.getPrototypeOf(LocationController.prototype), '_create', this).call(this, query);
+    }
+  }, {
+    key: '_getQuery',
+    value: function _getQuery() {
+      var query = _get(LocationController.prototype.__proto__ || Object.getPrototypeOf(LocationController.prototype), '_getQuery', this).call(this);
+      if (!query) {
+        var _id = this.req.params.id;
+        if (_id) query = { uid: _id.replace(/_/g, '/') };
+      }
+      return query && Object.assign(query, this._indexQuery());
     }
   }, {
     key: '_findOne',
