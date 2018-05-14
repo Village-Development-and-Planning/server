@@ -19,13 +19,20 @@ export default class LocationController extends EntityController {
     return super._create(query);
   }
 
+  _indexQuery() {
+    const query = super._indexQuery();
+    const {type} = this.req.query;
+    if (type) query.type = type;
+    return query;
+  }
+
   _getQuery() {
     let query = super._getQuery();
     if (!query) {
       let _id = this.req.params.id;
       if (_id) query = {uid: _id.replace(/_/g, '/')};
     }
-    return query && Object.assign(query, this._indexQuery());
+    return query;
   }
 
   _findOne(query) {

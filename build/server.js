@@ -5026,6 +5026,15 @@ var LocationController = function (_EntityController) {
       return _get(LocationController.prototype.__proto__ || Object.getPrototypeOf(LocationController.prototype), '_create', this).call(this, query);
     }
   }, {
+    key: '_indexQuery',
+    value: function _indexQuery() {
+      var query = _get(LocationController.prototype.__proto__ || Object.getPrototypeOf(LocationController.prototype), '_indexQuery', this).call(this);
+      var type = this.req.query.type;
+
+      if (type) query.type = type;
+      return query;
+    }
+  }, {
     key: '_getQuery',
     value: function _getQuery() {
       var query = _get(LocationController.prototype.__proto__ || Object.getPrototypeOf(LocationController.prototype), '_getQuery', this).call(this);
@@ -5033,7 +5042,7 @@ var LocationController = function (_EntityController) {
         var _id = this.req.params.id;
         if (_id) query = { uid: _id.replace(/_/g, '/') };
       }
-      return query && Object.assign(query, this._indexQuery());
+      return query;
     }
   }, {
     key: '_findOne',
