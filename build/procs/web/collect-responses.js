@@ -206,7 +206,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _Aggregates = __webpack_require__(11);
+var _Aggregates = __webpack_require__(12);
 
 var _Aggregates2 = _interopRequireDefault(_Aggregates);
 
@@ -295,6 +295,45 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _Schema = __webpack_require__(1);
+
+var _Schema2 = _interopRequireDefault(_Schema);
+
+var _mongoose = __webpack_require__(0);
+
+var _mongoose2 = _interopRequireDefault(_mongoose);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var schema = new _Schema2.default({
+  type: { type: String, required: true },
+  code: { type: String, required: true },
+  uid: { type: String, require: true },
+  name: { type: String, required: true },
+  children: [{
+    code: { type: String },
+    name: { type: String },
+    uid: { type: String }
+  }],
+  payload: { type: {} }
+});
+schema.index({ uid: 1, type: 1 });
+schema.index({ type: 1, code: 1 });
+schema.index({ name: 1, type: 1 });
+
+exports.default = _mongoose2.default.model('Location', schema);
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
 var _Constants = __webpack_require__(5);
 
 var _Constants2 = _interopRequireDefault(_Constants);
@@ -312,7 +351,7 @@ _mongoose2.default.Promise = global.Promise;
 exports.default = _mongoose2.default.connect(options.connectionString, options.connectionOptions);
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -337,7 +376,7 @@ userSchema.index({ roles: 1 });
 module.exports = mongoose.model('User', userSchema);
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -355,7 +394,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _hotFormulaParser = __webpack_require__(12);
+var _hotFormulaParser = __webpack_require__(13);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -729,13 +768,13 @@ var _class = function (_Mixin) {
 exports.default = _class;
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports) {
 
 module.exports = require("hot-formula-parser");
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -745,7 +784,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 __webpack_require__(3);
 
-var _Question = __webpack_require__(14);
+var _Question = __webpack_require__(15);
 
 var _Question2 = _interopRequireDefault(_Question);
 
@@ -789,7 +828,7 @@ surveySchema.methods = {
 module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -804,7 +843,7 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 __webpack_require__(3);
 
 var Schema = __webpack_require__(1);
-var Text = __webpack_require__(15);
+var Text = __webpack_require__(16);
 var mongoose = __webpack_require__(0);
 
 var questionSchema = new Schema({
@@ -1027,7 +1066,7 @@ var Question = mongoose.model('Question', questionSchema);
 exports.default = Question;
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1043,7 +1082,7 @@ module.exports = new Schema({
 });
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1066,7 +1105,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _child_process = __webpack_require__(17);
+var _child_process = __webpack_require__(18);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1151,49 +1190,10 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procArgs) {
 };
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports) {
 
 module.exports = require("child_process");
-
-/***/ }),
-/* 18 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _Schema = __webpack_require__(1);
-
-var _Schema2 = _interopRequireDefault(_Schema);
-
-var _mongoose = __webpack_require__(0);
-
-var _mongoose2 = _interopRequireDefault(_mongoose);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var schema = new _Schema2.default({
-  type: { type: String, required: true },
-  code: { type: String, required: true },
-  uid: { type: String, require: true },
-  name: { type: String, required: true },
-  children: [{
-    code: { type: String },
-    name: { type: String },
-    uid: { type: String }
-  }],
-  payload: { type: {} }
-});
-schema.index({ uid: 1, type: 1 });
-schema.index({ type: 1, code: 1 });
-schema.index({ name: 1, type: 1 });
-
-exports.default = _mongoose2.default.model('Location', schema);
 
 /***/ }),
 /* 19 */,
@@ -1985,7 +1985,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _Survey = __webpack_require__(13);
+var _Survey = __webpack_require__(14);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
@@ -2225,7 +2225,7 @@ exports.default = _class;
 "use strict";
 
 
-__webpack_require__(9);
+__webpack_require__(10);
 
 var _mongoose = __webpack_require__(0);
 
@@ -2345,7 +2345,7 @@ var _co = __webpack_require__(6);
 
 var _co2 = _interopRequireDefault(_co);
 
-var _childProcess = __webpack_require__(16);
+var _childProcess = __webpack_require__(17);
 
 var _Mixin = __webpack_require__(2);
 
@@ -2375,11 +2375,11 @@ var _Answer = __webpack_require__(20);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 
-var _Location = __webpack_require__(18);
+var _Location = __webpack_require__(9);
 
 var _Location2 = _interopRequireDefault(_Location);
 
-var _User = __webpack_require__(10);
+var _User = __webpack_require__(11);
 
 var _User2 = _interopRequireDefault(_User);
 

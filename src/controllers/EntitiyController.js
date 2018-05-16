@@ -31,10 +31,9 @@ class EntityController
     _parseBody() {
       return super._parseBody().then((obj) => {
         if (Array.isArray(obj)) {
-          return obj.map((o) => this._parseEntity(o));
+          return Promise.all(obj.map((o) => this._parseEntity(o)));
         } else {
-          obj = this._parseEntity(obj);
-          return obj;
+          return this._parseEntity(obj);
         }
       });
     }

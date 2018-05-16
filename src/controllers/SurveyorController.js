@@ -4,6 +4,8 @@ import SurveyorParser from '../lib/csv/surveyor-csv-parser';
 import User from '../models/User';
 import Statistic from '../models/Statistic';
 
+import Location from '../models/Location';
+
 /**
  * Surveyor document controller.
  *
@@ -19,9 +21,32 @@ export default class SurveyorController extends EntityController {
     return super._create(query);
   }
 
+  _addLocationPayload(obj, loc) {
+    if (!loc.payload) return obj;
+    for (let key of Object.keys(loc.payload || {})) {
+      obj[`payload.${key}`] = loc.payload[key];
+    }
+    obj[`payload.HABITATION_NAME`] = loc.children.map((c) => c.name);
+    return obj;
+  }
+
   _parseEntity(obj) {
     let filter = 'username name roles payload surveyor-csv _done';
-    return this._filterObject(obj, filter);
+    const payload = {};
+    let promise = false;
+    if (obj.panchayat) {
+      promise = Location.findOne({type: 'PANCHAYAT', uid: obj.panchayat}).then(
+        (loc) => loc && this._addLocationPayload(payload, loc)
+      );
+    }
+    if (obj.survey) {
+      payload['payload.SURVEY'] = obj.survey;
+    }
+    payload['payload.SURVEYOR_CODE'] = obj.username;
+    payload['payload.SURVEYOR_NAME'] = obj.name;
+    return promise ? promise.then(
+      () => Object.assign(payload, this._filterObject(obj, filter))
+    ) : Object.assign(payload, this._filterObject(obj, filter));
   }
 
   _parseFileField({mime, field, file, fields}) {
@@ -87,7 +112,7 @@ Object.assign(SurveyorController, {
   entityName: 'User',
   routeName: 'surveyors',
 
-  _findFields: '_id name username roles modifiedAt',
+  _findFields: '_id name username payload roles modifiedAt',
   _createFields: '_id name username roles modifiedAt',
 });
 module.exports = SurveyorController;

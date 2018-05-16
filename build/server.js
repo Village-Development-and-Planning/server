@@ -206,7 +206,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _Aggregates = __webpack_require__(11);
+var _Aggregates = __webpack_require__(12);
 
 var _Aggregates2 = _interopRequireDefault(_Aggregates);
 
@@ -343,12 +343,11 @@ var EntityController = function (_Mixin$mixin) {
 
       return _get(EntityController.prototype.__proto__ || Object.getPrototypeOf(EntityController.prototype), '_parseBody', this).call(this).then(function (obj) {
         if (Array.isArray(obj)) {
-          return obj.map(function (o) {
+          return Promise.all(obj.map(function (o) {
             return _this2._parseEntity(o);
-          });
+          }));
         } else {
-          obj = _this2._parseEntity(obj);
-          return obj;
+          return _this2._parseEntity(obj);
         }
       });
     }
@@ -404,6 +403,45 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _Schema = __webpack_require__(1);
+
+var _Schema2 = _interopRequireDefault(_Schema);
+
+var _mongoose = __webpack_require__(0);
+
+var _mongoose2 = _interopRequireDefault(_mongoose);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var schema = new _Schema2.default({
+  type: { type: String, required: true },
+  code: { type: String, required: true },
+  uid: { type: String, require: true },
+  name: { type: String, required: true },
+  children: [{
+    code: { type: String },
+    name: { type: String },
+    uid: { type: String }
+  }],
+  payload: { type: {} }
+});
+schema.index({ uid: 1, type: 1 });
+schema.index({ type: 1, code: 1 });
+schema.index({ name: 1, type: 1 });
+
+exports.default = _mongoose2.default.model('Location', schema);
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
 var _Constants = __webpack_require__(5);
 
 var _Constants2 = _interopRequireDefault(_Constants);
@@ -421,7 +459,7 @@ _mongoose2.default.Promise = global.Promise;
 exports.default = _mongoose2.default.connect(options.connectionString, options.connectionOptions);
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -446,7 +484,7 @@ userSchema.index({ roles: 1 });
 module.exports = mongoose.model('User', userSchema);
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -464,7 +502,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _hotFormulaParser = __webpack_require__(12);
+var _hotFormulaParser = __webpack_require__(13);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -838,13 +876,13 @@ var _class = function (_Mixin) {
 exports.default = _class;
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports) {
 
 module.exports = require("hot-formula-parser");
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -854,7 +892,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 __webpack_require__(3);
 
-var _Question = __webpack_require__(14);
+var _Question = __webpack_require__(15);
 
 var _Question2 = _interopRequireDefault(_Question);
 
@@ -898,7 +936,7 @@ surveySchema.methods = {
 module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -913,7 +951,7 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 __webpack_require__(3);
 
 var Schema = __webpack_require__(1);
-var Text = __webpack_require__(15);
+var Text = __webpack_require__(16);
 var mongoose = __webpack_require__(0);
 
 var questionSchema = new Schema({
@@ -1136,7 +1174,7 @@ var Question = mongoose.model('Question', questionSchema);
 exports.default = Question;
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1152,7 +1190,7 @@ module.exports = new Schema({
 });
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1175,7 +1213,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _child_process = __webpack_require__(17);
+var _child_process = __webpack_require__(18);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1260,49 +1298,10 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procArgs) {
 };
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports) {
 
 module.exports = require("child_process");
-
-/***/ }),
-/* 18 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _Schema = __webpack_require__(1);
-
-var _Schema2 = _interopRequireDefault(_Schema);
-
-var _mongoose = __webpack_require__(0);
-
-var _mongoose2 = _interopRequireDefault(_mongoose);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var schema = new _Schema2.default({
-  type: { type: String, required: true },
-  code: { type: String, required: true },
-  uid: { type: String, require: true },
-  name: { type: String, required: true },
-  children: [{
-    code: { type: String },
-    name: { type: String },
-    uid: { type: String }
-  }],
-  payload: { type: {} }
-});
-schema.index({ uid: 1, type: 1 });
-schema.index({ type: 1, code: 1 });
-schema.index({ name: 1, type: 1 });
-
-exports.default = _mongoose2.default.model('Location', schema);
 
 /***/ }),
 /* 19 */
@@ -2233,7 +2232,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Survey = __webpack_require__(13);
+var Survey = __webpack_require__(14);
 
 var SurveyCSVParser = __webpack_require__(62);
 
@@ -2739,13 +2738,17 @@ var _surveyorCsvParser = __webpack_require__(85);
 
 var _surveyorCsvParser2 = _interopRequireDefault(_surveyorCsvParser);
 
-var _User = __webpack_require__(10);
+var _User = __webpack_require__(11);
 
 var _User2 = _interopRequireDefault(_User);
 
 var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
+
+var _Location = __webpack_require__(9);
+
+var _Location2 = _interopRequireDefault(_Location);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2780,10 +2783,60 @@ var SurveyorController = function (_EntityController) {
       return _get(SurveyorController.prototype.__proto__ || Object.getPrototypeOf(SurveyorController.prototype), '_create', this).call(this, query);
     }
   }, {
+    key: '_addLocationPayload',
+    value: function _addLocationPayload(obj, loc) {
+      if (!loc.payload) return obj;
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = Object.keys(loc.payload || {})[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var key = _step.value;
+
+          obj['payload.' + key] = loc.payload[key];
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
+      obj['payload.HABITATION_NAME'] = loc.children.map(function (c) {
+        return c.name;
+      });
+      return obj;
+    }
+  }, {
     key: '_parseEntity',
     value: function _parseEntity(obj) {
+      var _this2 = this;
+
       var filter = 'username name roles payload surveyor-csv _done';
-      return this._filterObject(obj, filter);
+      var payload = {};
+      var promise = false;
+      if (obj.panchayat) {
+        promise = _Location2.default.findOne({ type: 'PANCHAYAT', uid: obj.panchayat }).then(function (loc) {
+          return loc && _this2._addLocationPayload(payload, loc);
+        });
+      }
+      if (obj.survey) {
+        payload['payload.SURVEY'] = obj.survey;
+      }
+      payload['payload.SURVEYOR_CODE'] = obj.username;
+      payload['payload.SURVEYOR_NAME'] = obj.name;
+      return promise ? promise.then(function () {
+        return Object.assign(payload, _this2._filterObject(obj, filter));
+      }) : Object.assign(payload, this._filterObject(obj, filter));
     }
   }, {
     key: '_parseFileField',
@@ -2857,7 +2910,7 @@ Object.assign(SurveyorController, {
   entityName: 'User',
   routeName: 'surveyors',
 
-  _findFields: '_id name username roles modifiedAt',
+  _findFields: '_id name username payload roles modifiedAt',
   _createFields: '_id name username roles modifiedAt'
 });
 module.exports = SurveyorController;
@@ -2880,7 +2933,7 @@ __webpack_require__(37);
 
 __webpack_require__(3);
 
-__webpack_require__(9);
+__webpack_require__(10);
 
 var express = __webpack_require__(19);
 var http = __webpack_require__(38);
@@ -3058,7 +3111,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.signIn = undefined;
 
-var _User = __webpack_require__(10);
+var _User = __webpack_require__(11);
 
 var _User2 = _interopRequireDefault(_User);
 
@@ -4954,7 +5007,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.ExportResponses = exports.CollectResponses = undefined;
 
-var _childProcess = __webpack_require__(16);
+var _childProcess = __webpack_require__(17);
 
 var _childProcess2 = _interopRequireDefault(_childProcess);
 
@@ -4986,7 +5039,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _Location = __webpack_require__(18);
+var _Location = __webpack_require__(9);
 
 var _Location2 = _interopRequireDefault(_Location);
 
@@ -5129,7 +5182,7 @@ var _csvParser = __webpack_require__(24);
 
 var _csvParser2 = _interopRequireDefault(_csvParser);
 
-var _Location = __webpack_require__(18);
+var _Location = __webpack_require__(9);
 
 var _Location2 = _interopRequireDefault(_Location);
 
@@ -5305,11 +5358,11 @@ var _csvParser = __webpack_require__(24);
 
 var _csvParser2 = _interopRequireDefault(_csvParser);
 
-var _User = __webpack_require__(10);
+var _User = __webpack_require__(11);
 
 var _User2 = _interopRequireDefault(_User);
 
-var _Location = __webpack_require__(18);
+var _Location = __webpack_require__(9);
 
 var _Location2 = _interopRequireDefault(_Location);
 
@@ -5392,12 +5445,11 @@ var _class = function (_CSVParser) {
               return c.name;
             })
           });
-          return _User2.default.create({
-            username: row['SURVEYOR_CODE'],
+          return _User2.default.findOneAndUpdate({ username: row['SURVEYOR_CODE'] }, {
             name: row.SURVEYOR_NAME,
             roles: ['SURVEYOR'],
             payload: userPayload
-          });
+          }, { new: true, upsert: true });
         });
       }));
     }

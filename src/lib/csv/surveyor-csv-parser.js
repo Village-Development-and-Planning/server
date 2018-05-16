@@ -62,12 +62,15 @@ export default class extends CSVParser {
           const userPayload = Object.assign(loc.payload || {}, row, {
             'HABITATION_NAME': loc.children.map((c) => c.name),
           });
-          return User.create({
-            username: row['SURVEYOR_CODE'],
-            name: row.SURVEYOR_NAME,
-            roles: ['SURVEYOR'],
-            payload: userPayload,
-          });
+          return User.findOneAndUpdate(
+            {username: row['SURVEYOR_CODE']},
+            {
+              name: row.SURVEYOR_NAME,
+              roles: ['SURVEYOR'],
+              payload: userPayload,
+            },
+            {new: true, upsert: true}
+          );
         })
       ),
     );
