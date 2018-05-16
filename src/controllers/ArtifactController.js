@@ -47,6 +47,13 @@ class ArtifactController extends EntityController {
       }
     });
   }
+
+  _indexQuery() {
+    const query = super._indexQuery();
+    const {type} = this.req.query;
+    if (type) query.type = type;
+    return query;
+  }
 }
 
 Object.assign(ArtifactController, {

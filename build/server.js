@@ -4840,6 +4840,15 @@ var ArtifactController = function (_EntityController) {
         }
       });
     }
+  }, {
+    key: '_indexQuery',
+    value: function _indexQuery() {
+      var query = _get(ArtifactController.prototype.__proto__ || Object.getPrototypeOf(ArtifactController.prototype), '_indexQuery', this).call(this);
+      var type = this.req.query.type;
+
+      if (type) query.type = type;
+      return query;
+    }
   }]);
 
   return ArtifactController;
