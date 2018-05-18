@@ -158,6 +158,13 @@ class SurveyController extends EntityController {
     stream.pipe(parser);
     return parser.promise;
   }
+
+  _indexQuery() {
+    const query = super._indexQuery();
+    const {enabled} = this.req.query;
+    if (enabled) query.enabled = !!enabled;
+    return query;
+  }
 }
 
 Object.assign(SurveyController, {

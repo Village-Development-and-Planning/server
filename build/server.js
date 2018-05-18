@@ -2434,6 +2434,15 @@ var SurveyController = function (_EntityController) {
       stream.pipe(parser);
       return parser.promise;
     }
+  }, {
+    key: '_indexQuery',
+    value: function _indexQuery() {
+      var query = _get(SurveyController.prototype.__proto__ || Object.getPrototypeOf(SurveyController.prototype), '_indexQuery', this).call(this);
+      var enabled = this.req.query.enabled;
+
+      if (enabled) query.enabled = !!enabled;
+      return query;
+    }
   }]);
 
   return SurveyController;
