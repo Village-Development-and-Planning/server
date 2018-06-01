@@ -87,7 +87,7 @@ class SurveyController extends EntityController {
 
   _find(query) {
     return super._find(query)
-      .select('name description enabled modifiedAt');
+      .select('name description enabled modifiedAt collectExportId collectExportId');
   }
 
   _findOne(query) {

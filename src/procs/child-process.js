@@ -1,4 +1,5 @@
 import ProcessM from '../models/Process';
+import SurveyM from '../models/Survey';
 import mongoose from 'mongoose';
 
 import {spawn} from 'child_process';
@@ -28,10 +29,12 @@ export default class ChildProcess {
       path: this.procPath,
       args,
     });
-
+    
     const promise = new Promise((res, rej) => {
       createP.then(
         (proc) => {
+          updateProcessToSurvey(proc.args, proc.status, proc._id, proc.name);
+
           const p = spawn(
             process.execPath,
             [`build/procs/${this.procPath}.js`, proc._id]
@@ -46,6 +49,8 @@ export default class ChildProcess {
             proc.stdout = stdout.join('');
             proc.stderr = stderr.join('');
             proc.endDate = new Date();
+
+            updateProcessToSurvey(proc.args, proc.status, proc._id, proc.name);
             proc.save().then(res).catch(rej);
           });
           p.stdout.on('data', (data) => {
@@ -55,6 +60,45 @@ export default class ChildProcess {
       }).catch(rej);
     });
     return {createP, promise};
+  }
+
+  updateProcessToSurvey(surveyId, status, processId, processType){
+    return Promise((res, rej) => {
+      SurveyM.findById(surveyId, function(err, survey) {
+        if (!survey)
+        {
+          rej('Could not load Document');
+          // return next(new Error('Could not load Document'));
+        }
+        else {
+          if (processType === 'CollectResponses'){
+            if (status === 'RUNNING'){
+              survey.collectProcessId = processId;
+            } else {
+              survey.collectProcessId = '';
+            } 
+          }
+          else if (processType === 'ExportResponses'){
+            if (status === 'RUNNING'){
+              survey.collectExportId = processId;
+            } else {
+              survey.collectExportId = '';
+            } 
+          }
+      
+          survey.save(function(err) {
+            if (err){
+              rej('Error occured while updating survey.');
+            } 
+            else{
+              res('Survey updated successfully.');
+            }
+              
+          });
+        }
+      });
+    });
+    
   }
 }
 
