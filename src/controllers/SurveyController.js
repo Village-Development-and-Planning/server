@@ -86,8 +86,29 @@ class SurveyController extends EntityController {
 
 
   _find(query) {
-    return super._find(query)
-      .select('name description enabled modifiedAt collectExportId collectExportId');
+    var surveyList = super._find(query)
+    .select('name description enabled modifiedAt collectProcessId collectExportId answerStats');
+    
+    return surveyList
+    .then((surveyData) => {
+      if(this.req.query.enabled === 'true'){
+        surveyData.map((survey) => {
+          Answer.count({survey: survey._id}, ((err, answerCountResponse) => {
+            let answerCount = answerCountResponse;
+            Object.assign(survey, {answerCount});
+          }));
+          
+          let resp = 'null';
+          const path = `data/export-responses/${survey._id}-${resp}.csv`;
+          if (fs.existsSync(path)) {
+            let downloadAvailable = true;
+            Object.assign(survey, {downloadAvailable});
+          }
+          return survey;
+        });
+      }
+      return surveyData;
+    });
   }
 
   _findOne(query) {

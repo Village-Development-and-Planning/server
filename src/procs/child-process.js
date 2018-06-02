@@ -29,12 +29,42 @@ export default class ChildProcess {
       path: this.procPath,
       args,
     });
+
+    var updateProcessToSurvey = function (surveyId, status, processId, processType){
+      SurveyM.findById(surveyId, function(err, survey) {
+        if (!survey)
+        {
+          return 'Could not load Document';
+        }
+        else {
+          if (processType === 'CollectResponses'){
+            if (status === 'RUNNING'){
+              survey.set('collectProcessId', processId);
+            } else {
+              survey.set('collectProcessId', '');
+            } 
+          }
+          else if (processType === 'ExportResponses'){
+            if (status === 'RUNNING'){
+              survey.set('collectExportId', processId);
+            } else {
+              survey.set('collectExportId', '');
+            } 
+          }
+          survey.save().then((resp) => {
+            return resp;
+          }).catch((err) => {
+            return err;
+          });
+        }
+      });
+      
+    };
     
     const promise = new Promise((res, rej) => {
       createP.then(
         (proc) => {
           updateProcessToSurvey(proc.args, proc.status, proc._id, proc.name);
-
           const p = spawn(
             process.execPath,
             [`build/procs/${this.procPath}.js`, proc._id]
@@ -49,7 +79,6 @@ export default class ChildProcess {
             proc.stdout = stdout.join('');
             proc.stderr = stderr.join('');
             proc.endDate = new Date();
-
             updateProcessToSurvey(proc.args, proc.status, proc._id, proc.name);
             proc.save().then(res).catch(rej);
           });
@@ -62,44 +91,7 @@ export default class ChildProcess {
     return {createP, promise};
   }
 
-  updateProcessToSurvey(surveyId, status, processId, processType){
-    return Promise((res, rej) => {
-      SurveyM.findById(surveyId, function(err, survey) {
-        if (!survey)
-        {
-          rej('Could not load Document');
-          // return next(new Error('Could not load Document'));
-        }
-        else {
-          if (processType === 'CollectResponses'){
-            if (status === 'RUNNING'){
-              survey.collectProcessId = processId;
-            } else {
-              survey.collectProcessId = '';
-            } 
-          }
-          else if (processType === 'ExportResponses'){
-            if (status === 'RUNNING'){
-              survey.collectExportId = processId;
-            } else {
-              survey.collectExportId = '';
-            } 
-          }
-      
-          survey.save(function(err) {
-            if (err){
-              rej('Error occured while updating survey.');
-            } 
-            else{
-              res('Survey updated successfully.');
-            }
-              
-          });
-        }
-      });
-    });
-    
-  }
+  
 }
 
 export class ChildTemplate {
