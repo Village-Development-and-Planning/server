@@ -95,15 +95,16 @@ class SurveyController extends EntityController {
         surveyData.map((survey) => {
           Answer.count({survey: survey._id}, ((err, answerCountResponse) => {
             let answerCount = answerCountResponse;
-            Object.assign(survey, {answerCount});
+            survey.set('answerCount', answerCount);
           }));
           
           let resp = 'null';
           const path = `data/export-responses/${survey._id}-${resp}.csv`;
           if (fs.existsSync(path)) {
             let downloadAvailable = true;
-            Object.assign(survey, {downloadAvailable});
+            survey.set('downloadAvailable', downloadAvailable);
           }
+          
           return survey;
         });
       }

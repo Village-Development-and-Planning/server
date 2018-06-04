@@ -14,7 +14,7 @@ const surveySchema = new Schema({
   answerStats: {type: {}},
   collectProcessId: {type: String},
   collectExportId: {type: String},
-});
+}, {strict: false});
 surveySchema.index({name: 1});
 surveySchema.index({enabled: 1, name: 1});
 
