@@ -206,7 +206,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _Aggregates = __webpack_require__(12);
+var _Aggregates = __webpack_require__(13);
 
 var _Aggregates2 = _interopRequireDefault(_Aggregates);
 
@@ -232,6 +232,62 @@ module.exports = _mongoose2.default.model('Statistic', schema);
 "use strict";
 
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+__webpack_require__(3);
+
+var _Question = __webpack_require__(15);
+
+var _Question2 = _interopRequireDefault(_Question);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Schema = __webpack_require__(1);
+var mongoose = __webpack_require__(0);
+
+
+var surveySchema = new Schema({
+  name: { type: String, required: true },
+  description: { type: String },
+  enabled: { type: Boolean, default: true },
+  question: { type: {}, get: function get(q) {
+      return new _Question2.default(q);
+    }, required: true },
+  respondents: { type: [] },
+  aggregates: { type: [] },
+  postProcessing: { type: [] },
+  answerStats: { type: {} },
+  collectProcessId: { type: String },
+  collectExportId: { type: String }
+}, { strict: false });
+surveySchema.index({ name: 1 });
+surveySchema.index({ enabled: 1, name: 1 });
+
+surveySchema.methods = {
+  getRespondents: function getRespondents() {
+    if (!this.respondents || !this.respondents.length) {
+      this.respondents = [null];
+    }
+    return this.respondents.map(function (resp) {
+      if (!resp) return { number: null };
+      if ((typeof resp === 'undefined' ? 'undefined' : _typeof(resp)) !== 'object') {
+        return { number: String(resp) };
+      }
+      if (!resp.number) resp.number = null;
+      return resp;
+    });
+  }
+};
+
+module.exports = mongoose.model('Survey', surveySchema);
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 module.exports = {
   db: {
     connectionOptions: {
@@ -240,6 +296,7 @@ module.exports = {
     },
     connectionString: 'mongodb://localhost/test'
   },
+  cookieName: 'ptracking_jwt',
   jwt: {
     secret: 'a general string'
   },
@@ -251,14 +308,14 @@ module.exports = {
 };
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports) {
 
 module.exports = require("co");
 
 /***/ }),
-/* 7 */,
-/* 8 */
+/* 8 */,
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -285,7 +342,7 @@ processSchema.index({ name: 1 });
 module.exports = mongoose.model('Process', processSchema);
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -324,7 +381,7 @@ schema.index({ name: 1, type: 1 });
 exports.default = _mongoose2.default.model('Location', schema);
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -334,7 +391,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _Constants = __webpack_require__(5);
+var _Constants = __webpack_require__(6);
 
 var _Constants2 = _interopRequireDefault(_Constants);
 
@@ -351,7 +408,7 @@ _mongoose2.default.Promise = global.Promise;
 exports.default = _mongoose2.default.connect(options.connectionString, options.connectionOptions);
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -376,7 +433,7 @@ userSchema.index({ roles: 1 });
 module.exports = mongoose.model('User', userSchema);
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -394,7 +451,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _hotFormulaParser = __webpack_require__(13);
+var _hotFormulaParser = __webpack_require__(14);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -768,64 +825,10 @@ var _class = function (_Mixin) {
 exports.default = _class;
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports) {
 
 module.exports = require("hot-formula-parser");
-
-/***/ }),
-/* 14 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-__webpack_require__(3);
-
-var _Question = __webpack_require__(15);
-
-var _Question2 = _interopRequireDefault(_Question);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var Schema = __webpack_require__(1);
-var mongoose = __webpack_require__(0);
-
-
-var surveySchema = new Schema({
-  name: { type: String, required: true },
-  description: { type: String },
-  enabled: { type: Boolean, default: true },
-  question: { type: {}, get: function get(q) {
-      return new _Question2.default(q);
-    }, required: true },
-  respondents: { type: [] },
-  aggregates: { type: [] },
-  postProcessing: { type: [] },
-  answerStats: { type: {} }
-});
-surveySchema.index({ name: 1 });
-surveySchema.index({ enabled: 1, name: 1 });
-
-surveySchema.methods = {
-  getRespondents: function getRespondents() {
-    if (!this.respondents || !this.respondents.length) {
-      this.respondents = [null];
-    }
-    return this.respondents.map(function (resp) {
-      if (!resp) return { number: null };
-      if ((typeof resp === 'undefined' ? 'undefined' : _typeof(resp)) !== 'object') {
-        return { number: String(resp) };
-      }
-      if (!resp.number) resp.number = null;
-      return resp;
-    });
-  }
-};
-
-module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
 /* 15 */
@@ -1097,9 +1100,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Process = __webpack_require__(8);
+var _Process = __webpack_require__(9);
 
 var _Process2 = _interopRequireDefault(_Process);
+
+var _Survey = __webpack_require__(5);
+
+var _Survey2 = _interopRequireDefault(_Survey);
 
 var _mongoose = __webpack_require__(0);
 
@@ -1136,8 +1143,36 @@ var ChildProcess = function () {
         args: args
       });
 
+      var updateProcessToSurvey = function updateProcessToSurvey(surveyId, status, processId, processType) {
+        _Survey2.default.findById(surveyId, function (err, survey) {
+          if (!survey) {
+            return 'Could not load Document';
+          } else {
+            if (processType === 'CollectResponses') {
+              if (status === 'RUNNING') {
+                survey.set('collectProcessId', processId);
+              } else {
+                survey.set('collectProcessId', '');
+              }
+            } else if (processType === 'ExportResponses') {
+              if (status === 'RUNNING') {
+                survey.set('collectExportId', processId);
+              } else {
+                survey.set('collectExportId', '');
+              }
+            }
+            survey.save().then(function (resp) {
+              return resp;
+            }).catch(function (err) {
+              return err;
+            });
+          }
+        });
+      };
+
       var promise = new Promise(function (res, rej) {
         createP.then(function (proc) {
+          updateProcessToSurvey(proc.args, proc.status, proc._id, proc.name);
           var p = (0, _child_process.spawn)(process.execPath, ['build/procs/' + _this.procPath + '.js', proc._id]);
           var stdout = [];
           var stderr = [];
@@ -1149,6 +1184,7 @@ var ChildProcess = function () {
             proc.stdout = stdout.join('');
             proc.stderr = stderr.join('');
             proc.endDate = new Date();
+            updateProcessToSurvey(proc.args, proc.status, proc._id, proc.name);
             proc.save().then(res).catch(rej);
           });
           p.stdout.on('data', function (data) {
@@ -1985,7 +2021,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _Survey = __webpack_require__(14);
+var _Survey = __webpack_require__(5);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
@@ -2141,7 +2177,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _co = __webpack_require__(6);
+var _co = __webpack_require__(7);
 
 var _co2 = _interopRequireDefault(_co);
 
@@ -2225,7 +2261,7 @@ exports.default = _class;
 "use strict";
 
 
-__webpack_require__(10);
+__webpack_require__(11);
 
 var _mongoose = __webpack_require__(0);
 
@@ -2341,7 +2377,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 __webpack_require__(3);
 
-var _co = __webpack_require__(6);
+var _co = __webpack_require__(7);
 
 var _co2 = _interopRequireDefault(_co);
 
@@ -2375,11 +2411,11 @@ var _Answer = __webpack_require__(20);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 
-var _Location = __webpack_require__(9);
+var _Location = __webpack_require__(10);
 
 var _Location2 = _interopRequireDefault(_Location);
 
-var _User = __webpack_require__(11);
+var _User = __webpack_require__(12);
 
 var _User2 = _interopRequireDefault(_User);
 
@@ -2799,7 +2835,7 @@ var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
-var _co = __webpack_require__(6);
+var _co = __webpack_require__(7);
 
 var _co2 = _interopRequireDefault(_co);
 

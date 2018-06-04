@@ -6,6 +6,7 @@ module.exports = {
     },
     connectionString: 'mongodb://localhost/test',
   },
+  cookieName: 'ptracking_jwt',
   jwt: {
     secret: 'a general string',
   },

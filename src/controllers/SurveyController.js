@@ -86,30 +86,25 @@ class SurveyController extends EntityController {
 
 
   _find(query) {
-    var surveyList = super._find(query)
-    .select('name description enabled modifiedAt collectProcessId collectExportId answerStats');
-    
-    return surveyList
-    .then((surveyData) => {
-      if(this.req.query.enabled === 'true'){
-        surveyData.map((survey) => {
-          Answer.count({survey: survey._id}, ((err, answerCountResponse) => {
-            let answerCount = answerCountResponse;
-            survey.set('answerCount', answerCount);
-          }));
-          
-          let resp = 'null';
-          const path = `data/export-responses/${survey._id}-${resp}.csv`;
-          if (fs.existsSync(path)) {
-            let downloadAvailable = true;
+    return super._find(query)
+      .then((list) => Promise.all(list.map(
+        (survey) => {
+          if (this.req.query.enabled) {
+            const downloadAvailable = [];
+            survey.getRespondents().forEach((resp) => {
+              const path = `data/export-responses/`
+                + `${survey._id}-${resp.number || null}.csv`;
+              if (fs.existsSync(path)) downloadAvailable.push(resp);
+            });
             survey.set('downloadAvailable', downloadAvailable);
+            return Answer.count({survey: survey._id})
+              .then((c) => survey.set('answerCount', c))
+              .then(() => survey);
           }
-          
           return survey;
-        });
-      }
-      return surveyData;
-    });
+        }
+      ))
+    ).catch((e) => console.log(e));
   }
 
   _findOne(query) {
@@ -193,5 +188,7 @@ Object.assign(SurveyController, {
   collection: Survey,
   entityName: 'survey',
   routeName: 'surveys',
+  _findFields: '_id name description enabled '
+    + 'respondents answerStats collectProcessId collectExportId modifiedAt',
 });
 module.exports = SurveyController;

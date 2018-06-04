@@ -1,6 +1,7 @@
 import CSVParser from './csv-parser';
 import User from '../../models/User';
 import Location from '../../models/Location';
+import Survey from '../../models/Survey';
 
 /**
  * Abstraction for csv-parse with our default options.
@@ -62,15 +63,21 @@ export default class extends CSVParser {
           const userPayload = Object.assign(loc.payload || {}, row, {
             'HABITATION_NAME': loc.children.map((c) => c.name),
           });
-          return User.findOneAndUpdate(
-            {username: row['SURVEYOR_CODE']},
-            {
-              name: row.SURVEYOR_NAME,
-              roles: ['SURVEYOR'],
-              payload: userPayload,
-            },
-            {new: true, upsert: true}
-          );
+          const surveyName = row['SURVEY'];
+          return Survey.findOne({
+            enabled: true, name: surveyName,
+          }).then((survey) => {
+            userPayload.surveyId = survey._id;
+            return User.findOneAndUpdate(
+              {username: row['SURVEYOR_CODE']},
+              {
+                name: row.SURVEYOR_NAME,
+                roles: ['SURVEYOR'],
+                payload: userPayload,
+              },
+              {new: true, upsert: true}
+            );
+          });
         })
       ),
     );

@@ -2,7 +2,7 @@ const jwt = require('express-jwt');
 const constants = require('../config/Constants');
 
 import express from 'express';
-import {signIn} from './authentication';
+import {signIn, clearCookie} from './authentication';
 import roles from './roles';
 
 
@@ -15,11 +15,9 @@ const jwtOpts = Object.assign({
       req.headers.authorization
       && req.headers.authorization.split(' ')[0] === 'Bearer'
     ) {
-      req.skipCSRF = true;
       return req.headers.authorization.slice(6).trim();
-    } else if (req.cookies && req.cookies.ptracking_jwt) {
-      req.skipCSRF = false;
-      return req.cookies.ptracking_jwt;
+    } else if (req.cookies && req.cookies[constants.cookieName]) {
+      return req.cookies[constants.cookieName];
     } else {
       return null;
     }
@@ -45,6 +43,7 @@ secRouter.use(
 module.exports = function(app) {
   app.use(secRouter);
   app.use(roles);
+  app.get('/auth/out', clearCookie);
   app.get('/auth', (req, res, next) => {
     res.json(req.user);
   });

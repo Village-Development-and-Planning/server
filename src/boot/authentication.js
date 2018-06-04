@@ -25,6 +25,7 @@ passport.use(new Digest(
           username: user.username,
           name: user.name,
           roles: user.roles,
+          _id: user._id,
         }, user.passphrase || 'none');
       }).catch((err) => cb(err));
     }
@@ -34,10 +35,17 @@ passport.use(new Digest(
 const passportMiddleware = passport.authenticate('digest', {session: false});
 
 const setCookie = (req, res, next) => {
-  const cookie = jwt.sign(req.user, Constants.jwt.secret);
-  res.cookie('ptracking_jwt', cookie);
+  if (req.user) {
+    const cookie = jwt.sign(req.user, Constants.jwt.secret);
+    res.cookie(Constants.cookieName, cookie);
+  }
   next();
 };
 
+const clearCookie = (req, res, next) => {
+  res.clearCookie(Constants.cookieName);
+  res.sendStatus(204);
+};
+
 const signIn = [passportMiddleware, setCookie];
-export {signIn};
+export {signIn, clearCookie, setCookie};

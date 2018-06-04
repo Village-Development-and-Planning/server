@@ -7,11 +7,11 @@ import AnswerController from '../controllers/AnswerController';
 import SurveyController from '../controllers/SurveyController';
 
 app.get('/auth', dispatcher(SurveyorController, 'auth'));
-
 app.post('/upload', dispatcher(AnswerController, 'create'));
-
 app.get('/download', dispatcher(SurveyController, 'index'));
 app.get('/download/:id', dispatcher(SurveyController, 'get'));
+
+app.get('/info', dispatcher(SurveyorController, 'appInfo'));
 
 //  (req, res, next) => {
 //   res.sendFile(path.resolve('data/auth.json'));

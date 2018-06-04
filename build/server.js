@@ -206,7 +206,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _Aggregates = __webpack_require__(12);
+var _Aggregates = __webpack_require__(13);
 
 var _Aggregates2 = _interopRequireDefault(_Aggregates);
 
@@ -232,6 +232,62 @@ module.exports = _mongoose2.default.model('Statistic', schema);
 "use strict";
 
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+__webpack_require__(3);
+
+var _Question = __webpack_require__(15);
+
+var _Question2 = _interopRequireDefault(_Question);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Schema = __webpack_require__(1);
+var mongoose = __webpack_require__(0);
+
+
+var surveySchema = new Schema({
+  name: { type: String, required: true },
+  description: { type: String },
+  enabled: { type: Boolean, default: true },
+  question: { type: {}, get: function get(q) {
+      return new _Question2.default(q);
+    }, required: true },
+  respondents: { type: [] },
+  aggregates: { type: [] },
+  postProcessing: { type: [] },
+  answerStats: { type: {} },
+  collectProcessId: { type: String },
+  collectExportId: { type: String }
+}, { strict: false });
+surveySchema.index({ name: 1 });
+surveySchema.index({ enabled: 1, name: 1 });
+
+surveySchema.methods = {
+  getRespondents: function getRespondents() {
+    if (!this.respondents || !this.respondents.length) {
+      this.respondents = [null];
+    }
+    return this.respondents.map(function (resp) {
+      if (!resp) return { number: null };
+      if ((typeof resp === 'undefined' ? 'undefined' : _typeof(resp)) !== 'object') {
+        return { number: String(resp) };
+      }
+      if (!resp.number) resp.number = null;
+      return resp;
+    });
+  }
+};
+
+module.exports = mongoose.model('Survey', surveySchema);
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 module.exports = {
   db: {
     connectionOptions: {
@@ -240,6 +296,7 @@ module.exports = {
     },
     connectionString: 'mongodb://localhost/test'
   },
+  cookieName: 'ptracking_jwt',
   jwt: {
     secret: 'a general string'
   },
@@ -251,13 +308,13 @@ module.exports = {
 };
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports) {
 
 module.exports = require("co");
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -366,7 +423,7 @@ Object.assign(EntityController, {
 exports.default = EntityController;
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -393,7 +450,7 @@ processSchema.index({ name: 1 });
 module.exports = mongoose.model('Process', processSchema);
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -432,7 +489,7 @@ schema.index({ name: 1, type: 1 });
 exports.default = _mongoose2.default.model('Location', schema);
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -442,7 +499,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _Constants = __webpack_require__(5);
+var _Constants = __webpack_require__(6);
 
 var _Constants2 = _interopRequireDefault(_Constants);
 
@@ -459,7 +516,7 @@ _mongoose2.default.Promise = global.Promise;
 exports.default = _mongoose2.default.connect(options.connectionString, options.connectionOptions);
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -484,7 +541,7 @@ userSchema.index({ roles: 1 });
 module.exports = mongoose.model('User', userSchema);
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -502,7 +559,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _hotFormulaParser = __webpack_require__(13);
+var _hotFormulaParser = __webpack_require__(14);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -876,64 +933,10 @@ var _class = function (_Mixin) {
 exports.default = _class;
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports) {
 
 module.exports = require("hot-formula-parser");
-
-/***/ }),
-/* 14 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-__webpack_require__(3);
-
-var _Question = __webpack_require__(15);
-
-var _Question2 = _interopRequireDefault(_Question);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var Schema = __webpack_require__(1);
-var mongoose = __webpack_require__(0);
-
-
-var surveySchema = new Schema({
-  name: { type: String, required: true },
-  description: { type: String },
-  enabled: { type: Boolean, default: true },
-  question: { type: {}, get: function get(q) {
-      return new _Question2.default(q);
-    }, required: true },
-  respondents: { type: [] },
-  aggregates: { type: [] },
-  postProcessing: { type: [] },
-  answerStats: { type: {} }
-});
-surveySchema.index({ name: 1 });
-surveySchema.index({ enabled: 1, name: 1 });
-
-surveySchema.methods = {
-  getRespondents: function getRespondents() {
-    if (!this.respondents || !this.respondents.length) {
-      this.respondents = [null];
-    }
-    return this.respondents.map(function (resp) {
-      if (!resp) return { number: null };
-      if ((typeof resp === 'undefined' ? 'undefined' : _typeof(resp)) !== 'object') {
-        return { number: String(resp) };
-      }
-      if (!resp.number) resp.number = null;
-      return resp;
-    });
-  }
-};
-
-module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
 /* 15 */
@@ -1205,9 +1208,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Process = __webpack_require__(8);
+var _Process = __webpack_require__(9);
 
 var _Process2 = _interopRequireDefault(_Process);
+
+var _Survey = __webpack_require__(5);
+
+var _Survey2 = _interopRequireDefault(_Survey);
 
 var _mongoose = __webpack_require__(0);
 
@@ -1244,8 +1251,36 @@ var ChildProcess = function () {
         args: args
       });
 
+      var updateProcessToSurvey = function updateProcessToSurvey(surveyId, status, processId, processType) {
+        _Survey2.default.findById(surveyId, function (err, survey) {
+          if (!survey) {
+            return 'Could not load Document';
+          } else {
+            if (processType === 'CollectResponses') {
+              if (status === 'RUNNING') {
+                survey.set('collectProcessId', processId);
+              } else {
+                survey.set('collectProcessId', '');
+              }
+            } else if (processType === 'ExportResponses') {
+              if (status === 'RUNNING') {
+                survey.set('collectExportId', processId);
+              } else {
+                survey.set('collectExportId', '');
+              }
+            }
+            survey.save().then(function (resp) {
+              return resp;
+            }).catch(function (err) {
+              return err;
+            });
+          }
+        });
+      };
+
       var promise = new Promise(function (res, rej) {
         createP.then(function (proc) {
+          updateProcessToSurvey(proc.args, proc.status, proc._id, proc.name);
           var p = (0, _child_process.spawn)(process.execPath, ['build/procs/' + _this.procPath + '.js', proc._id]);
           var stdout = [];
           var stderr = [];
@@ -1257,6 +1292,7 @@ var ChildProcess = function () {
             proc.stdout = stdout.join('');
             proc.stderr = stderr.join('');
             proc.endDate = new Date();
+            updateProcessToSurvey(proc.args, proc.status, proc._id, proc.name);
             proc.save().then(res).catch(rej);
           });
           p.stdout.on('data', function (data) {
@@ -2180,7 +2216,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 /**
  * Dispatch action to given controller
- * @param {Class.<BaseController>} Controller 
+ * @param {Class.<BaseController>} Controller
  * @param {String} method name to call
  * @return {Function.<ExpressMiddleware>}
  */
@@ -2214,11 +2250,11 @@ var _fs = __webpack_require__(23);
 
 var _fs2 = _interopRequireDefault(_fs);
 
-var _co = __webpack_require__(6);
+var _co = __webpack_require__(7);
 
 var _co2 = _interopRequireDefault(_co);
 
-var _EntitiyController = __webpack_require__(7);
+var _EntitiyController = __webpack_require__(8);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
@@ -2232,7 +2268,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Survey = __webpack_require__(14);
+var Survey = __webpack_require__(5);
 
 var SurveyCSVParser = __webpack_require__(62);
 
@@ -2328,19 +2364,40 @@ var SurveyController = function (_EntityController) {
   }, {
     key: '_find',
     value: function _find(query) {
-      return _get(SurveyController.prototype.__proto__ || Object.getPrototypeOf(SurveyController.prototype), '_find', this).call(this, query).select('name description enabled modifiedAt');
+      var _this4 = this;
+
+      return _get(SurveyController.prototype.__proto__ || Object.getPrototypeOf(SurveyController.prototype), '_find', this).call(this, query).then(function (list) {
+        return Promise.all(list.map(function (survey) {
+          if (_this4.req.query.enabled) {
+            var downloadAvailable = [];
+            survey.getRespondents().forEach(function (resp) {
+              var path = 'data/export-responses/' + (survey._id + '-' + (resp.number || null) + '.csv');
+              if (_fs2.default.existsSync(path)) downloadAvailable.push(resp);
+            });
+            survey.set('downloadAvailable', downloadAvailable);
+            return _Answer2.default.count({ survey: survey._id }).then(function (c) {
+              return survey.set('answerCount', c);
+            }).then(function () {
+              return survey;
+            });
+          }
+          return survey;
+        }));
+      }).catch(function (e) {
+        return console.log(e);
+      });
     }
   }, {
     key: '_findOne',
     value: function _findOne(query) {
-      var _this4 = this;
+      var _this5 = this;
 
       var promise = _get(SurveyController.prototype.__proto__ || Object.getPrototypeOf(SurveyController.prototype), '_findOne', this).call(this, query);
       if (this.req.query.light) {
         promise = promise.select('-question');
       }
       return promise.then(function (mSurvey) {
-        return _co2.default.call(_this4, /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+        return _co2.default.call(_this5, /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
           var survey, total, respondents;
           return regeneratorRuntime.wrap(function _callee$(_context) {
             while (1) {
@@ -2451,7 +2508,8 @@ var SurveyController = function (_EntityController) {
 Object.assign(SurveyController, {
   collection: Survey,
   entityName: 'survey',
-  routeName: 'surveys'
+  routeName: 'surveys',
+  _findFields: '_id name description enabled ' + 'respondents answerStats collectProcessId collectExportId modifiedAt'
 });
 module.exports = SurveyController;
 
@@ -2600,7 +2658,7 @@ var _Answer = __webpack_require__(20);
 
 var _Answer2 = _interopRequireDefault(_Answer);
 
-var _EntitiyController = __webpack_require__(7);
+var _EntitiyController = __webpack_require__(8);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
@@ -2739,7 +2797,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _EntitiyController = __webpack_require__(7);
+var _EntitiyController = __webpack_require__(8);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
@@ -2747,7 +2805,7 @@ var _surveyorCsvParser = __webpack_require__(85);
 
 var _surveyorCsvParser2 = _interopRequireDefault(_surveyorCsvParser);
 
-var _User = __webpack_require__(11);
+var _User = __webpack_require__(12);
 
 var _User2 = _interopRequireDefault(_User);
 
@@ -2755,7 +2813,7 @@ var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
-var _Location = __webpack_require__(9);
+var _Location = __webpack_require__(10);
 
 var _Location2 = _interopRequireDefault(_Location);
 
@@ -2893,8 +2951,12 @@ var SurveyorController = function (_EntityController) {
   }, {
     key: '_findOne',
     value: function _findOne(query) {
+      var _this3 = this;
+
       return _get(SurveyorController.prototype.__proto__ || Object.getPrototypeOf(SurveyorController.prototype), '_findOne', this).call(this, query).then(function (surveyor) {
-        if (surveyor) {
+        if (!surveyor) return null;
+        surveyor.set('code', surveyor.username, { strict: false });
+        if (_this3.queryZone !== 'app') {
           return _Statistic2.default.find({
             type: /^SurveyorAggregate/,
             key: new RegExp('^' + surveyor.username)
@@ -2904,7 +2966,18 @@ var SurveyorController = function (_EntityController) {
           });
         }
         return surveyor;
+      }).then(function (surveyor) {
+        if (surveyor && surveyor.payload) {
+          surveyor.set('surveyId', surveyor.payload.surveyId, { strict: false });
+        }
+        return surveyor;
       });
+    }
+  }, {
+    key: 'appInfo',
+    value: function appInfo() {
+      this.queryZone = 'app';
+      this.get({ username: this.req.user.username });
     }
   }]);
 
@@ -2942,7 +3015,7 @@ __webpack_require__(37);
 
 __webpack_require__(3);
 
-__webpack_require__(10);
+__webpack_require__(11);
 
 var express = __webpack_require__(19);
 var http = __webpack_require__(38);
@@ -3072,18 +3145,16 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 var jwt = __webpack_require__(47);
-var constants = __webpack_require__(5);
+var constants = __webpack_require__(6);
 
 var secRouter = new _express2.default.Router();
 
 var jwtOpts = Object.assign({
   getToken: function getToken(req) {
     if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
-      req.skipCSRF = true;
       return req.headers.authorization.slice(6).trim();
-    } else if (req.cookies && req.cookies.ptracking_jwt) {
-      req.skipCSRF = false;
-      return req.cookies.ptracking_jwt;
+    } else if (req.cookies && req.cookies[constants.cookieName]) {
+      return req.cookies[constants.cookieName];
     } else {
       return null;
     }
@@ -3103,6 +3174,7 @@ secRouter.use.apply(secRouter, [jwt(jwtOpts), function (req, res, next) {
 module.exports = function (app) {
   app.use(secRouter);
   app.use(_roles2.default);
+  app.get('/auth/out', _authentication.clearCookie);
   app.get('/auth', function (req, res, next) {
     res.json(req.user);
   });
@@ -3118,9 +3190,9 @@ module.exports = function (app) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.signIn = undefined;
+exports.setCookie = exports.clearCookie = exports.signIn = undefined;
 
-var _User = __webpack_require__(11);
+var _User = __webpack_require__(12);
 
 var _User2 = _interopRequireDefault(_User);
 
@@ -3129,7 +3201,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var passport = __webpack_require__(43);
 var Digest = __webpack_require__(44).DigestStrategy;
 var jwt = __webpack_require__(45);
-var Constants = __webpack_require__(5);
+var Constants = __webpack_require__(6);
 
 passport.use(new Digest({ qop: 'auth' }, function (username, cb) {
   if (username === Constants.admin.username) {
@@ -3143,7 +3215,8 @@ passport.use(new Digest({ qop: 'auth' }, function (username, cb) {
       cb(null, {
         username: user.username,
         name: user.name,
-        roles: user.roles
+        roles: user.roles,
+        _id: user._id
       }, user.passphrase || 'none');
     }).catch(function (err) {
       return cb(err);
@@ -3154,13 +3227,22 @@ passport.use(new Digest({ qop: 'auth' }, function (username, cb) {
 var passportMiddleware = passport.authenticate('digest', { session: false });
 
 var setCookie = function setCookie(req, res, next) {
-  var cookie = jwt.sign(req.user, Constants.jwt.secret);
-  res.cookie('ptracking_jwt', cookie);
+  if (req.user) {
+    var cookie = jwt.sign(req.user, Constants.jwt.secret);
+    res.cookie(Constants.cookieName, cookie);
+  }
   next();
+};
+
+var clearCookie = function clearCookie(req, res, next) {
+  res.clearCookie(Constants.cookieName);
+  res.sendStatus(204);
 };
 
 var signIn = [passportMiddleware, setCookie];
 exports.signIn = signIn;
+exports.clearCookie = clearCookie;
+exports.setCookie = setCookie;
 
 /***/ }),
 /* 43 */
@@ -3191,7 +3273,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = rolesMiddleware;
-var Constants = __webpack_require__(5);
+var Constants = __webpack_require__(6);
 
 /**
  * Inspects roles based on the route
@@ -3207,27 +3289,15 @@ function rolesMiddleware(req, res, next) {
   }
   var user = req.user;
   var rolesHash = {};
-  for (var role in user.roles) {
-    rolesHash[role.toLowerCase()] = 1;
-  }
-
   var _iteratorNormalCompletion = true;
   var _didIteratorError = false;
   var _iteratorError = undefined;
 
   try {
-    for (var _iterator = Constants.routeSecurity[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var sec = _step.value;
+    for (var _iterator = user.roles[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var role = _step.value;
 
-      if (req.path.startsWith(sec.prefix)) {
-        var roles2Check = sec.roles.split(' ');
-        for (var _role in roles2Check) {
-          if (rolesHash[_role]) {
-            next();
-            return;
-          }
-        }
-      }
+      rolesHash[role.toLowerCase()] = 1;
     }
   } catch (err) {
     _didIteratorError = true;
@@ -3240,6 +3310,60 @@ function rolesMiddleware(req, res, next) {
     } finally {
       if (_didIteratorError) {
         throw _iteratorError;
+      }
+    }
+  }
+
+  var _iteratorNormalCompletion2 = true;
+  var _didIteratorError2 = false;
+  var _iteratorError2 = undefined;
+
+  try {
+    for (var _iterator2 = Constants.routeSecurity[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+      var sec = _step2.value;
+
+      if (req.path.startsWith(sec.prefix)) {
+        var roles2Check = sec.roles.split(' ');
+        var _iteratorNormalCompletion3 = true;
+        var _didIteratorError3 = false;
+        var _iteratorError3 = undefined;
+
+        try {
+          for (var _iterator3 = roles2Check[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+            var _role = _step3.value;
+
+            if (rolesHash[_role]) {
+              next();
+              return;
+            }
+          }
+        } catch (err) {
+          _didIteratorError3 = true;
+          _iteratorError3 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion3 && _iterator3.return) {
+              _iterator3.return();
+            }
+          } finally {
+            if (_didIteratorError3) {
+              throw _iteratorError3;
+            }
+          }
+        }
+      }
+    }
+  } catch (err) {
+    _didIteratorError2 = true;
+    _iteratorError2 = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion2 && _iterator2.return) {
+        _iterator2.return();
+      }
+    } finally {
+      if (_didIteratorError2) {
+        throw _iteratorError2;
       }
     }
   }
@@ -3587,8 +3711,8 @@ var GetConcerns = function (_Mixin) {
     }
   }, {
     key: 'get',
-    value: function get() {
-      var query = this._getQuery();
+    value: function get(query) {
+      query = query || this._getQuery();
       this.renderer.renderPromise(Promise.resolve(query && this._findOne(query)).then(function (e) {
         return e || Promise.reject(new Error('Entity not found.'));
       }).catch(function (e) {
@@ -4819,7 +4943,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _EntitiyController = __webpack_require__(7);
+var _EntitiyController = __webpack_require__(8);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
@@ -4941,7 +5065,7 @@ module.exports = require("file-type");
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _EntitiyController = __webpack_require__(7);
+var _EntitiyController = __webpack_require__(8);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
@@ -4949,7 +5073,7 @@ var _procs = __webpack_require__(82);
 
 var _procs2 = _interopRequireDefault(_procs);
 
-var _Process = __webpack_require__(8);
+var _Process = __webpack_require__(9);
 
 var _Process2 = _interopRequireDefault(_Process);
 
@@ -5048,11 +5172,11 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _Location = __webpack_require__(9);
+var _Location = __webpack_require__(10);
 
 var _Location2 = _interopRequireDefault(_Location);
 
-var _EntitiyController = __webpack_require__(7);
+var _EntitiyController = __webpack_require__(8);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
@@ -5169,7 +5293,7 @@ Object.assign(LocationController, {
   entityName: 'Location',
   routeName: 'locations',
 
-  _findFields: '_id name code uid type modifiedAt',
+  _findFields: '_id name code uid payload type modifiedAt',
   _createFields: '_id name code uid type children modifiedAt'
 });
 module.exports = LocationController;
@@ -5191,7 +5315,7 @@ var _csvParser = __webpack_require__(24);
 
 var _csvParser2 = _interopRequireDefault(_csvParser);
 
-var _Location = __webpack_require__(9);
+var _Location = __webpack_require__(10);
 
 var _Location2 = _interopRequireDefault(_Location);
 
@@ -5367,13 +5491,17 @@ var _csvParser = __webpack_require__(24);
 
 var _csvParser2 = _interopRequireDefault(_csvParser);
 
-var _User = __webpack_require__(11);
+var _User = __webpack_require__(12);
 
 var _User2 = _interopRequireDefault(_User);
 
-var _Location = __webpack_require__(9);
+var _Location = __webpack_require__(10);
 
 var _Location2 = _interopRequireDefault(_Location);
+
+var _Survey = __webpack_require__(5);
+
+var _Survey2 = _interopRequireDefault(_Survey);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -5454,11 +5582,17 @@ var _class = function (_CSVParser) {
               return c.name;
             })
           });
-          return _User2.default.findOneAndUpdate({ username: row['SURVEYOR_CODE'] }, {
-            name: row.SURVEYOR_NAME,
-            roles: ['SURVEYOR'],
-            payload: userPayload
-          }, { new: true, upsert: true });
+          var surveyName = row['SURVEY'];
+          return _Survey2.default.findOne({
+            enabled: true, name: surveyName
+          }).then(function (survey) {
+            userPayload.surveyId = survey._id;
+            return _User2.default.findOneAndUpdate({ username: row['SURVEYOR_CODE'] }, {
+              name: row.SURVEYOR_NAME,
+              roles: ['SURVEYOR'],
+              payload: userPayload
+            }, { new: true, upsert: true });
+          });
         });
       }));
     }
@@ -5504,11 +5638,11 @@ var app = new express.Router();
 
 
 app.get('/auth', (0, _dispatcher2.default)(_SurveyorController2.default, 'auth'));
-
 app.post('/upload', (0, _dispatcher2.default)(_AnswerController2.default, 'create'));
-
 app.get('/download', (0, _dispatcher2.default)(_SurveyController2.default, 'index'));
 app.get('/download/:id', (0, _dispatcher2.default)(_SurveyController2.default, 'get'));
+
+app.get('/info', (0, _dispatcher2.default)(_SurveyorController2.default, 'appInfo'));
 
 //  (req, res, next) => {
 //   res.sendFile(path.resolve('data/auth.json'));

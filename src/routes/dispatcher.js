@@ -2,7 +2,7 @@ import Renderer from '../lib/utils/render';
 
 /**
  * Dispatch action to given controller
- * @param {Class.<BaseController>} Controller 
+ * @param {Class.<BaseController>} Controller
  * @param {String} method name to call
  * @return {Function.<ExpressMiddleware>}
  */

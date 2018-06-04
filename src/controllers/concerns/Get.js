@@ -19,8 +19,8 @@ export default class GetConcerns extends Mixin {
     }
   }
 
-  get() {
-    let query = this._getQuery();
+  get(query) {
+    query = query || this._getQuery();
     this.renderer.renderPromise(
       Promise.resolve(
         query && this._findOne(query)

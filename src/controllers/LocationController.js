@@ -76,7 +76,7 @@ Object.assign(LocationController, {
   entityName: 'Location',
   routeName: 'locations',
 
-  _findFields: '_id name code uid type modifiedAt',
+  _findFields: '_id name code uid payload type modifiedAt',
   _createFields: '_id name code uid type children modifiedAt',
 });
 module.exports = LocationController;

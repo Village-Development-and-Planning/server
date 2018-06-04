@@ -90,20 +90,32 @@ export default class SurveyorController extends EntityController {
   }
 
   _findOne(query) {
-    return super._findOne(query).then(
-      (surveyor) => {
-        if (surveyor) {
-          return Statistic.find({
-            type: /^SurveyorAggregate/,
-            key: new RegExp(`^${surveyor.username}`),
-          }).then((stats) => {
-            surveyor.set('aggregates', stats, {strict: false});
-            return surveyor;
-          });
-        }
-        return surveyor;
+    return super._findOne(query).then((surveyor) => {
+      if (!surveyor) return null;
+      surveyor.set('code', surveyor.username, {strict: false});
+      if (this.queryZone !== 'app') {
+        return Statistic.find({
+          type: /^SurveyorAggregate/,
+          key: new RegExp(`^${surveyor.username}`),
+        }).then((stats) => {
+          surveyor.set('aggregates', stats, {strict: false});
+          return surveyor;
+        });
       }
-    );
+      return surveyor;
+    }).then((surveyor) => {
+      if (surveyor && surveyor.payload) {
+        surveyor.set(
+          'surveyId', surveyor.payload.surveyId, {strict: false}
+        );
+      }
+      return surveyor;
+    });
+  }
+
+  appInfo() {
+    this.queryZone = 'app';
+    this.get({username: this.req.user.username});
   }
 }
 

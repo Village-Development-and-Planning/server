@@ -14,14 +14,13 @@ export default function rolesMiddleware(req, res, next) {
   }
   const user = req.user;
   const rolesHash = {};
-  for (let role in user.roles) {
+  for (let role of user.roles) {
     rolesHash[role.toLowerCase()] = 1;
   }
-
   for (let sec of Constants.routeSecurity) {
     if (req.path.startsWith(sec.prefix)) {
       const roles2Check = sec.roles.split(' ');
-      for (let role in roles2Check) {
+      for (let role of roles2Check) {
         if (rolesHash[role]) {
           next();
           return;
