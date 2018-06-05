@@ -23,9 +23,6 @@ class ArtifactController extends EntityController {
     }
 
     let filter = 'name description type mimeType data extension'.split(' ');
-    if (this.action === 'create') {
-      filter = filter.concat('_id');
-    }
     return this._filterObject(obj, filter);
   }
 

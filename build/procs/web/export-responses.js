@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 94);
+/******/ 	return __webpack_require__(__webpack_require__.s = 95);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -115,7 +115,35 @@ module.exports = Schema;
 
 /***/ }),
 
-/***/ 11:
+/***/ 10:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var Schema = __webpack_require__(1);
+var mongoose = __webpack_require__(0);
+
+var processSchema = new Schema({
+    name: { type: String, required: true },
+    path: { type: String },
+    args: { type: {} },
+    status: { type: String },
+    exitCode: { type: Number },
+    exitSignal: { type: String },
+    stdout: { type: String },
+    stderr: { type: String },
+    startDate: { type: Date, default: Date.now },
+    endDate: { type: Date }
+});
+processSchema.index({ status: 1, name: 1 });
+processSchema.index({ name: 1 });
+
+module.exports = mongoose.model('Process', processSchema);
+
+/***/ }),
+
+/***/ 12:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -814,7 +842,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Process = __webpack_require__(9);
+var _Process = __webpack_require__(10);
 
 var _Process2 = _interopRequireDefault(_Process);
 
@@ -1288,7 +1316,7 @@ exports.default = _class;
 "use strict";
 
 
-__webpack_require__(11);
+__webpack_require__(12);
 
 var _mongoose = __webpack_require__(0);
 
@@ -1432,13 +1460,13 @@ module.exports = {
   },
   cookieName: 'ptracking_jwt',
   jwt: {
-    secret: 'a general string'
+    secret: '235a21d1385b6b877d8efb4fc6445c8e'
   },
   admin: {
-    username: 'ptracking',
-    passphrase: 'vaazhvuT'
+    username: 'root',
+    passphrase: '7232aa3fbbb01be2f556bb76c2827410'
   },
-  routeSecurity: [{ prefix: '/cms', roles: 'root content-manager' }, { prefix: '/app', roles: 'root surveyor' }]
+  routeSecurity: [{ prefix: '/cms/surveys', roles: 'content-manager' }, { prefix: '/cms/surveyors', roles: 'content-manager' }, { prefix: '/cms/artifacts', roles: 'content-manager' }, { prefix: '/cms/locations', roles: 'content-manager' }, { prefix: '/cms/answers', roles: 'content-manager' }, { prefix: '/cms/processes', roles: 'content-manager' }, { prefix: '/cms', method: 'get', roles: 'content-viewer content-manager' }, { prefix: '/cms', roles: 'root admin' }, { prefix: '/app', roles: 'root admin surveyor' }]
 };
 
 /***/ }),
@@ -1450,51 +1478,23 @@ module.exports = require("co");
 
 /***/ }),
 
-/***/ 9:
+/***/ 95:
 /***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
-
-
-var Schema = __webpack_require__(1);
-var mongoose = __webpack_require__(0);
-
-var processSchema = new Schema({
-    name: { type: String, required: true },
-    path: { type: String },
-    args: { type: {} },
-    status: { type: String },
-    exitCode: { type: Number },
-    exitSignal: { type: String },
-    stdout: { type: String },
-    stderr: { type: String },
-    startDate: { type: Date, default: Date.now },
-    endDate: { type: Date }
-});
-processSchema.index({ status: 1, name: 1 });
-processSchema.index({ name: 1 });
-
-module.exports = mongoose.model('Process', processSchema);
-
-/***/ }),
-
-/***/ 94:
-/***/ (function(module, exports, __webpack_require__) {
-
-__webpack_require__(95);
+__webpack_require__(96);
 module.exports = __webpack_require__(27);
 
 
 /***/ }),
 
-/***/ 95:
+/***/ 96:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = global["Proc"] = __webpack_require__(96);
+module.exports = global["Proc"] = __webpack_require__(97);
 
 /***/ }),
 
-/***/ 96:
+/***/ 97:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1524,7 +1524,7 @@ var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
-var _csvStringify = __webpack_require__(97);
+var _csvStringify = __webpack_require__(98);
 
 var _csvStringify2 = _interopRequireDefault(_csvStringify);
 
@@ -1729,7 +1729,7 @@ exports.default = ExportResponses;
 
 /***/ }),
 
-/***/ 97:
+/***/ 98:
 /***/ (function(module, exports) {
 
 module.exports = require("csv-stringify");

@@ -18,7 +18,13 @@ export default function rolesMiddleware(req, res, next) {
     rolesHash[role.toLowerCase()] = 1;
   }
   for (let sec of Constants.routeSecurity) {
-    if (req.path.startsWith(sec.prefix)) {
+    if (
+      req.path.startsWith(sec.prefix)
+      && (
+        !sec.method
+        || (req.method.toLowerCase() === sec.method)
+      )
+    ) {
       const roles2Check = sec.roles.split(' ');
       for (let role of roles2Check) {
         if (rolesHash[role]) {

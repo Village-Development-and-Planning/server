@@ -13,7 +13,14 @@ class MPHandler extends Busboy {
       this.data = {};
       this.on('file', this._fileHandler.bind(this));
       this.on('field', (field, val) => {
-        this.data[field] = val;
+        if (field.endsWith('[]')) {
+          field = field.slice(0, -2);
+          this.data[field] = this.data[field] || [];
+          console.log(field, this.data[field]);
+          this.data[field].push(val);
+        } else {
+          this.data[field] = val;
+        }
       });
       this.on('finish', () => {
         resolve(

@@ -18,9 +18,11 @@ passport.use(new Digest(
         Constants.admin.passphrase
       );
     } else {
+      console.log(username);
       User.findOne({username})
       .then((user) => {
         if (!user) cb(null, false);
+        console.log(user.passphrase);
         cb(null, {
           username: user.username,
           name: user.name,
@@ -44,7 +46,7 @@ const setCookie = (req, res, next) => {
 
 const clearCookie = (req, res, next) => {
   res.clearCookie(Constants.cookieName);
-  res.sendStatus(204);
+  res.json({message: 'Logged out'});
 };
 
 const signIn = [passportMiddleware, setCookie];

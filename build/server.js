@@ -298,13 +298,13 @@ module.exports = {
   },
   cookieName: 'ptracking_jwt',
   jwt: {
-    secret: 'a general string'
+    secret: '235a21d1385b6b877d8efb4fc6445c8e'
   },
   admin: {
-    username: 'ptracking',
-    passphrase: 'vaazhvuT'
+    username: 'root',
+    passphrase: '7232aa3fbbb01be2f556bb76c2827410'
   },
-  routeSecurity: [{ prefix: '/cms', roles: 'root content-manager' }, { prefix: '/app', roles: 'root surveyor' }]
+  routeSecurity: [{ prefix: '/cms/surveys', roles: 'content-manager' }, { prefix: '/cms/surveyors', roles: 'content-manager' }, { prefix: '/cms/artifacts', roles: 'content-manager' }, { prefix: '/cms/locations', roles: 'content-manager' }, { prefix: '/cms/answers', roles: 'content-manager' }, { prefix: '/cms/processes', roles: 'content-manager' }, { prefix: '/cms', method: 'get', roles: 'content-viewer content-manager' }, { prefix: '/cms', roles: 'root admin' }, { prefix: '/app', roles: 'root admin surveyor' }]
 };
 
 /***/ }),
@@ -432,6 +432,31 @@ exports.default = EntityController;
 var Schema = __webpack_require__(1);
 var mongoose = __webpack_require__(0);
 
+var userSchema = new Schema({
+  username: { type: String, required: true },
+  name: { type: String },
+
+  passphrase: { type: String },
+  roles: [{ type: String }],
+
+  payload: { type: {} }
+});
+userSchema.index({ username: 1 });
+userSchema.index({ name: 1 });
+userSchema.index({ roles: 1 });
+
+module.exports = mongoose.model('User', userSchema);
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var Schema = __webpack_require__(1);
+var mongoose = __webpack_require__(0);
+
 var processSchema = new Schema({
     name: { type: String, required: true },
     path: { type: String },
@@ -450,7 +475,7 @@ processSchema.index({ name: 1 });
 module.exports = mongoose.model('Process', processSchema);
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -489,7 +514,7 @@ schema.index({ name: 1, type: 1 });
 exports.default = _mongoose2.default.model('Location', schema);
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -514,31 +539,6 @@ var options = _Constants2.default.db;
 _mongoose2.default.Promise = global.Promise;
 
 exports.default = _mongoose2.default.connect(options.connectionString, options.connectionOptions);
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var Schema = __webpack_require__(1);
-var mongoose = __webpack_require__(0);
-
-var userSchema = new Schema({
-  username: { type: String, required: true },
-  name: { type: String },
-
-  passphrase: { type: String },
-  roles: [{ type: String }],
-
-  payload: { type: {} }
-});
-userSchema.index({ username: 1 });
-userSchema.index({ name: 1 });
-userSchema.index({ roles: 1 });
-
-module.exports = mongoose.model('User', userSchema);
 
 /***/ }),
 /* 13 */
@@ -1208,7 +1208,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Process = __webpack_require__(9);
+var _Process = __webpack_require__(10);
 
 var _Process2 = _interopRequireDefault(_Process);
 
@@ -2848,9 +2848,6 @@ var ArtifactController = function (_EntityController) {
       }
 
       var filter = 'name description type mimeType data extension'.split(' ');
-      if (this.action === 'create') {
-        filter = filter.concat('_id');
-      }
       return this._filterObject(obj, filter);
     }
   }, {
@@ -2952,7 +2949,7 @@ var _surveyorCsvParser = __webpack_require__(86);
 
 var _surveyorCsvParser2 = _interopRequireDefault(_surveyorCsvParser);
 
-var _User = __webpack_require__(12);
+var _User = __webpack_require__(9);
 
 var _User2 = _interopRequireDefault(_User);
 
@@ -2960,7 +2957,7 @@ var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
-var _Location = __webpack_require__(10);
+var _Location = __webpack_require__(11);
 
 var _Location2 = _interopRequireDefault(_Location);
 
@@ -3162,7 +3159,7 @@ __webpack_require__(38);
 
 __webpack_require__(3);
 
-__webpack_require__(11);
+__webpack_require__(12);
 
 var express = __webpack_require__(19);
 var http = __webpack_require__(39);
@@ -3187,7 +3184,7 @@ __webpack_require__(49)(app);
 __webpack_require__(51)(app);
 
 // 99. Setup error-handling
-__webpack_require__(88)(app);
+__webpack_require__(89)(app);
 
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
@@ -3339,7 +3336,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.setCookie = exports.clearCookie = exports.signIn = undefined;
 
-var _User = __webpack_require__(12);
+var _User = __webpack_require__(9);
 
 var _User2 = _interopRequireDefault(_User);
 
@@ -3357,8 +3354,10 @@ passport.use(new Digest({ qop: 'auth' }, function (username, cb) {
       name: 'Admin',
       roles: ['root'] }, Constants.admin.passphrase);
   } else {
+    console.log(username);
     _User2.default.findOne({ username: username }).then(function (user) {
       if (!user) cb(null, false);
+      console.log(user.passphrase);
       cb(null, {
         username: user.username,
         name: user.name,
@@ -3383,7 +3382,7 @@ var setCookie = function setCookie(req, res, next) {
 
 var clearCookie = function clearCookie(req, res, next) {
   res.clearCookie(Constants.cookieName);
-  res.sendStatus(204);
+  res.json({ message: 'Logged out' });
 };
 
 var signIn = [passportMiddleware, setCookie];
@@ -3469,7 +3468,7 @@ function rolesMiddleware(req, res, next) {
     for (var _iterator2 = Constants.routeSecurity[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
       var sec = _step2.value;
 
-      if (req.path.startsWith(sec.prefix)) {
+      if (req.path.startsWith(sec.prefix) && (!sec.method || req.method.toLowerCase() === sec.method)) {
         var roles2Check = sec.roles.split(' ');
         var _iteratorNormalCompletion3 = true;
         var _didIteratorError3 = false;
@@ -3556,7 +3555,7 @@ module.exports = require("body-parser");
 
 module.exports = function (app) {
   app.use('/cms', __webpack_require__(52));
-  app.use('/app', __webpack_require__(87));
+  app.use('/app', __webpack_require__(88));
 
   // redirect the home to /cms
   app.get('/', function (req, res) {
@@ -3614,6 +3613,7 @@ registerCmsRoutes(cmsRouter, __webpack_require__(35), function (app, ctrl) {
 registerCmsRoutes(cmsRouter, __webpack_require__(82));
 registerCmsRoutes(cmsRouter, __webpack_require__(84));
 registerCmsRoutes(cmsRouter, __webpack_require__(36));
+registerCmsRoutes(cmsRouter, __webpack_require__(87));
 module.exports = cmsRouter;
 
 /***/ }),
@@ -4070,7 +4070,14 @@ var MPHandler = function (_Busboy) {
       _this.data = {};
       _this.on('file', _this._fileHandler.bind(_this));
       _this.on('field', function (field, val) {
-        _this.data[field] = val;
+        if (field.endsWith('[]')) {
+          field = field.slice(0, -2);
+          _this.data[field] = _this.data[field] || [];
+          console.log(field, _this.data[field]);
+          _this.data[field].push(val);
+        } else {
+          _this.data[field] = val;
+        }
       });
       _this.on('finish', function () {
         resolve(Promise.all(_this.childPromises).then(function () {
@@ -5110,7 +5117,7 @@ var _procs = __webpack_require__(83);
 
 var _procs2 = _interopRequireDefault(_procs);
 
-var _Process = __webpack_require__(9);
+var _Process = __webpack_require__(10);
 
 var _Process2 = _interopRequireDefault(_Process);
 
@@ -5209,7 +5216,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _Location = __webpack_require__(10);
+var _Location = __webpack_require__(11);
 
 var _Location2 = _interopRequireDefault(_Location);
 
@@ -5352,7 +5359,7 @@ var _csvParser = __webpack_require__(24);
 
 var _csvParser2 = _interopRequireDefault(_csvParser);
 
-var _Location = __webpack_require__(10);
+var _Location = __webpack_require__(11);
 
 var _Location2 = _interopRequireDefault(_Location);
 
@@ -5528,11 +5535,11 @@ var _csvParser = __webpack_require__(24);
 
 var _csvParser2 = _interopRequireDefault(_csvParser);
 
-var _User = __webpack_require__(12);
+var _User = __webpack_require__(9);
 
 var _User2 = _interopRequireDefault(_User);
 
-var _Location = __webpack_require__(10);
+var _Location = __webpack_require__(11);
 
 var _Location2 = _interopRequireDefault(_Location);
 
@@ -5652,6 +5659,91 @@ exports.default = _class;
 "use strict";
 
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _EntitiyController = __webpack_require__(8);
+
+var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
+
+var _User = __webpack_require__(9);
+
+var _User2 = _interopRequireDefault(_User);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+/**
+ * Surveyor document controller.
+ *
+ * @class LocationController
+ * @extends {BaseController}
+ */
+var UserController = function (_EntityController) {
+  _inherits(UserController, _EntityController);
+
+  function UserController() {
+    _classCallCheck(this, UserController);
+
+    return _possibleConstructorReturn(this, (UserController.__proto__ || Object.getPrototypeOf(UserController)).apply(this, arguments));
+  }
+
+  _createClass(UserController, [{
+    key: '_findOne',
+    value: function _findOne() {
+      var _get2;
+
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      return (_get2 = _get(UserController.prototype.__proto__ || Object.getPrototypeOf(UserController.prototype), '_findOne', this)).call.apply(_get2, [this].concat(args)).select('-passphrase');
+    }
+  }, {
+    key: '_indexQuery',
+    value: function _indexQuery() {
+      return { roles: { $ne: 'SURVEYOR' } };
+    }
+  }, {
+    key: '_parseEntity',
+    value: function _parseEntity(obj) {
+      return this._filterObject(obj, 'name username roles passphrase');
+    }
+  }]);
+
+  return UserController;
+}(_EntitiyController2.default);
+
+exports.default = UserController;
+
+
+Object.assign(UserController, {
+  collection: _User2.default,
+  entityName: 'User',
+  routeName: 'users',
+
+  _findFields: '_id name username roles modifiedAt',
+  _createFields: '_id name username roles modifiedAt'
+});
+module.exports = UserController;
+
+/***/ }),
+/* 88 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 var _dispatcher = __webpack_require__(28);
 
 var _dispatcher2 = _interopRequireDefault(_dispatcher);
@@ -5691,7 +5783,7 @@ app.post('/response', (0, _dispatcher2.default)(_AnswerController2.default, 'cre
 module.exports = app;
 
 /***/ }),
-/* 88 */
+/* 89 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

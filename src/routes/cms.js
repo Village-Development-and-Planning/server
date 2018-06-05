@@ -57,4 +57,8 @@ registerCmsRoutes(
   cmsRouter,
   require('../controllers/SurveyorController'),
 );
+registerCmsRoutes(
+  cmsRouter,
+  require('../controllers/UserController'),
+);
 module.exports = cmsRouter;
