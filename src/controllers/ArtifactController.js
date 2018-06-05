@@ -15,7 +15,11 @@ class ArtifactController extends EntityController {
   _parseEntity(obj) {
     if (obj.data && !obj.mimeType) {
       const fType = fileType(obj.data);
-      if (fType) obj.mimeType = fType.mime;
+      if (fType) {
+        obj.mimeType = fType.mime;
+      } else if (obj.extension === '.csv') {
+        obj.mimeType = 'text/csv';
+      }
     }
 
     let filter = 'name description type mimeType data extension'.split(' ');

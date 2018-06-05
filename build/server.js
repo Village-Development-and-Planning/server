@@ -2840,7 +2840,11 @@ var ArtifactController = function (_EntityController) {
     value: function _parseEntity(obj) {
       if (obj.data && !obj.mimeType) {
         var fType = (0, _fileType2.default)(obj.data);
-        if (fType) obj.mimeType = fType.mime;
+        if (fType) {
+          obj.mimeType = fType.mime;
+        } else if (obj.extension === '.csv') {
+          obj.mimeType = 'text/csv';
+        }
       }
 
       var filter = 'name description type mimeType data extension'.split(' ');
@@ -5683,9 +5687,6 @@ app.get('/info', (0, _dispatcher2.default)(_SurveyorController2.default, 'appInf
 app.get('/surveys/:id', (0, _dispatcher2.default)(_SurveyController2.default, 'get'));
 app.get('/artifacts/:id', (0, _dispatcher2.default)(_ArtifactController2.default, 'get'));
 app.post('/response', (0, _dispatcher2.default)(_AnswerController2.default, 'create'));
-//  (req, res, next) => {
-//   res.sendFile(path.resolve('data/auth.json'));
-// })
 
 module.exports = app;
 
