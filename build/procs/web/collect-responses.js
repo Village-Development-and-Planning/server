@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 88);
+/******/ 	return __webpack_require__(__webpack_require__.s = 89);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -2349,21 +2349,22 @@ process.exitCode = 0;
 /* 85 */,
 /* 86 */,
 /* 87 */,
-/* 88 */
+/* 88 */,
+/* 89 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(89);
+__webpack_require__(90);
 module.exports = __webpack_require__(27);
 
 
 /***/ }),
-/* 89 */
+/* 90 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = global["Proc"] = __webpack_require__(90);
+module.exports = global["Proc"] = __webpack_require__(91);
 
 /***/ }),
-/* 90 */
+/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2395,11 +2396,11 @@ var _Cursor = __webpack_require__(26);
 
 var _Cursor2 = _interopRequireDefault(_Cursor);
 
-var _Aggregation = __webpack_require__(91);
+var _Aggregation = __webpack_require__(92);
 
 var _Aggregation2 = _interopRequireDefault(_Aggregation);
 
-var _AnswerCollector = __webpack_require__(92);
+var _AnswerCollector = __webpack_require__(93);
 
 var _AnswerCollector2 = _interopRequireDefault(_AnswerCollector);
 
@@ -2811,7 +2812,7 @@ var CollectResponses = function (_Mixin$mixin) {
 exports.default = CollectResponses;
 
 /***/ }),
-/* 91 */
+/* 92 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3118,7 +3119,7 @@ var _class = function (_Mixin) {
 exports.default = _class;
 
 /***/ }),
-/* 92 */
+/* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

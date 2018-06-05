@@ -3,6 +3,7 @@ import EntityController from './EntitiyController';
 
 import streamToArray from 'stream-to-array';
 import fileType from 'file-type';
+import path from 'path';
 
 /**
  * Artifact document controller.
@@ -17,15 +18,16 @@ class ArtifactController extends EntityController {
       if (fType) obj.mimeType = fType.mime;
     }
 
-    let filter = ['name', 'description', 'type', 'mimeType', 'data'];
+    let filter = 'name description type mimeType data extension'.split(' ');
     if (this.action === 'create') {
       filter = filter.concat('_id');
     }
     return this._filterObject(obj, filter);
   }
 
-  _parseFileField({mime, field, file, fields}) {
+  _parseFileField({mime, field, fname, file, fields}) {
     if (field === 'data') {
+      if (fname) fields.extension = path.extname(fname);
       return streamToArray(file).then((arr) => Buffer.concat(arr));
     }
     return null;
@@ -53,6 +55,24 @@ class ArtifactController extends EntityController {
     const {type} = this.req.query;
     if (type) query.type = type;
     return query;
+  }
+
+  download(query) {
+    query = query || this._getQuery();
+    this.renderer.renderPromise(
+      Promise.resolve(
+        query && super._findOne(query)
+      )
+      .then((e) => e || Promise.reject(new Error('Entity not found.')))
+      .then((e) => {
+        const res = this.renderer.res;
+        res.contentType(e.mimeType);
+        res.attachment(`${e.name}${e.extension || ''}`);
+        res.send(e.data);
+        res.end();
+      })
+      .catch((e) => Promise.reject(Object.assign(e, {status: 404})))
+    );
   }
 }
 

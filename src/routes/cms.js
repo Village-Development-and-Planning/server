@@ -41,6 +41,9 @@ registerCmsRoutes(
 registerCmsRoutes(
   cmsRouter,
   require('../controllers/ArtifactController'),
+  (app, ctrl) => {
+    app.get('/:id/download', dispatcher(ctrl, 'download'));
+  }
 );
 registerCmsRoutes(
   cmsRouter,

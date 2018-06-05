@@ -2632,7 +2632,8 @@ var artifactSchema = new Schema({
   description: { type: String },
   type: { type: String, required: true },
   mimeType: { type: String, required: true },
-  data: { type: Buffer, required: true }
+  data: { type: Buffer, required: true },
+  extension: { type: String }
 });
 artifactSchema.index({ name: 1, type: 1 });
 artifactSchema.index({ type: 1, mimeType: 1 });
@@ -2801,7 +2802,7 @@ var _EntitiyController = __webpack_require__(8);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
-var _surveyorCsvParser = __webpack_require__(85);
+var _surveyorCsvParser = __webpack_require__(86);
 
 var _surveyorCsvParser2 = _interopRequireDefault(_surveyorCsvParser);
 
@@ -3040,7 +3041,7 @@ __webpack_require__(48)(app);
 __webpack_require__(50)(app);
 
 // 99. Setup error-handling
-__webpack_require__(87)(app);
+__webpack_require__(88)(app);
 
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
@@ -3409,7 +3410,7 @@ module.exports = require("body-parser");
 
 module.exports = function (app) {
   app.use('/cms', __webpack_require__(51));
-  app.use('/app', __webpack_require__(86));
+  app.use('/app', __webpack_require__(87));
 
   // redirect the home to /cms
   app.get('/', function (req, res) {
@@ -3461,9 +3462,11 @@ registerCmsRoutes(cmsRouter, __webpack_require__(29), function (app, ctrl) {
   app.post('/:id/reset', (0, _dispatcher2.default)(ctrl, 'reset'));
 });
 registerCmsRoutes(cmsRouter, __webpack_require__(33));
-registerCmsRoutes(cmsRouter, __webpack_require__(79));
-registerCmsRoutes(cmsRouter, __webpack_require__(81));
-registerCmsRoutes(cmsRouter, __webpack_require__(83));
+registerCmsRoutes(cmsRouter, __webpack_require__(79), function (app, ctrl) {
+  app.get('/:id/download', (0, _dispatcher2.default)(ctrl, 'download'));
+});
+registerCmsRoutes(cmsRouter, __webpack_require__(82));
+registerCmsRoutes(cmsRouter, __webpack_require__(84));
 registerCmsRoutes(cmsRouter, __webpack_require__(35));
 module.exports = cmsRouter;
 
@@ -4955,6 +4958,10 @@ var _fileType = __webpack_require__(80);
 
 var _fileType2 = _interopRequireDefault(_fileType);
 
+var _path = __webpack_require__(81);
+
+var _path2 = _interopRequireDefault(_path);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -4988,7 +4995,7 @@ var ArtifactController = function (_EntityController) {
         if (fType) obj.mimeType = fType.mime;
       }
 
-      var filter = ['name', 'description', 'type', 'mimeType', 'data'];
+      var filter = 'name description type mimeType data extension'.split(' ');
       if (this.action === 'create') {
         filter = filter.concat('_id');
       }
@@ -4999,10 +5006,12 @@ var ArtifactController = function (_EntityController) {
     value: function _parseFileField(_ref) {
       var mime = _ref.mime,
           field = _ref.field,
+          fname = _ref.fname,
           file = _ref.file,
           fields = _ref.fields;
 
       if (field === 'data') {
+        if (fname) fields.extension = _path2.default.extname(fname);
         return (0, _streamToArray2.default)(file).then(function (arr) {
           return Buffer.concat(arr);
         });
@@ -5035,6 +5044,24 @@ var ArtifactController = function (_EntityController) {
       if (type) query.type = type;
       return query;
     }
+  }, {
+    key: 'download',
+    value: function download(query) {
+      var _this3 = this;
+
+      query = query || this._getQuery();
+      this.renderer.renderPromise(Promise.resolve(query && _get(ArtifactController.prototype.__proto__ || Object.getPrototypeOf(ArtifactController.prototype), '_findOne', this).call(this, query)).then(function (e) {
+        return e || Promise.reject(new Error('Entity not found.'));
+      }).then(function (e) {
+        var res = _this3.renderer.res;
+        res.contentType(e.mimeType);
+        res.attachment('' + e.name + (e.extension || ''));
+        res.send(e.data);
+        res.end();
+      }).catch(function (e) {
+        return Promise.reject(Object.assign(e, { status: 404 }));
+      }));
+    }
   }]);
 
   return ArtifactController;
@@ -5058,6 +5085,12 @@ module.exports = require("file-type");
 
 /***/ }),
 /* 81 */
+/***/ (function(module, exports) {
+
+module.exports = require("path");
+
+/***/ }),
+/* 82 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5069,7 +5102,7 @@ var _EntitiyController = __webpack_require__(8);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
-var _procs = __webpack_require__(82);
+var _procs = __webpack_require__(83);
 
 var _procs2 = _interopRequireDefault(_procs);
 
@@ -5129,7 +5162,7 @@ Object.assign(ProcessController, {
 module.exports = ProcessController;
 
 /***/ }),
-/* 82 */
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5158,7 +5191,7 @@ var ExportResponses = exports.ExportResponses = new _childProcess2.default({
 exports.default = { CollectResponses: CollectResponses, ExportResponses: ExportResponses };
 
 /***/ }),
-/* 83 */
+/* 84 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5180,7 +5213,7 @@ var _EntitiyController = __webpack_require__(8);
 
 var _EntitiyController2 = _interopRequireDefault(_EntitiyController);
 
-var _locationCsvParser = __webpack_require__(84);
+var _locationCsvParser = __webpack_require__(85);
 
 var _locationCsvParser2 = _interopRequireDefault(_locationCsvParser);
 
@@ -5299,7 +5332,7 @@ Object.assign(LocationController, {
 module.exports = LocationController;
 
 /***/ }),
-/* 84 */
+/* 85 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5475,7 +5508,7 @@ var _class = function (_CSVParser) {
 exports.default = _class;
 
 /***/ }),
-/* 85 */
+/* 86 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5609,7 +5642,7 @@ var _class = function (_CSVParser) {
 exports.default = _class;
 
 /***/ }),
-/* 86 */
+/* 87 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5651,7 +5684,7 @@ app.get('/info', (0, _dispatcher2.default)(_SurveyorController2.default, 'appInf
 module.exports = app;
 
 /***/ }),
-/* 87 */
+/* 88 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
