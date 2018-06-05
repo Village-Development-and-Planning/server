@@ -40,7 +40,7 @@ class AnswerController extends EntityController {
   }
 
   _parseFileField({mime, field, file, fields, encoding}) {
-    if (field === 'data-file' || field === 'dataFile') {
+    if (field === 'data-file' || field === 'dataFile' || field === 'data') {
       return streamToArray(file)
         .then((arr) => Buffer.concat(arr))
         .then((buff) => {
