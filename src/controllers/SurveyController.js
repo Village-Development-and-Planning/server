@@ -129,7 +129,7 @@ class SurveyController extends EntityController {
 
 
   _parseEntity(obj) {
-    if (typeof obj.enabled !== 'undefined') obj.enabled = !!obj.enabled;
+    obj.enabled = !!obj.enabled;
     if (typeof obj.respondents === 'string') {
       if (!obj.respondents || obj.respondents == 'none') {
         obj.respondents = null;
