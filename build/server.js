@@ -3098,6 +3098,7 @@ var SurveyorController = function (_EntityController) {
       var _this3 = this;
 
       return _get(SurveyorController.prototype.__proto__ || Object.getPrototypeOf(SurveyorController.prototype), '_findOne', this).call(this, query).then(function (surveyor) {
+        delete surveyor.passphrase;
         if (!surveyor) return null;
         surveyor.set('code', surveyor.username, { strict: false });
         if (_this3.queryZone !== 'app') {
@@ -3354,10 +3355,8 @@ passport.use(new Digest({ qop: 'auth' }, function (username, cb) {
       name: 'Admin',
       roles: ['root'] }, Constants.admin.passphrase);
   } else {
-    console.log(username);
     _User2.default.findOne({ username: username }).then(function (user) {
       if (!user) cb(null, false);
-      console.log(user.passphrase);
       cb(null, {
         username: user.username,
         name: user.name,
@@ -4073,7 +4072,6 @@ var MPHandler = function (_Busboy) {
         if (field.endsWith('[]')) {
           field = field.slice(0, -2);
           _this.data[field] = _this.data[field] || [];
-          console.log(field, _this.data[field]);
           _this.data[field].push(val);
         } else {
           _this.data[field] = val;
@@ -5717,6 +5715,7 @@ var UserController = function (_EntityController) {
   }, {
     key: '_parseEntity',
     value: function _parseEntity(obj) {
+      if (!obj.passphrase) delete obj.passphrase;
       return this._filterObject(obj, 'name username roles passphrase');
     }
   }]);

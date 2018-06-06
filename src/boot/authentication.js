@@ -18,11 +18,9 @@ passport.use(new Digest(
         Constants.admin.passphrase
       );
     } else {
-      console.log(username);
       User.findOne({username})
       .then((user) => {
         if (!user) cb(null, false);
-        console.log(user.passphrase);
         cb(null, {
           username: user.username,
           name: user.name,

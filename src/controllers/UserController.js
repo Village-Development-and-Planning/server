@@ -16,6 +16,7 @@ export default class UserController extends EntityController {
   }
 
   _parseEntity(obj) {
+    if (!obj.passphrase) delete obj.passphrase;
     return this._filterObject(
       obj,
       'name username roles passphrase',

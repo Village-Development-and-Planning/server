@@ -91,6 +91,7 @@ export default class SurveyorController extends EntityController {
 
   _findOne(query) {
     return super._findOne(query).then((surveyor) => {
+      delete surveyor.passphrase;
       if (!surveyor) return null;
       surveyor.set('code', surveyor.username, {strict: false});
       if (this.queryZone !== 'app') {
