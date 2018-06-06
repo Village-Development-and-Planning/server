@@ -63,7 +63,7 @@ export default class SurveyorController extends EntityController {
 
   auth() {
     this.renderer.renderPromise(
-      User.find({roles: 'SURVEYOR'})
+      User.find(this._indexQuery())
       .then(
         (users) => users.reduce(
           (acc, user) => {
@@ -113,6 +113,11 @@ export default class SurveyorController extends EntityController {
       return surveyor;
     });
   }
+
+  _findOneAndUpdate(...args) {
+    return super._findOneAndUpdate(...args).select('-passphrase');
+  }
+
 
   appInfo() {
     this.queryZone = 'app';

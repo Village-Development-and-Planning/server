@@ -22,6 +22,10 @@ export default class UserController extends EntityController {
       'name username roles passphrase',
     );
   }
+
+  _findOneAndUpdate(...args) {
+    return super._findOneAndUpdate(...args).select('-passphrase');
+  }
 }
 
 Object.assign(UserController, {

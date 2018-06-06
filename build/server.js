@@ -3070,7 +3070,7 @@ var SurveyorController = function (_EntityController) {
   }, {
     key: 'auth',
     value: function auth() {
-      this.renderer.renderPromise(_User2.default.find({ roles: 'SURVEYOR' }).then(function (users) {
+      this.renderer.renderPromise(_User2.default.find(this._indexQuery()).then(function (users) {
         return users.reduce(function (acc, user) {
           acc[user.username] = user.payload;
           return acc;
@@ -3117,6 +3117,17 @@ var SurveyorController = function (_EntityController) {
         }
         return surveyor;
       });
+    }
+  }, {
+    key: '_findOneAndUpdate',
+    value: function _findOneAndUpdate() {
+      var _get2;
+
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      return (_get2 = _get(SurveyorController.prototype.__proto__ || Object.getPrototypeOf(SurveyorController.prototype), '_findOneAndUpdate', this)).call.apply(_get2, [this].concat(args)).select('-passphrase');
     }
   }, {
     key: 'appInfo',
@@ -5717,6 +5728,17 @@ var UserController = function (_EntityController) {
     value: function _parseEntity(obj) {
       if (!obj.passphrase) delete obj.passphrase;
       return this._filterObject(obj, 'name username roles passphrase');
+    }
+  }, {
+    key: '_findOneAndUpdate',
+    value: function _findOneAndUpdate() {
+      var _get3;
+
+      for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+        args[_key2] = arguments[_key2];
+      }
+
+      return (_get3 = _get(UserController.prototype.__proto__ || Object.getPrototypeOf(UserController.prototype), '_findOneAndUpdate', this)).call.apply(_get3, [this].concat(args)).select('-passphrase');
     }
   }]);
 
