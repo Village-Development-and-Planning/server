@@ -28,7 +28,10 @@ class ArtifactController extends EntityController {
 
   _parseFileField({mime, field, fname, file, fields}) {
     if (field === 'data') {
-      if (fname) fields.extension = path.extname(fname);
+      if (fname) {
+        fields.extension = path.extname(fname);
+        fields.name = path.basename(fname, fields.extension);
+      }
       return streamToArray(file).then((arr) => Buffer.concat(arr));
     }
     return null;
@@ -36,18 +39,8 @@ class ArtifactController extends EntityController {
 
   _findOne(query) {
     return super._findOne(query).then((a) => {
-      if (a) {
-        const b = this._findFields.split(' ').reduce(
-          (acc, key) => {
-            acc[key] = a[key];
-            return acc;
-          },
-          {},
-        );
-        b.dataBase64 = a.data.toString('base64');
-        delete b.data;
-        return b;
-      }
+      delete a.data;
+      return a;
     });
   }
 

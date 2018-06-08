@@ -2860,7 +2860,10 @@ var ArtifactController = function (_EntityController) {
           fields = _ref.fields;
 
       if (field === 'data') {
-        if (fname) fields.extension = _path2.default.extname(fname);
+        if (fname) {
+          fields.extension = _path2.default.extname(fname);
+          fields.name = _path2.default.basename(fname, fields.extension);
+        }
         return (0, _streamToArray2.default)(file).then(function (arr) {
           return Buffer.concat(arr);
         });
@@ -2870,18 +2873,9 @@ var ArtifactController = function (_EntityController) {
   }, {
     key: '_findOne',
     value: function _findOne(query) {
-      var _this2 = this;
-
       return _get(ArtifactController.prototype.__proto__ || Object.getPrototypeOf(ArtifactController.prototype), '_findOne', this).call(this, query).then(function (a) {
-        if (a) {
-          var b = _this2._findFields.split(' ').reduce(function (acc, key) {
-            acc[key] = a[key];
-            return acc;
-          }, {});
-          b.dataBase64 = a.data.toString('base64');
-          delete b.data;
-          return b;
-        }
+        delete a.data;
+        return a;
       });
     }
   }, {
@@ -2896,13 +2890,13 @@ var ArtifactController = function (_EntityController) {
   }, {
     key: 'download',
     value: function download(query) {
-      var _this3 = this;
+      var _this2 = this;
 
       query = query || this._getQuery();
       this.renderer.renderPromise(Promise.resolve(query && _get(ArtifactController.prototype.__proto__ || Object.getPrototypeOf(ArtifactController.prototype), '_findOne', this).call(this, query)).then(function (e) {
         return e || Promise.reject(new Error('Entity not found.'));
       }).then(function (e) {
-        var res = _this3.renderer.res;
+        var res = _this2.renderer.res;
         res.contentType(e.mimeType);
         res.attachment('' + e.name + (e.extension || ''));
         res.send(e.data);
