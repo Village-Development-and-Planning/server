@@ -53,7 +53,7 @@ export default class SurveyorController extends EntityController {
     if (field === 'surveyor-csv') {
       fields._done = true;
       const parser = new SurveyorParser({
-        deleteExisting: fields['delete-existing'],
+        deleteExisting: parseInt( fields['delete-existing'] ),
       });
       file.pipe(parser);
       return parser.promise;

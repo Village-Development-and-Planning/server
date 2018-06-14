@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 95);
+/******/ 	return __webpack_require__(__webpack_require__.s = 96);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -153,7 +153,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _Constants = __webpack_require__(6);
+var _Constants = __webpack_require__(5);
 
 var _Constants2 = _interopRequireDefault(_Constants);
 
@@ -846,7 +846,7 @@ var _Process = __webpack_require__(10);
 
 var _Process2 = _interopRequireDefault(_Process);
 
-var _Survey = __webpack_require__(5);
+var _Survey = __webpack_require__(6);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
@@ -1074,7 +1074,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _Survey = __webpack_require__(5);
+var _Survey = __webpack_require__(6);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
@@ -1393,6 +1393,34 @@ module.exports = _mongoose2.default.model('Statistic', schema);
 "use strict";
 
 
+module.exports = {
+  db: {
+    connectionOptions: {
+      poolSize: 2,
+      useMongoClient: true
+    },
+    connectionString: 'mongodb://localhost/test'
+  },
+  cookieName: 'ptracking_jwt',
+  jwt: {
+    secret: '235a21d1385b6b877d8efb4fc6445c8e'
+  },
+  admin: {
+    username: 'root',
+    passphrase: '7232aa3fbbb01be2f556bb76c2827410'
+  },
+  routeSecurity: [{ prefix: '/cms/surveys', roles: 'content-manager' }, { prefix: '/cms/surveyors', roles: 'content-manager' }, { prefix: '/cms/artifacts', roles: 'content-manager' }, { prefix: '/cms/locations', roles: 'content-manager' }, { prefix: '/cms/answers', roles: 'content-manager' }, { prefix: '/cms/processes', roles: 'content-manager' }, { prefix: '/cms', method: 'get', roles: 'content-viewer content-manager' }, { prefix: '/cms', roles: 'root admin' }, { prefix: '/app', roles: 'root admin surveyor' }],
+  origin: 'http://localhost:3000'
+};
+
+/***/ }),
+
+/***/ 6:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 __webpack_require__(3);
@@ -1444,33 +1472,6 @@ module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
 
-/***/ 6:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-module.exports = {
-  db: {
-    connectionOptions: {
-      poolSize: 2,
-      useMongoClient: true
-    },
-    connectionString: 'mongodb://localhost/test'
-  },
-  cookieName: 'ptracking_jwt',
-  jwt: {
-    secret: '235a21d1385b6b877d8efb4fc6445c8e'
-  },
-  admin: {
-    username: 'root',
-    passphrase: '7232aa3fbbb01be2f556bb76c2827410'
-  },
-  routeSecurity: [{ prefix: '/cms/surveys', roles: 'content-manager' }, { prefix: '/cms/surveyors', roles: 'content-manager' }, { prefix: '/cms/artifacts', roles: 'content-manager' }, { prefix: '/cms/locations', roles: 'content-manager' }, { prefix: '/cms/answers', roles: 'content-manager' }, { prefix: '/cms/processes', roles: 'content-manager' }, { prefix: '/cms', method: 'get', roles: 'content-viewer content-manager' }, { prefix: '/cms', roles: 'root admin' }, { prefix: '/app', roles: 'root admin surveyor' }]
-};
-
-/***/ }),
-
 /***/ 7:
 /***/ (function(module, exports) {
 
@@ -1478,23 +1479,23 @@ module.exports = require("co");
 
 /***/ }),
 
-/***/ 95:
+/***/ 96:
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(96);
+__webpack_require__(97);
 module.exports = __webpack_require__(27);
 
 
 /***/ }),
 
-/***/ 96:
+/***/ 97:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = global["Proc"] = __webpack_require__(97);
+module.exports = global["Proc"] = __webpack_require__(98);
 
 /***/ }),
 
-/***/ 97:
+/***/ 98:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1524,7 +1525,7 @@ var _Statistic = __webpack_require__(4);
 
 var _Statistic2 = _interopRequireDefault(_Statistic);
 
-var _csvStringify = __webpack_require__(98);
+var _csvStringify = __webpack_require__(99);
 
 var _csvStringify2 = _interopRequireDefault(_csvStringify);
 
@@ -1729,7 +1730,7 @@ exports.default = ExportResponses;
 
 /***/ }),
 
-/***/ 98:
+/***/ 99:
 /***/ (function(module, exports) {
 
 module.exports = require("csv-stringify");

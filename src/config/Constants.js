@@ -25,4 +25,5 @@ module.exports = {
     {prefix: '/cms', roles: 'root admin'},
     {prefix: '/app', roles: 'root admin surveyor'},
   ],
+  origin: 'http://localhost:3000',
 };

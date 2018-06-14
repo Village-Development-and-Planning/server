@@ -4,7 +4,7 @@ const constants = require('../config/Constants');
 import express from 'express';
 import {signIn, clearCookie} from './authentication';
 import roles from './roles';
-
+import csrf from './csrf';
 
 const secRouter = new express.Router();
 
@@ -47,4 +47,5 @@ module.exports = function(app) {
   app.get('/auth', (req, res, next) => {
     res.json(req.user);
   });
+  app.use(csrf);
 };

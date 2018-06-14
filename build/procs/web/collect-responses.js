@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 90);
+/******/ 	return __webpack_require__(__webpack_require__.s = 91);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -232,6 +232,33 @@ module.exports = _mongoose2.default.model('Statistic', schema);
 "use strict";
 
 
+module.exports = {
+  db: {
+    connectionOptions: {
+      poolSize: 2,
+      useMongoClient: true
+    },
+    connectionString: 'mongodb://localhost/test'
+  },
+  cookieName: 'ptracking_jwt',
+  jwt: {
+    secret: '235a21d1385b6b877d8efb4fc6445c8e'
+  },
+  admin: {
+    username: 'root',
+    passphrase: '7232aa3fbbb01be2f556bb76c2827410'
+  },
+  routeSecurity: [{ prefix: '/cms/surveys', roles: 'content-manager' }, { prefix: '/cms/surveyors', roles: 'content-manager' }, { prefix: '/cms/artifacts', roles: 'content-manager' }, { prefix: '/cms/locations', roles: 'content-manager' }, { prefix: '/cms/answers', roles: 'content-manager' }, { prefix: '/cms/processes', roles: 'content-manager' }, { prefix: '/cms', method: 'get', roles: 'content-viewer content-manager' }, { prefix: '/cms', roles: 'root admin' }, { prefix: '/app', roles: 'root admin surveyor' }],
+  origin: 'http://localhost:3000'
+};
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 __webpack_require__(3);
@@ -280,32 +307,6 @@ surveySchema.methods = {
 };
 
 module.exports = mongoose.model('Survey', surveySchema);
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-module.exports = {
-  db: {
-    connectionOptions: {
-      poolSize: 2,
-      useMongoClient: true
-    },
-    connectionString: 'mongodb://localhost/test'
-  },
-  cookieName: 'ptracking_jwt',
-  jwt: {
-    secret: '235a21d1385b6b877d8efb4fc6445c8e'
-  },
-  admin: {
-    username: 'root',
-    passphrase: '7232aa3fbbb01be2f556bb76c2827410'
-  },
-  routeSecurity: [{ prefix: '/cms/surveys', roles: 'content-manager' }, { prefix: '/cms/surveyors', roles: 'content-manager' }, { prefix: '/cms/artifacts', roles: 'content-manager' }, { prefix: '/cms/locations', roles: 'content-manager' }, { prefix: '/cms/answers', roles: 'content-manager' }, { prefix: '/cms/processes', roles: 'content-manager' }, { prefix: '/cms', method: 'get', roles: 'content-viewer content-manager' }, { prefix: '/cms', roles: 'root admin' }, { prefix: '/app', roles: 'root admin surveyor' }]
-};
 
 /***/ }),
 /* 7 */
@@ -416,7 +417,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _Constants = __webpack_require__(6);
+var _Constants = __webpack_require__(5);
 
 var _Constants2 = _interopRequireDefault(_Constants);
 
@@ -1104,7 +1105,7 @@ var _Process = __webpack_require__(10);
 
 var _Process2 = _interopRequireDefault(_Process);
 
-var _Survey = __webpack_require__(5);
+var _Survey = __webpack_require__(6);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
@@ -2021,7 +2022,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _Survey = __webpack_require__(5);
+var _Survey = __webpack_require__(6);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
@@ -2351,21 +2352,22 @@ process.exitCode = 0;
 /* 87 */,
 /* 88 */,
 /* 89 */,
-/* 90 */
+/* 90 */,
+/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(91);
+__webpack_require__(92);
 module.exports = __webpack_require__(27);
 
 
 /***/ }),
-/* 91 */
+/* 92 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = global["Proc"] = __webpack_require__(92);
+module.exports = global["Proc"] = __webpack_require__(93);
 
 /***/ }),
-/* 92 */
+/* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2397,11 +2399,11 @@ var _Cursor = __webpack_require__(26);
 
 var _Cursor2 = _interopRequireDefault(_Cursor);
 
-var _Aggregation = __webpack_require__(93);
+var _Aggregation = __webpack_require__(94);
 
 var _Aggregation2 = _interopRequireDefault(_Aggregation);
 
-var _AnswerCollector = __webpack_require__(94);
+var _AnswerCollector = __webpack_require__(95);
 
 var _AnswerCollector2 = _interopRequireDefault(_AnswerCollector);
 
@@ -2813,7 +2815,7 @@ var CollectResponses = function (_Mixin$mixin) {
 exports.default = CollectResponses;
 
 /***/ }),
-/* 93 */
+/* 94 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3120,7 +3122,7 @@ var _class = function (_Mixin) {
 exports.default = _class;
 
 /***/ }),
-/* 94 */
+/* 95 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
