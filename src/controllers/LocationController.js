@@ -21,8 +21,9 @@ export default class LocationController extends EntityController {
 
   _indexQuery() {
     const query = super._indexQuery();
-    const {type} = this.req.query;
+    const {type, prefix} = this.req.query;
     if (type) query.type = type;
+    if (prefix) query.uid = new RegExp(`^${prefix}`);
     return query;
   }
 

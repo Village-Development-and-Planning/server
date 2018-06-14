@@ -5271,9 +5271,12 @@ var LocationController = function (_EntityController) {
     key: '_indexQuery',
     value: function _indexQuery() {
       var query = _get(LocationController.prototype.__proto__ || Object.getPrototypeOf(LocationController.prototype), '_indexQuery', this).call(this);
-      var type = this.req.query.type;
+      var _req$query = this.req.query,
+          type = _req$query.type,
+          prefix = _req$query.prefix;
 
       if (type) query.type = type;
+      if (prefix) query.uid = new RegExp('^' + prefix);
       return query;
     }
   }, {
