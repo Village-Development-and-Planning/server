@@ -249,7 +249,7 @@ module.exports = {
     passphrase: '7232aa3fbbb01be2f556bb76c2827410'
   },
   routeSecurity: [{ prefix: '/cms/surveys', roles: 'content-manager' }, { prefix: '/cms/surveyors', roles: 'content-manager' }, { prefix: '/cms/artifacts', roles: 'content-manager' }, { prefix: '/cms/locations', roles: 'content-manager' }, { prefix: '/cms/answers', roles: 'content-manager' }, { prefix: '/cms/processes', roles: 'content-manager' }, { prefix: '/cms', method: 'get', roles: 'content-viewer content-manager' }, { prefix: '/cms', roles: 'root admin' }, { prefix: '/app', roles: 'root admin surveyor' }],
-  origin: 'http://localhost:3000'
+  origin: 'http://localhost'
 };
 
 /***/ }),

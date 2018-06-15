@@ -11,8 +11,7 @@ export default function(req, res, next) {
     next(); return;
   }
   let str = req.get('Origin') || req.get('Referer');
-  console.log(str);
-  if (str.startsWith(`${constants.origin}`)) {
+  if (str && str.startsWith(`${constants.origin}`)) {
     next(); return;
   }
   next({status: 403, message: 'CSRF Error'});
