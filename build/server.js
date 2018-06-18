@@ -3327,9 +3327,9 @@ secRouter.use.apply(secRouter, [jwt(jwtOpts), function (req, res, next) {
 }].concat(_toConsumableArray(_authentication.signIn)));
 
 module.exports = function (app) {
+  app.get('/auth/out', _authentication.clearCookie);
   app.use(secRouter);
   app.use(_roles2.default);
-  app.get('/auth/out', _authentication.clearCookie);
   app.get('/auth', function (req, res, next) {
     res.json(req.user);
   });
@@ -3392,7 +3392,7 @@ var setCookie = function setCookie(req, res, next) {
 
 var clearCookie = function clearCookie(req, res, next) {
   res.clearCookie(Constants.cookieName);
-  res.json({ message: 'Logged out' });
+  res.send('<h3>Logged out.</h3>');
 };
 
 var signIn = [passportMiddleware, setCookie];

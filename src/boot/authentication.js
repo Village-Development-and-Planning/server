@@ -44,7 +44,7 @@ const setCookie = (req, res, next) => {
 
 const clearCookie = (req, res, next) => {
   res.clearCookie(Constants.cookieName);
-  res.json({message: 'Logged out'});
+  res.send('<h3>Logged out.</h3>');
 };
 
 const signIn = [passportMiddleware, setCookie];

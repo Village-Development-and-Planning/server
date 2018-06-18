@@ -41,9 +41,9 @@ secRouter.use(
 
 
 module.exports = function(app) {
+  app.get('/auth/out', clearCookie);
   app.use(secRouter);
   app.use(roles);
-  app.get('/auth/out', clearCookie);
   app.get('/auth', (req, res, next) => {
     res.json(req.user);
   });
