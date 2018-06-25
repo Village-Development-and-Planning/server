@@ -1,6 +1,6 @@
 /**
  * Base Controller.
- * 
+ *
  * @class BaseController
  */
 class BaseController {
@@ -9,9 +9,9 @@ class BaseController {
     this.renderer = renderer;
   }
 
-  dispatch(method) {
+  dispatch(method, ...args) {
     this.action = method;
-    this[method]();
+    this[method](...args);
   }
 }
 export default BaseController;

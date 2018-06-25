@@ -30,26 +30,23 @@ export default class ChildProcess {
       args,
     });
 
-    var updateProcessToSurvey = function (surveyId, status, processId, processType){
+    let updateProcessToSurvey = (surveyId, status, processId, processType) => {
       SurveyM.findById(surveyId, function(err, survey) {
-        if (!survey)
-        {
+        if (!survey) {
           return 'Could not load Document';
-        }
-        else {
-          if (processType === 'CollectResponses'){
-            if (status === 'RUNNING'){
+        } else {
+          if (processType === 'CollectResponses') {
+            if (status === 'RUNNING') {
               survey.set('collectProcessId', processId);
             } else {
               survey.set('collectProcessId', '');
-            } 
-          }
-          else if (processType === 'ExportResponses'){
-            if (status === 'RUNNING'){
+            }
+          } else if (processType === 'ExportResponses') {
+            if (status === 'RUNNING') {
               survey.set('collectExportId', processId);
             } else {
               survey.set('collectExportId', '');
-            } 
+            }
           }
           survey.save().then((resp) => {
             return resp;
@@ -58,9 +55,8 @@ export default class ChildProcess {
           });
         }
       });
-      
     };
-    
+
     const promise = new Promise((res, rej) => {
       createP.then(
         (proc) => {
@@ -90,8 +86,6 @@ export default class ChildProcess {
     });
     return {createP, promise};
   }
-
-  
 }
 
 export class ChildTemplate {

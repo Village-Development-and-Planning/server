@@ -25,6 +25,7 @@ module.exports = {
     {prefix: '/cms/locations', roles: 'content-manager'},
     {prefix: '/cms/answers', roles: 'content-manager'},
     {prefix: '/cms/processes', roles: 'content-manager'},
+    {prefix: '/db', roles: 'root'},
   ],
   origin: 'http://localhost',
 };

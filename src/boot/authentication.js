@@ -37,7 +37,7 @@ const passportMiddleware = passport.authenticate('digest', {session: false});
 const setCookie = (req, res, next) => {
   if (req.user) {
     const cookie = jwt.sign(req.user, Constants.jwt.secret);
-    res.cookie(Constants.cookieName, cookie);
+    res.cookie(Constants.cookieName, cookie, {httpOnly: true, secure: true});
   }
   next();
 };

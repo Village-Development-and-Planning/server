@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 96);
+/******/ 	return __webpack_require__(__webpack_require__.s = 98);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -115,31 +115,245 @@ module.exports = Schema;
 
 /***/ }),
 
-/***/ 10:
+/***/ 100:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var Schema = __webpack_require__(1);
-var mongoose = __webpack_require__(0);
-
-var processSchema = new Schema({
-    name: { type: String, required: true },
-    path: { type: String },
-    args: { type: {} },
-    status: { type: String },
-    exitCode: { type: Number },
-    exitSignal: { type: String },
-    stdout: { type: String },
-    stderr: { type: String },
-    startDate: { type: Date, default: Date.now },
-    endDate: { type: Date }
+Object.defineProperty(exports, "__esModule", {
+  value: true
 });
-processSchema.index({ status: 1, name: 1 });
-processSchema.index({ name: 1 });
 
-module.exports = mongoose.model('Process', processSchema);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _childProcess = __webpack_require__(19);
+
+var _Mixin = __webpack_require__(2);
+
+var _Mixin2 = _interopRequireDefault(_Mixin);
+
+var _SurveyExport = __webpack_require__(27);
+
+var _SurveyExport2 = _interopRequireDefault(_SurveyExport);
+
+var _Cursor = __webpack_require__(28);
+
+var _Cursor2 = _interopRequireDefault(_Cursor);
+
+var _Statistic = __webpack_require__(4);
+
+var _Statistic2 = _interopRequireDefault(_Statistic);
+
+var _csvStringify = __webpack_require__(101);
+
+var _csvStringify2 = _interopRequireDefault(_csvStringify);
+
+var _fs = __webpack_require__(24);
+
+var _fs2 = _interopRequireDefault(_fs);
+
+var _co = __webpack_require__(7);
+
+var _co2 = _interopRequireDefault(_co);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var ExportResponses = function (_Mixin$mixin) {
+  _inherits(ExportResponses, _Mixin$mixin);
+
+  function ExportResponses() {
+    _classCallCheck(this, ExportResponses);
+
+    return _possibleConstructorReturn(this, (ExportResponses.__proto__ || Object.getPrototypeOf(ExportResponses)).apply(this, arguments));
+  }
+
+  _createClass(ExportResponses, [{
+    key: 'execute',
+    value: function execute(proc) {
+      var _this2 = this;
+
+      this.surveyId = proc.args;
+      return this.getSurvey().then(function () {
+        return _this2.getExportHeader();
+      }).then(function () {
+        return _this2.collectStatistics();
+      });
+    }
+  }, {
+    key: 'collectStatistics',
+    value: function collectStatistics() {
+      return _co2.default.call(this, /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+        var _this3 = this;
+
+        var _loop, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, _ref, number;
+
+        return regeneratorRuntime.wrap(function _callee$(_context2) {
+          while (1) {
+            switch (_context2.prev = _context2.next) {
+              case 0:
+                _loop = /*#__PURE__*/regeneratorRuntime.mark(function _loop(_number) {
+                  var writer, keys;
+                  return regeneratorRuntime.wrap(function _loop$(_context) {
+                    while (1) {
+                      switch (_context.prev = _context.next) {
+                        case 0:
+                          if (!_number) _number = null;
+                          writer = _this3._createCsvWriter(_this3.surveyId, _number);
+                          keys = _this3.answerKeys[_number].keys;
+
+                          writer.write(keys.map(function (_ref2) {
+                            var key = _ref2.key;
+                            return key;
+                          }));
+                          writer.write(keys.map(function (_ref3) {
+                            var description = _ref3.description;
+                            return description;
+                          }));
+                          _this3.writer = writer;
+                          _this3.rowCount = 0;
+                          _this3.keys = keys;
+                          _context.next = 10;
+                          return _this3.iterateCursor(_Statistic2.default.find({
+                            type: 'SurveyResponse',
+                            key: _this3.surveyId + '/' + _number
+                          }), 'collectOneStatistic').then(function (out) {
+                            return console.log(JSON.stringify({
+                              _logHeader: 'stats',
+                              respondent: _number,
+                              processed: out,
+                              numRows: _this3.rowCount
+                            }));
+                          });
+
+                        case 10:
+                          number = _number;
+
+                        case 11:
+                        case 'end':
+                          return _context.stop();
+                      }
+                    }
+                  }, _loop, _this3);
+                });
+                _iteratorNormalCompletion = true;
+                _didIteratorError = false;
+                _iteratorError = undefined;
+                _context2.prev = 4;
+                _iterator = this.respondents[Symbol.iterator]();
+
+              case 6:
+                if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
+                  _context2.next = 13;
+                  break;
+                }
+
+                _ref = _step.value;
+                number = _ref.number;
+                return _context2.delegateYield(_loop(number), 't0', 10);
+
+              case 10:
+                _iteratorNormalCompletion = true;
+                _context2.next = 6;
+                break;
+
+              case 13:
+                _context2.next = 19;
+                break;
+
+              case 15:
+                _context2.prev = 15;
+                _context2.t1 = _context2['catch'](4);
+                _didIteratorError = true;
+                _iteratorError = _context2.t1;
+
+              case 19:
+                _context2.prev = 19;
+                _context2.prev = 20;
+
+                if (!_iteratorNormalCompletion && _iterator.return) {
+                  _iterator.return();
+                }
+
+              case 22:
+                _context2.prev = 22;
+
+                if (!_didIteratorError) {
+                  _context2.next = 25;
+                  break;
+                }
+
+                throw _iteratorError;
+
+              case 25:
+                return _context2.finish(22);
+
+              case 26:
+                return _context2.finish(19);
+
+              case 27:
+              case 'end':
+                return _context2.stop();
+            }
+          }
+        }, _callee, this, [[4, 15, 19, 27], [20,, 22, 26]]);
+      }));
+    }
+  }, {
+    key: 'collectOneStatistic',
+    value: function collectOneStatistic(stat) {
+      var _this4 = this;
+
+      return new Promise(function (res, rej) {
+        _this4.writer.write(_this4.keys.map(function (_ref4) {
+          var key = _ref4.key;
+          return stat.data[key];
+        }), null, function () {
+          ++_this4.rowCount;
+          res(stat._id);
+        });
+      });
+    }
+  }, {
+    key: '_createCsvWriter',
+    value: function _createCsvWriter(surveyId, resp) {
+      var path = 'data/export-responses/' + surveyId + '-' + resp + '.csv';
+      var mode = 'w';
+      var fileStream = _fs2.default.createWriteStream(path, { encoding: 'utf8', flags: mode });
+      fileStream.on('error', function (err) {
+        throw err;
+      });
+
+      var csvWriter = new _csvStringify2.default();
+      csvWriter.on('error', function (err) {
+        throw err;
+      });
+
+      csvWriter.pipe(fileStream);
+      csvWriter.on('end', function () {
+        return fileStream.end();
+      });
+      return csvWriter;
+    }
+  }]);
+
+  return ExportResponses;
+}(_Mixin2.default.mixin(_childProcess.ChildTemplate, _SurveyExport2.default, _Cursor2.default));
+
+exports.default = ExportResponses;
+
+/***/ }),
+
+/***/ 101:
+/***/ (function(module, exports) {
+
+module.exports = require("csv-stringify");
 
 /***/ }),
 
@@ -153,7 +367,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _Constants = __webpack_require__(5);
+var _Constants = __webpack_require__(6);
 
 var _Constants2 = _interopRequireDefault(_Constants);
 
@@ -171,7 +385,7 @@ exports.default = _mongoose2.default.connect(options.connectionString, options.c
 
 /***/ }),
 
-/***/ 13:
+/***/ 15:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -189,7 +403,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _hotFormulaParser = __webpack_require__(14);
+var _hotFormulaParser = __webpack_require__(16);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -564,14 +778,14 @@ exports.default = _class;
 
 /***/ }),
 
-/***/ 14:
+/***/ 16:
 /***/ (function(module, exports) {
 
 module.exports = require("hot-formula-parser");
 
 /***/ }),
 
-/***/ 15:
+/***/ 17:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -586,7 +800,7 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 __webpack_require__(3);
 
 var Schema = __webpack_require__(1);
-var Text = __webpack_require__(16);
+var Text = __webpack_require__(18);
 var mongoose = __webpack_require__(0);
 
 var questionSchema = new Schema({
@@ -810,7 +1024,7 @@ exports.default = Question;
 
 /***/ }),
 
-/***/ 16:
+/***/ 18:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -827,7 +1041,7 @@ module.exports = new Schema({
 
 /***/ }),
 
-/***/ 17:
+/***/ 19:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -842,11 +1056,11 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Process = __webpack_require__(10);
+var _Process = __webpack_require__(9);
 
 var _Process2 = _interopRequireDefault(_Process);
 
-var _Survey = __webpack_require__(6);
+var _Survey = __webpack_require__(5);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
@@ -854,7 +1068,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _child_process = __webpack_require__(18);
+var _child_process = __webpack_require__(20);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -969,13 +1183,6 @@ var ChildTemplate = exports.ChildTemplate = function ChildTemplate(procArgs) {
 
 /***/ }),
 
-/***/ 18:
-/***/ (function(module, exports) {
-
-module.exports = require("child_process");
-
-/***/ }),
-
 /***/ 2:
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1051,14 +1258,21 @@ exports.default = Mixin;
 
 /***/ }),
 
-/***/ 23:
+/***/ 20:
+/***/ (function(module, exports) {
+
+module.exports = require("child_process");
+
+/***/ }),
+
+/***/ 24:
 /***/ (function(module, exports) {
 
 module.exports = require("fs");
 
 /***/ }),
 
-/***/ 25:
+/***/ 27:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1074,7 +1288,7 @@ var _Mixin2 = __webpack_require__(2);
 
 var _Mixin3 = _interopRequireDefault(_Mixin2);
 
-var _Survey = __webpack_require__(6);
+var _Survey = __webpack_require__(5);
 
 var _Survey2 = _interopRequireDefault(_Survey);
 
@@ -1213,7 +1427,7 @@ exports.default = _class;
 
 /***/ }),
 
-/***/ 26:
+/***/ 28:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1310,7 +1524,7 @@ exports.default = _class;
 
 /***/ }),
 
-/***/ 27:
+/***/ 29:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1366,7 +1580,7 @@ var _mongoose = __webpack_require__(0);
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _Aggregates = __webpack_require__(13);
+var _Aggregates = __webpack_require__(15);
 
 var _Aggregates2 = _interopRequireDefault(_Aggregates);
 
@@ -1393,39 +1607,11 @@ module.exports = _mongoose2.default.model('Statistic', schema);
 "use strict";
 
 
-module.exports = {
-  db: {
-    connectionOptions: {
-      poolSize: 2,
-      useMongoClient: true
-    },
-    connectionString: 'mongodb://localhost/test'
-  },
-  cookieName: 'ptracking_jwt',
-  jwt: {
-    secret: '235a21d1385b6b877d8efb4fc6445c8e'
-  },
-  admin: {
-    username: 'root',
-    passphrase: '7232aa3fbbb01be2f556bb76c2827410'
-  },
-  routeSecurity: [{ prefix: '/', roles: 'root' }, { prefix: '/cms', roles: 'admin' }, { prefix: '/cms', method: 'get', roles: 'content-viewer content-manager' }, { prefix: '/app', roles: 'admin surveyor' }, { prefix: '/cms/surveys', roles: 'content-manager' }, { prefix: '/cms/surveyors', roles: 'content-manager' }, { prefix: '/cms/artifacts', roles: 'content-manager' }, { prefix: '/cms/locations', roles: 'content-manager' }, { prefix: '/cms/answers', roles: 'content-manager' }, { prefix: '/cms/processes', roles: 'content-manager' }],
-  origin: 'http://localhost'
-};
-
-/***/ }),
-
-/***/ 6:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 __webpack_require__(3);
 
-var _Question = __webpack_require__(15);
+var _Question = __webpack_require__(17);
 
 var _Question2 = _interopRequireDefault(_Question);
 
@@ -1472,6 +1658,34 @@ module.exports = mongoose.model('Survey', surveySchema);
 
 /***/ }),
 
+/***/ 6:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = {
+  db: {
+    connectionOptions: {
+      poolSize: 2,
+      useMongoClient: true
+    },
+    connectionString: 'mongodb://localhost/test'
+  },
+  cookieName: 'ptracking_jwt',
+  jwt: {
+    secret: '235a21d1385b6b877d8efb4fc6445c8e'
+  },
+  admin: {
+    username: 'root',
+    passphrase: '7232aa3fbbb01be2f556bb76c2827410'
+  },
+  routeSecurity: [{ prefix: '/', roles: 'root' }, { prefix: '/cms', roles: 'admin' }, { prefix: '/cms', method: 'get', roles: 'content-viewer content-manager' }, { prefix: '/app', roles: 'admin surveyor' }, { prefix: '/cms/surveys', roles: 'content-manager' }, { prefix: '/cms/surveyors', roles: 'content-manager' }, { prefix: '/cms/artifacts', roles: 'content-manager' }, { prefix: '/cms/locations', roles: 'content-manager' }, { prefix: '/cms/answers', roles: 'content-manager' }, { prefix: '/cms/processes', roles: 'content-manager' }, { prefix: '/db', roles: 'root' }],
+  origin: 'http://localhost'
+};
+
+/***/ }),
+
 /***/ 7:
 /***/ (function(module, exports) {
 
@@ -1479,261 +1693,47 @@ module.exports = require("co");
 
 /***/ }),
 
-/***/ 96:
+/***/ 9:
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(97);
-module.exports = __webpack_require__(27);
+"use strict";
 
 
-/***/ }),
+var Schema = __webpack_require__(1);
+var mongoose = __webpack_require__(0);
 
-/***/ 97:
-/***/ (function(module, exports, __webpack_require__) {
+var processSchema = new Schema({
+    name: { type: String, required: true },
+    path: { type: String },
+    args: { type: {} },
+    status: { type: String },
+    exitCode: { type: Number },
+    exitSignal: { type: String },
+    stdout: { type: String },
+    stderr: { type: String },
+    startDate: { type: Date, default: Date.now },
+    endDate: { type: Date }
+});
+processSchema.index({ status: 1, name: 1 });
+processSchema.index({ name: 1 });
 
-module.exports = global["Proc"] = __webpack_require__(98);
+module.exports = mongoose.model('Process', processSchema);
 
 /***/ }),
 
 /***/ 98:
 /***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
+__webpack_require__(99);
+module.exports = __webpack_require__(29);
 
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _childProcess = __webpack_require__(17);
-
-var _Mixin = __webpack_require__(2);
-
-var _Mixin2 = _interopRequireDefault(_Mixin);
-
-var _SurveyExport = __webpack_require__(25);
-
-var _SurveyExport2 = _interopRequireDefault(_SurveyExport);
-
-var _Cursor = __webpack_require__(26);
-
-var _Cursor2 = _interopRequireDefault(_Cursor);
-
-var _Statistic = __webpack_require__(4);
-
-var _Statistic2 = _interopRequireDefault(_Statistic);
-
-var _csvStringify = __webpack_require__(99);
-
-var _csvStringify2 = _interopRequireDefault(_csvStringify);
-
-var _fs = __webpack_require__(23);
-
-var _fs2 = _interopRequireDefault(_fs);
-
-var _co = __webpack_require__(7);
-
-var _co2 = _interopRequireDefault(_co);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var ExportResponses = function (_Mixin$mixin) {
-  _inherits(ExportResponses, _Mixin$mixin);
-
-  function ExportResponses() {
-    _classCallCheck(this, ExportResponses);
-
-    return _possibleConstructorReturn(this, (ExportResponses.__proto__ || Object.getPrototypeOf(ExportResponses)).apply(this, arguments));
-  }
-
-  _createClass(ExportResponses, [{
-    key: 'execute',
-    value: function execute(proc) {
-      var _this2 = this;
-
-      this.surveyId = proc.args;
-      return this.getSurvey().then(function () {
-        return _this2.getExportHeader();
-      }).then(function () {
-        return _this2.collectStatistics();
-      });
-    }
-  }, {
-    key: 'collectStatistics',
-    value: function collectStatistics() {
-      return _co2.default.call(this, /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
-        var _this3 = this;
-
-        var _loop, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, _ref, number;
-
-        return regeneratorRuntime.wrap(function _callee$(_context2) {
-          while (1) {
-            switch (_context2.prev = _context2.next) {
-              case 0:
-                _loop = /*#__PURE__*/regeneratorRuntime.mark(function _loop(_number) {
-                  var writer, keys;
-                  return regeneratorRuntime.wrap(function _loop$(_context) {
-                    while (1) {
-                      switch (_context.prev = _context.next) {
-                        case 0:
-                          if (!_number) _number = null;
-                          writer = _this3._createCsvWriter(_this3.surveyId, _number);
-                          keys = _this3.answerKeys[_number].keys;
-
-                          writer.write(keys.map(function (_ref2) {
-                            var key = _ref2.key;
-                            return key;
-                          }));
-                          writer.write(keys.map(function (_ref3) {
-                            var description = _ref3.description;
-                            return description;
-                          }));
-                          _this3.writer = writer;
-                          _this3.rowCount = 0;
-                          _this3.keys = keys;
-                          _context.next = 10;
-                          return _this3.iterateCursor(_Statistic2.default.find({
-                            type: 'SurveyResponse',
-                            key: _this3.surveyId + '/' + _number
-                          }), 'collectOneStatistic').then(function (out) {
-                            return console.log(JSON.stringify({
-                              _logHeader: 'stats',
-                              respondent: _number,
-                              processed: out,
-                              numRows: _this3.rowCount
-                            }));
-                          });
-
-                        case 10:
-                          number = _number;
-
-                        case 11:
-                        case 'end':
-                          return _context.stop();
-                      }
-                    }
-                  }, _loop, _this3);
-                });
-                _iteratorNormalCompletion = true;
-                _didIteratorError = false;
-                _iteratorError = undefined;
-                _context2.prev = 4;
-                _iterator = this.respondents[Symbol.iterator]();
-
-              case 6:
-                if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-                  _context2.next = 13;
-                  break;
-                }
-
-                _ref = _step.value;
-                number = _ref.number;
-                return _context2.delegateYield(_loop(number), 't0', 10);
-
-              case 10:
-                _iteratorNormalCompletion = true;
-                _context2.next = 6;
-                break;
-
-              case 13:
-                _context2.next = 19;
-                break;
-
-              case 15:
-                _context2.prev = 15;
-                _context2.t1 = _context2['catch'](4);
-                _didIteratorError = true;
-                _iteratorError = _context2.t1;
-
-              case 19:
-                _context2.prev = 19;
-                _context2.prev = 20;
-
-                if (!_iteratorNormalCompletion && _iterator.return) {
-                  _iterator.return();
-                }
-
-              case 22:
-                _context2.prev = 22;
-
-                if (!_didIteratorError) {
-                  _context2.next = 25;
-                  break;
-                }
-
-                throw _iteratorError;
-
-              case 25:
-                return _context2.finish(22);
-
-              case 26:
-                return _context2.finish(19);
-
-              case 27:
-              case 'end':
-                return _context2.stop();
-            }
-          }
-        }, _callee, this, [[4, 15, 19, 27], [20,, 22, 26]]);
-      }));
-    }
-  }, {
-    key: 'collectOneStatistic',
-    value: function collectOneStatistic(stat) {
-      var _this4 = this;
-
-      return new Promise(function (res, rej) {
-        _this4.writer.write(_this4.keys.map(function (_ref4) {
-          var key = _ref4.key;
-          return stat.data[key];
-        }), null, function () {
-          ++_this4.rowCount;
-          res(stat._id);
-        });
-      });
-    }
-  }, {
-    key: '_createCsvWriter',
-    value: function _createCsvWriter(surveyId, resp) {
-      var path = 'data/export-responses/' + surveyId + '-' + resp + '.csv';
-      var mode = 'w';
-      var fileStream = _fs2.default.createWriteStream(path, { encoding: 'utf8', flags: mode });
-      fileStream.on('error', function (err) {
-        throw err;
-      });
-
-      var csvWriter = new _csvStringify2.default();
-      csvWriter.on('error', function (err) {
-        throw err;
-      });
-
-      csvWriter.pipe(fileStream);
-      csvWriter.on('end', function () {
-        return fileStream.end();
-      });
-      return csvWriter;
-    }
-  }]);
-
-  return ExportResponses;
-}(_Mixin2.default.mixin(_childProcess.ChildTemplate, _SurveyExport2.default, _Cursor2.default));
-
-exports.default = ExportResponses;
 
 /***/ }),
 
 /***/ 99:
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-module.exports = require("csv-stringify");
+module.exports = global["Proc"] = __webpack_require__(100);
 
 /***/ })
 
