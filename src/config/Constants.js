@@ -6,6 +6,7 @@ module.exports = {
     },
     connectionString: 'mongodb://localhost/test',
   },
+  staticPath: 'tmp/static',
   cookieName: 'ptracking_jwt',
   jwt: {
     secret: '235a21d1385b6b877d8efb4fc6445c8e',
@@ -25,7 +26,6 @@ module.exports = {
     {prefix: '/cms/locations', roles: 'content-manager'},
     {prefix: '/cms/answers', roles: 'content-manager'},
     {prefix: '/cms/processes', roles: 'content-manager'},
-    {prefix: '/db', roles: 'root'},
   ],
   origin: 'http://localhost',
 };
