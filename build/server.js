@@ -2377,7 +2377,11 @@ var SurveyController = function (_EntityController) {
       this.renderer.renderPromise(_Statistic2.default.deleteMany({ key: new RegExp('^' + _id) }).then(function () {
         return _Answer2.default.update({ survey: _id, lastExport: { $ne: null } }, { lastExport: null }, { multi: true });
       }).then(function () {
-        return _this2._findOneAndUpdate(_this2._getQuery(), { answerStats: { processed: 0 } });
+        return _this2._findOneAndUpdate(_this2._getQuery(), {
+          answerStats: { processed: 0 },
+          collectProcessId: null,
+          collectExportId: null
+        });
       }));
     }
   }, {

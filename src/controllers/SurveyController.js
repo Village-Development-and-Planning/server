@@ -24,7 +24,11 @@ class SurveyController extends EntityController {
         {multi: true}
       )).then(() => this._findOneAndUpdate(
         this._getQuery(),
-        {answerStats: {processed: 0}},
+        {
+          answerStats: {processed: 0},
+          collectProcessId: null,
+          collectExportId: null,
+        },
       ))
     );
   }
